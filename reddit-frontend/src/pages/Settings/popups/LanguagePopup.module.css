@@ -1,0 +1,89 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  width: 340px;
+  animation: popupFade 0.25s ease;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 14px;
+  margin-bottom: 18px;
+  color: #444;
+}
+
+.option {
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.option:hover {
+  background: hsla(0, 0%, 91%, 0.422);
+}
+
+.check {
+  opacity: 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+}
+
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+
+.save {
+  padding: 8px 14px;
+  background: #0A449B;
+  color: #ffffff;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.save:hover {
+    background: #08306d;
+}
+
+
+@keyframes popupFade {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

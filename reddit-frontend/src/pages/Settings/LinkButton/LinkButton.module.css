@@ -1,0 +1,17 @@
+.btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  color: #1a1a1b;
+}

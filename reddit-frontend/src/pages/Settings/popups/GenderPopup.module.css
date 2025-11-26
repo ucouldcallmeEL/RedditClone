@@ -1,0 +1,100 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+
+.popup {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  width: 420px;
+  border-radius: 16px;
+  padding: 26px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  animation: popupScale 0.15s ease-out;
+}
+
+/* Title */
+.title {
+  margin: 0 0 12px 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #6b6e72;
+  line-height: 1.4;
+}
+
+/* Option items */
+.option {
+  padding: 14px 4px;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 6px;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.option:hover {
+  background: #f3f4f5;
+}
+
+.selected {
+  background: #e7f1ff;
+}
+
+.selected::after {
+  content: "✔";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2563eb;
+  font-size: 16px;
+}
+
+/* Footer buttons */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.cancel, .save {
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+}
+
+.cancel {
+  background: #f1f2f3;
+}
+
+.cancel:hover {
+  background: #e4e5e7;
+}
+
+.save {
+  background: #0079d3;
+  color: white;
+}
+
+.save:hover {
+  background: #0065b6;
+}
+
+@keyframes popupScale {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
