@@ -1,0 +1,85 @@
+/* body {
+    background-color: #0e1113;
+} */
+
+.modal-container {
+    background-color: #181C1F;
+    box-sizing: border-box;
+    padding: 1rem;
+    /* width: 100%; */
+    /* max-width: 540px; */
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: fit-content;
+    overflow: visible;
+    border-radius: 1rem;
+    box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+    margin: 50px, 100px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+h2 {
+    color:#b7cad4;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: start;
+}
+
+.close-button-container {
+    background-color: rgba(0,0,0,0);
+    display: block;
+}
+
+.close-button {
+    background-color: #2a3236;
+    color: #FFFFFF;
+    align-items: center;
+    justify-content: center;
+    display: inline-flex;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+    border-radius: 999px;
+    border: none;
+    height: 2rem;
+    width: 2rem;
+}
+
+.close-icon {
+    font-family: 'Segeo UI', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.progress-dots-container {
+    display: flex;
+    position: absolute;
+    height: 0.75rem;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: 0.625rem;
+    align-items: center;
+    padding: 1rem;
+    gap: 0.25rem;
+    /* margin-bottom: 1rem; */
+}
+
+.progress-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 100%;
+    background-color: #ffffff33;
+    margin-bottom: 1rem;
+
+}
+
+#current-page-indicator {
+    background-color: #FFFFFF;
+}
