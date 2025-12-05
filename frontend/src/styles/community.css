@@ -1,0 +1,102 @@
+/* Community page specific styles (moved from styles.css for modularity) */
+
+/* When viewing a community page, expand the main feed to use more horizontal space */
+.community-active .app-body {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  width: min(1400px, 100%);
+  max-width: none;
+  width: calc(100% - clamp(80px, var(--sidebar-width), 260px));
+  margin: 0;
+  padding-left: clamp(1rem, 5vw, 3.5rem);
+  justify-content: start;
+}
+
+.community-active .feed {
+  max-width: none;
+  width: 100%;
+}
+
+.rules-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0;
+  border-top: 1px solid #eef2f7;
+  overflow-x: auto;
+}
+
+.filter-bar .ghost-btn {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+}
+
+.filter-bar .ghost-btn.active-filter {
+  background: #ffedd5;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+
+/* Subreddit banner styling */
+.subreddit-banner {
+  width: 100%;
+  display: block;
+}
+
+/* Sort dropdown and menu */
+.sort-dropdown .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sort-menu .profile-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+/* compact styling for feed list vs card view - basic placeholder */
+.feed.compact .post {
+  padding: 0.45rem 0.6rem;
+}
+
+.view-toggle .ghost-btn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+}
+
+.community-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.community-info h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.community-sidebar .chip {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.community-sidebar .chip--ghost {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.community-sidebar .card {
+  padding: 1rem;
+}
+
+.community-sidebar ol li p {
+  margin: 0;
+}
+
+@media (max-width: 820px) {
+  .community-sidebar {
+    display: none;
+  }
+}

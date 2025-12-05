@@ -27,3 +27,15 @@ export type Community = {
   avatar: string;
 };
 
+export type CommunityDetails = Community & {
+  bannerColor?: string;
+  bannerImage?: string;
+  createdAt?: string;
+  moderators?: string[];
+  rules?: { id: string; title: string; description?: string }[];
+  online?: number;
+  joined?: boolean;
+  bookmarks?: string[];
+  weeklyContributions?: string;
+};
+

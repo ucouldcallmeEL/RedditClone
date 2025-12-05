@@ -56,6 +56,8 @@ button {
   transition: width 0.2s ease;
 }
 
+/* Community page specific styles moved to `src/styles/community.css` for modularity */
+
 .card {
   background: #fff;
   border-radius: 1rem;
@@ -289,6 +291,8 @@ button {
   flex-wrap: wrap;
   gap: 0.4rem;
 }
+
+/* Community page specific styles migrated to `src/styles/community.css` */
 
 .icon-btn {
   width: 36px;
@@ -582,6 +586,8 @@ button {
   height: fit-content;
 }
 
+/* Community sidebar styles moved to `src/styles/community.css` */
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -645,4 +651,8 @@ button {
     margin: 0 1rem;
   }
 }
+
+@media (max-width: 820px) {
+}
+
 
