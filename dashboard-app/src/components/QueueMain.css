@@ -1,0 +1,102 @@
+/* src/components/QueueMain.css */
+.queue-container {
+  color: #D7DADC;
+  padding-top: 16px;
+}
+
+/* Header & Title */
+.queue-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.queue-title-row h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.queue-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-action {
+  background: transparent;
+  border: none;
+  color: #818384;
+  cursor: pointer;
+  padding: 4px;
+}
+.icon-action:hover { color: #D7DADC; }
+
+/* Tabs */
+.queue-tabs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #343536;
+  padding-bottom: 8px;
+}
+
+.tabs-list {
+  display: flex;
+  gap: 8px;
+}
+
+.queue-tab {
+  background: transparent;
+  border: none;
+  color: #818384;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.queue-tab:hover {
+  background-color: #272729;
+  color: #D7DADC;
+}
+
+.queue-tab.active {
+  background-color: #272729; /* Active Grey Pill */
+  color: #D7DADC;
+}
+
+.sort-btn {
+  background: transparent;
+  border: none;
+  color: #818384;
+  cursor: pointer;
+}
+
+/* Empty State (Kitteh) */
+.queue-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 80px;
+  text-align: center;
+}
+
+.kitteh-img {
+  width: 120px;
+  height: auto;
+  margin-bottom: 16px;
+}
+
+.queue-empty-state h2 {
+  font-size: 18px;
+  margin: 0 0 4px 0;
+}
+
+.queue-empty-state p {
+  color: #818384;
+  font-size: 14px;
+  margin: 0;
+}
