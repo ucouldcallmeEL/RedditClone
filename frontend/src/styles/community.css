@@ -2,13 +2,30 @@
 
 /* When viewing a community page, expand the main feed to use more horizontal space */
 .community-active .app-body {
-  grid-template-columns: minmax(0, 1fr) 320px;
-  width: min(1400px, 100%);
-  max-width: none;
-  width: calc(100% - clamp(80px, var(--sidebar-width), 260px));
-  margin: 0;
-  padding-left: clamp(1rem, 5vw, 3.5rem);
-  justify-content: start;
+  /* When the right-rail is not rendered for community pages,
+     use a single centered column for the main content to avoid
+     empty space on the right. */
+  grid-template-columns: 1fr;
+  width: min(1100px, 100%);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: 0;
+  justify-content: center;
+}
+
+/* Make the surrounding app-body area match the community background
+   so the gap between header/left-sidebar and the community content
+   uses the same dark color. Header (sticky) and left sidebar remain unchanged. */
+.community-active .app-body {
+  background: #0b1114;
+}
+
+/* Also set the page background when viewing a community so the
+   gutters outside the centered column are the same dark color. The
+   header and left sidebar keep their own white backgrounds on top. */
+.community-active,
+.community-active body {
+  background-color: #0b1114;
 }
 
 .community-active .feed {
@@ -72,6 +89,20 @@
   gap: 1rem;
 }
 
+/* Make the community sidebar sticky and independently scrollable so
+   the main feed can scroll without moving the sidebar. */
+.community-sidebar {
+  position: sticky;
+  top: calc(var(--header-height) + 1rem);
+  /* fix the sidebar inside its grid cell and give it an explicit
+     height so it can show its own scrollbar independently from the
+     main feed */
+  align-self: start;
+  height: calc(100vh - var(--header-height) - 2rem);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
 .community-info h2 {
   font-size: 1.05rem;
   margin-bottom: 0.25rem;
@@ -91,8 +122,70 @@
   padding: 1rem;
 }
 
+/* Sidebar typography: use a tighter font stack and slightly smaller sizes
+   to match the compact look in the screenshot. This keeps the global
+   app font while preferring UI/system fonts that look condensed. */
+.community-sidebar {
+  font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.875rem; /* slightly smaller */
+  line-height: 1.3;
+  color: #334155;
+}
+
+.community-sidebar .section-heading h3 {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+}
+
+.community-sidebar p {
+  font-size: 0.845rem;
+  color: inherit;
+  margin: 0 0 0.35rem 0;
+}
+
+.community-sidebar small {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.community-sidebar .rule-number {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  font-size: 0.78rem;
+}
+
 .community-sidebar ol li p {
   margin: 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.community-sidebar ol li p {
+  margin: 0;
+}
+
+/* Number marker for community rules (small circular badge) */
+.community-sidebar .rule-number {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: #eef2f7;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.community-theme .community-sidebar .rule-number {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
 }
 
 @media (max-width: 820px) {
@@ -100,3 +193,139 @@
     display: none;
   }
 }
+
+/* Scoped dark theme for community page only (does not affect global header or left sidebar) */
+.community-theme {
+  background-color: #0b1114; /* page background similar to first image */
+  color: #fff;
+}
+
+.community-theme .card {
+  background: #0e1416; /* slightly lighter than page bg */
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Make post cards match the community dark card style when inside a community page */
+.community-theme .post.card {
+  background: #0e1416;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: none;
+}
+
+.community-theme .post.card .post__content h2,
+.community-theme .post.card .post__content p,
+.community-theme .post.card .post__author,
+.community-theme .post.card .post__meta small {
+  color: #fff;
+}
+
+.community-theme .post.card .chip,
+.community-theme .post.card .chip--ghost,
+.community-theme .post.card .ghost-btn {
+  color: inherit;
+}
+
+.community-theme .community-header__body h1,
+.community-theme .community-header__body p,
+.community-theme .post__content h2,
+.community-theme .post__content p {
+  color: #fff;
+}
+
+/* Community sidebar should use a different (slightly lighter) dark color per request */
+.community-theme .community-sidebar .card {
+  background: #071018; /* second image-like color for sidebar */
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.community-sidebar .rule-title {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: inherit;
+}
+
+.community-sidebar .rule-desc {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.community-theme .community-sidebar .rule-title {
+  color: #d6e1e8;
+  font-weight: 500;
+}
+
+.community-theme .community-sidebar .rule-desc {
+  color: #9fb0bb;
+}
+
+.community-theme .community-sidebar {
+  color: #d6e1e8;
+  font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.community-theme .community-sidebar .section-heading h3 {
+  color: #b8c6cf;
+}
+
+.community-theme .community-sidebar small {
+  color: #9fb0bb;
+}
+
+/* Join button blue */
+.community-theme .community-header .chip {
+  background: #0079d3;
+  color: #fff;
+  border: none;
+}
+
+.community-theme .chip--ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.community-theme .ghost-btn {
+  color: #fff;
+}
+
+.community-theme .subreddit-banner {
+  filter: brightness(0.85);
+}
+
+/* Dropdown/menu text and items should be white on community pages */
+.community-theme .sort-menu {
+  background: #0e1416;
+  border: 1px solid rgba(255,255,255,0.03);
+  color: #fff;
+}
+
+.community-theme .sort-menu .profile-menu__item {
+  color: #fff;
+  background: transparent;
+}
+
+.community-theme .sort-menu .profile-menu__item:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.community-theme .sort-dropdown .chip svg,
+.community-theme .sort-menu svg {
+  color: inherit;
+}
+
+/* Style the Create Post button as black with a thin white outline */
+.community-theme .community-header .create-post {
+  background: #000;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.community-theme .community-header .create-post svg {
+  color: #fff;
+}
+
+ 

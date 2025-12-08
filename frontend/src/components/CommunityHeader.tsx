@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserPlus, Check } from 'lucide-react';
+import { UserPlus, Check, Plus } from 'lucide-react';
 import type { CommunityDetails } from '../types';
 
 type Props = {
@@ -42,22 +42,18 @@ function CommunityHeader({ community, onToggleJoin }: Props) {
           <p style={{ margin: 0, color: '#64748b' }}>{community.members} • {community.online?.toLocaleString() ?? 0} online</p>
         </div>
 
-        <div>
+        <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+          <button className="chip chip--ghost create-post" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }} onClick={() => { /* placeholder: open composer */ }}>
+            <Plus size={14} /> Create Post
+          </button>
+
           <button className={`chip`} onClick={toggle} aria-pressed={joined}>
             {joined ? <><Check size={14} /> Joined</> : <><UserPlus size={14} /> Join</>}
           </button>
         </div>
       </div>
 
-      {community.rules && community.rules.length ? (
-        <div className="rules-bar" style={{ display: 'flex', gap: '.5rem', overflowX: 'auto', padding: '0 1rem 1rem' }}>
-          {community.rules.map((r) => (
-            <button key={r.id} className="chip chip--ghost" style={{ whiteSpace: 'nowrap' }}>
-              {r.title}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {/* header rules removed — rules are shown in the sidebar now */}
     </section>
   );
 }

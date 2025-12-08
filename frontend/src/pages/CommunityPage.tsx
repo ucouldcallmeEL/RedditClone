@@ -48,15 +48,39 @@ function SortDropdown({ active, onChange }: { active: FilterKey; onChange: (f: F
   );
 }
 
-function ViewToggle({ compact, onChange }: { compact: boolean; onChange: (c: boolean) => void }) {
+function ViewDropdown({ compact, onChange }: { compact: boolean; onChange: (c: boolean) => void }) {
+  const [open, setOpen] = useState(false);
+  const options = [
+    { key: false, label: 'Card', icon: <LayoutGrid size={16} /> },
+    { key: true, label: 'Compact', icon: <List size={16} /> },
+  ];
+
   return (
-    <div className="view-toggle" style={{ display: 'flex', gap: '.4rem' }}>
-      <button className={`ghost-btn ${!compact ? 'active-filter' : ''}`} onClick={() => onChange(false)} aria-pressed={!compact}>
-        <LayoutGrid size={14} />
+    <div className="sort-dropdown" style={{ position: 'relative' }}>
+      <button className="chip chip--ghost" onClick={() => setOpen((s) => !s)} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+        {compact ? <List size={14} /> : <LayoutGrid size={14} />}
+        <span style={{ marginLeft: 2 }}>{compact ? 'Compact' : 'Card'}</span>
+        <ChevronDown size={14} style={{ marginLeft: 6 }} />
       </button>
-      <button className={`ghost-btn ${compact ? 'active-filter' : ''}`} onClick={() => onChange(true)} aria-pressed={compact}>
-        <List size={14} />
-      </button>
+
+      {open ? (
+        <div className="sort-menu card" style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, minWidth: 160, zIndex: 40 }}>
+          <div style={{ padding: '0.6rem 0.8rem', borderBottom: '1px solid #eef2f7', fontWeight: 700 }}>View</div>
+          {options.map((o) => (
+            <button
+              key={String(o.key)}
+              className={`profile-menu__item`}
+              onClick={() => {
+                onChange(o.key as boolean);
+                setOpen(false);
+              }}
+            >
+              <span style={{ width: 28, display: 'inline-flex', justifyContent: 'center' }}>{o.icon}</span>
+              <span>{o.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -122,7 +146,7 @@ function CommunityPage() {
   if (!communityName) return <main className="feed">No community specified</main>;
 
   return (
-    <main className="feed">
+    <main className="feed community-theme">
       {community && (
         <CommunityHeader
           community={community}
@@ -134,15 +158,13 @@ function CommunityPage() {
         <div style={{ gridColumn: '1 / span 2', marginTop: '.5rem' }}>
           <div className="filter-bar" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
             <SortDropdown active={filter} onChange={(f) => setFilter(f)} />
-            <ViewToggle compact={compactView} onChange={(c) => setCompactView(c)} />
-            <div style={{ marginLeft: 'auto', color: '#94a3b8' }}>{posts.length.toLocaleString()} posts</div>
+            <ViewDropdown compact={compactView} onChange={(c) => setCompactView(c)} />
+            {/* post count removed as requested */}
           </div>
         </div>
         <div>
           <section className="card">
-            <div className="section-heading">
-              <h3>Posts</h3>
-            </div>
+            {/* Posts heading removed per request */}
 
             {loading ? (
               <p>Loading…</p>
@@ -162,7 +184,7 @@ function CommunityPage() {
           </section>
         </div>
 
-        <div>
+        <div style={{ alignSelf: 'start' }}>
           {community && <CommunitySidebar community={community} />}
         </div>
       </div>

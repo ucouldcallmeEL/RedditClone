@@ -35,32 +35,44 @@ function CommunitySidebar({ community }: Props) {
             </div>
           </div>
         </div>
-      </SidebarCard>
 
-      <SidebarCard title="Community bookmarks">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-          {(community.bookmarks ?? []).map((b, i) => (
-            <button key={b + i} className="chip chip--ghost" style={{ width: '100%', textAlign: 'left', padding: '.6rem 1rem', borderRadius: '999px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>{b}</span>
-              {b.toLowerCase().includes('recent') || b.toLowerCase().includes('official') ? <ChevronDown size={14} /> : null}
-            </button>
-          ))}
+        <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #eef2f7' }} />
+
+        <div className="community-bookmarks">
+          <div className="section-heading">
+            <h3>Community bookmarks</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+            {(community.bookmarks ?? []).map((b, i) => (
+              <button key={b + i} className="chip chip--ghost" style={{ width: '100%', textAlign: 'left', padding: '.6rem 1rem', borderRadius: '999px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{b}</span>
+                {b.toLowerCase().includes('recent') || b.toLowerCase().includes('official') ? <ChevronDown size={14} /> : null}
+              </button>
+            ))}
+          </div>
         </div>
-      </SidebarCard>
 
-      <SidebarCard title={`${community.name} rules`}>
-        <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
-          {community.rules?.map((r) => (
-            <li key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.6rem' }}>
-              <div className="chip" style={{ width: 36, height: 28, display: 'grid', placeItems: 'center' }}>{r.id}</div>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontWeight: 600 }}>{r.title}</p>
-                {r.description ? <small style={{ color: '#94a3b8' }}>{r.description}</small> : null}
-              </div>
-              <button className="ghost-btn" aria-label="Expand rule"><ChevronDown size={16} /></button>
-            </li>
-          ))}
-        </ol>
+        <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #eef2f7' }} />
+
+        <div className="community-rules">
+          <div className="section-heading">
+            <h3>{community.name} rules</h3>
+          </div>
+
+          <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+            {community.rules?.map((r) => (
+              <li key={r.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '.6rem' }}>
+                <div className="rule-number">{r.id}</div>
+                <div style={{ flex: 1 }}>
+                  <p className="rule-title">{r.title}</p>
+                  {r.description ? <small className="rule-desc">{r.description}</small> : null}
+                </div>
+                <button className="ghost-btn" aria-label="Expand rule"><ChevronDown size={16} /></button>
+              </li>
+            ))}
+          </ol>
+        </div>
       </SidebarCard>
     </aside>
   );
