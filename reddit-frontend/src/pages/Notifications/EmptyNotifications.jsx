@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import "./notifications.css";
 
 function EmptyNotifications() {
@@ -10,7 +12,7 @@ function EmptyNotifications() {
             />
             <h2>Turn on email digest</h2>
             <p>Stay in the loop on content from communities you love right in your email inbox.</p>
-            <button className="empty-btn">View settings</button>
+            <Link to="/settings?tab=email"><button className="empty-btn">View settings</button></Link>
         </div>
     );
 }

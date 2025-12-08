@@ -1,4 +1,9 @@
-import {useState} from "react";
+import {useState , useEffect } from "react";
+
+import { useLocation } from "react-router-dom";
+
+
+
 import SettingsTab from "./SettingsTab";
 import SettingsAccountContent from "./SettingsTabsContent/SettingsAccountContent";
 import SettingsProfileContent from "./SettingsTabsContent/SettingsProfileContent";
@@ -19,6 +24,8 @@ import "./Settings.css"
 
 function SettingsPage() {
 
+    const location = useLocation();
+    
 
 
     //States
@@ -30,6 +37,18 @@ function SettingsPage() {
     const [banner , setBanner] = useState(null);
     const [lang , setLang] = useState("English");
     const [view , setView] = useState("Card");
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get("tab");
+
+        if (tab === "notifications") {
+            setActiveIndex(4);// Notifications tab index
+        }
+        else if (tab === "email"){
+            setActiveIndex(5);
+        }
+    }, [location.search]);
 
     async function handleGenderChange(){
         const changedGender = await openGenderPopup(gender);
