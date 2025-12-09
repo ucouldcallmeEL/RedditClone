@@ -16,7 +16,8 @@ import {
   LayoutGrid,
   Settings as SettingsIcon,
 } from 'lucide-react';
-import redditLogo from '../../../resources/reddit-logo_578229-207.avif';
+import { useTheme } from '../contexts/ThemeContext';
+import redditLogo from '../../../resources/Reddit_Lockup.svg';
 
 const profileActions = [
   { label: 'Edit Avatar', icon: Pencil },
@@ -37,6 +38,7 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!menuOpen) {
@@ -58,6 +60,16 @@ function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [menuOpen]);
 
+  const handleMenuItemClick = (label: string) => {
+    if (label === 'Dark Mode') {
+      toggleTheme();
+    } else if (label === 'Log Out') {
+      // Handle logout
+      console.log('Logging out...');
+    }
+    // Add more handlers as needed
+  };
+
   return (
     <header className="header">
       <div className="header__brand">
@@ -66,7 +78,6 @@ function Header() {
           alt="Reddit logo"
           className="header__logo-img"
         />
-        <span className="header__logo">reddit</span>
       </div>
 
       <div className="header__search">
@@ -111,14 +122,21 @@ function Header() {
 
             <div className="profile-menu__section">
               {profileActions.map(({ label, icon: Icon, meta, control }) => (
-                <button key={label} className="profile-menu__item">
+                <button 
+                  key={label} 
+                  className="profile-menu__item"
+                  onClick={() => handleMenuItemClick(label)}
+                >
                   <Icon size={18} />
                   <div className="profile-menu__item-text">
                     <span>{label}</span>
                     {meta && <small>{meta}</small>}
                   </div>
                   {control === 'toggle' ? (
-                    <span className="profile-menu__toggle" aria-hidden="true">
+                    <span 
+                      className={`profile-menu__toggle${theme === 'dark' ? ' profile-menu__toggle--active' : ''}`}
+                      aria-hidden="true"
+                    >
                       <span />
                     </span>
                   ) : null}
