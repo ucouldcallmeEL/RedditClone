@@ -9,11 +9,12 @@ import type { Post } from '../types';
 
 type Props = {
   post: Post;
+  onClick?: () => void;
 };
 
-function PostCard({ post }: Props) {
+function PostCard({ post, onClick }: Props) {
   return (
-    <article className="post card">
+    <article className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <header className="post__meta">
         <img
           src={post.communityIcon}

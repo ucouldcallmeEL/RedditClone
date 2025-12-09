@@ -33,7 +33,9 @@ const commentSchema = new mongoose.Schema({
         type: Array,
         default: []
     }
+}, {
+    timestamps: true  // Adds createdAt and updatedAt fields automatically
 });
 
 const Comment = mongoose.model('Comment', commentSchema);
-export default Comment;
+module.exports = Comment;

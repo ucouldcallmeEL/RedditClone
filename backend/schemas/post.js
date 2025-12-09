@@ -25,7 +25,10 @@ const postSchema = new mongoose.Schema({
     downvotes: {
         type: Number,
         default: 0
-    }});
+    }
+}, {
+    timestamps: true  // Adds createdAt and updatedAt fields automatically
+});
 
 const Post = mongoose.model('Post', postSchema);
-export default Post;
+module.exports = Post;

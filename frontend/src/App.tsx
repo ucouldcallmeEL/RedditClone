@@ -1,9 +1,10 @@
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
-import PostCard from './components/PostCard';
-import PostComposer from './components/PostComposer';
 import RightRail from './components/RightRail';
 import SidebarNav from './components/SidebarNav';
-import { communities, posts, trendingTopics } from './data/feed';
+import HomePage from './pages/HomePage';
+import PostDetailPage from './pages/PostDetailPage';
+import { communities, trendingTopics } from './data/feed';
 
 function App() {
   return (
@@ -14,10 +15,10 @@ function App() {
         <SidebarNav />
 
         <main className="feed">
-          <PostComposer />
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/post/:postId" element={<PostDetailPage />} />
+          </Routes>
         </main>
 
         <RightRail trendingTopics={trendingTopics} communities={communities} />
