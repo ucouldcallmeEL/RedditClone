@@ -1,3 +1,69 @@
+.App {
+  text-align: center;
+}
+
+.homepage {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #dae0e6;
+}
+
+.homepage h1 {
+  color: #1a1a1b;
+  margin-bottom: 2rem;
+}
+
+.create-community-btn {
+  background-color: #0079d3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-community-btn:hover {
+  background-color: #005ba1;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #0e1113;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 auth-flow-modal {
   justify-self: center;
   align-self: center;
@@ -5,12 +71,12 @@ auth-flow-modal {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 650px;
+  width: 700px;
   padding: 2rem;
 }
 
 .quit-login-button {
-  background-color: #B7CAD4;
+  background-color: #555;
   align-items: center;
   justify-content: center;
   border-radius: 100%;
@@ -53,11 +119,11 @@ auth-flow-modal {
 }
 
 .log-in-modal-text {
-  color: #B7CAD4;
-  font-size: 13px;
+  color: #cdcdcd;
+  font-size: 14px;
   font-weight: 400;
   text-align: center;
-  margin: 1em 0 1em;
+  margin: 1em 0 .5em;
 }
 
 .log-in-modal .log-in-modal-title {
@@ -118,28 +184,28 @@ auth-flow-modal {
 .or-divider-line {
   width: 100%;
   border: none;
-  border-top: 1px solid #323131;
+  border-top: 1px solid #555;
   margin: 0;
 }
 
 .or-divider-text {
   position: absolute;
-  /* background-color: #181C1F; */
-  color: #B7CAD4;
+  background-color: #181C1F;
+  color: #FFFFFF;
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
 }
 
 .text-field {
-  background-color: #B7CAD4;
+  background-color: #555;
   width: 55%;
   margin: 10px 0;
   display: block;
 }
 
 .or-divider-text{
-  color:#B7CAD4
+  color:#555
 }
 
 .text-fields-wrapper {
@@ -147,55 +213,4 @@ auth-flow-modal {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.log-in-modal-other-links {
-    align-self: left;
-    text-align: left;
-    width: 55%;    
-    margin-bottom: 16px;
-}
-
-.forgot-password-link{
-    color: #B7CAD4;
-    font-size: 14px;
-    text-align: left;
-}
-
-.signup-prompt{
-    color: #B7CAD4;
-    font-size: 14px;
-    text-align: left;
-}
-a{
-    text-decoration: none;
-    color: #648EFC;
-}
-a:hover{
-    text-decoration: underline;
-}
-
-.LogIn-button.disabled {
-  background-color: #24282b;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* .LogIn-button.disabled:hover {
-  background-color: #333D42;
-} */
- .login-action-button{
-    color: White;
-    background-color: #D93900;
- }
-.log-in-button-text{
-    color:#FFFFFF;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.log-in-button-text.disabled {
-  color: #8E8E93;
-  font-size: 16px;
-  font-weight: 600;
 }

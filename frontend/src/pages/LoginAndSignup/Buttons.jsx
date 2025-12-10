@@ -4,7 +4,7 @@ const Buttons = () => {
     return (
         <div>
             <div className="LogIn-button">
-                <img className="logo" src="/phone.svg" alt="Phone Icon" width="20"/>
+                <img className="logo" src="/phone.png" alt="Phone Icon" width="20"/>
                 <span className="LogIn-button-text">
                     Continue with Phone Number
                 </span>
@@ -18,7 +18,7 @@ const Buttons = () => {
                 <span>Continue with Apple</span>
             </div>
             <div className="LogIn-button">
-                <img className="logo" src="/link.svg" alt="Link Icon" width="20"/>
+                <img className="logo" src="/link.png" alt="Link Icon" width="20"/>
                 <span>Email me a one-time link</span>
             </div>
         </div>
