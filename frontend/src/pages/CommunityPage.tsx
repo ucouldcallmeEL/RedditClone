@@ -162,14 +162,49 @@ function CommunityPage() {
 
     switch (filter) {
       case 'hot':
-        return [...posts].sort((a, b) => (b.upvotes + b.comments) - (a.upvotes + a.comments));
+        // Reddit-style hot algorithm: considers engagement and recency
+        return [...posts].sort((a, b) => {
+          const aScore = a.upvotes - a.downvotes + a.comments;
+          const bScore = b.upvotes - b.downvotes + b.comments;
+          const aDate = new Date(a.createdAt).getTime();
+          const bDate = new Date(b.createdAt).getTime();
+          const now = Date.now();
+          
+          // Decay factor based on age (newer posts get boost)
+          const aAge = (now - aDate) / (1000 * 60 * 60); // hours ago
+          const bAge = (now - bDate) / (1000 * 60 * 60);
+          
+          const aHot = aScore / Math.pow(aAge + 2, 1.8);
+          const bHot = bScore / Math.pow(bAge + 2, 1.8);
+          
+          return bHot - aHot;
+        });
       case 'new':
-        // we don't have a real date, keep original order
-        return posts;
+        // Sort by creation date, newest first
+        return [...posts].sort((a, b) => {
+          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bDate - aDate; // Newest first
+        });
       case 'top':
-        return [...posts].sort((a, b) => b.upvotes - a.upvotes);
+        // Sort by net upvotes (upvotes - downvotes), highest first
+        return [...posts].sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
       case 'rising':
-        return [...posts].sort((a, b) => a.comments - b.comments);
+        // Sort by comment velocity (most discussed posts that are relatively new)
+        return [...posts].sort((a, b) => {
+          const aDate = new Date(a.createdAt).getTime();
+          const bDate = new Date(b.createdAt).getTime();
+          const now = Date.now();
+          
+          const aAge = (now - aDate) / (1000 * 60 * 60); // hours ago
+          const bAge = (now - bDate) / (1000 * 60 * 60);
+          
+          // Comments per hour (higher = rising faster)
+          const aVelocity = a.comments / (aAge + 1); // +1 to avoid division by zero
+          const bVelocity = b.comments / (bAge + 1);
+          
+          return bVelocity - aVelocity;
+        });
       default:
         return posts;
     }
