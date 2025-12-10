@@ -55,10 +55,10 @@ auth-flow-modal {
 
 .log-in-modal-text {
   color: #B7CAD4;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   text-align: center;
-  margin: 1em 0 .5em;
+  margin: 1em 0 1em;
 }
 
 .log-in-modal .log-in-modal-title {
@@ -185,7 +185,17 @@ a:hover{
 /* .LogIn-button.disabled:hover {
   background-color: #333D42;
 } */
-.log-in-button-text {
+ .login-action-button{
+    color: White;
+    background-color: #D93900;
+ }
+.log-in-button-text{
+    color:#FFFFFF;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.log-in-button-text.disabled {
   color: #8E8E93;
   font-size: 16px;
   font-weight: 600;

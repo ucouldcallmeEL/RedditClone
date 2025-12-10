@@ -69,7 +69,7 @@ const LogIn = () => {
                     className={`LogIn-button login-action-button ${!formIsValid ? "disabled" : ""}`}
                     onClick={formIsValid ? handleSubmit : undefined}
                 >
-                    <span className="log-in-button-text">Log In</span>
+                    <span className={`log-in-button-text ${!formIsValid ? "disabled" : ""}`}>Log In</span>
                 </div>
             </div>
 
