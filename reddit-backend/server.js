@@ -6,6 +6,7 @@ const connectDB = require("./Db_config/connectDB");
 
 
 //Routers
+const uploadRoute = require("./Routes/upload");
 const notificationRouter = require("./Routes/notification.routes");
 const userRouter = require("./Routes/user.routes");
 const postRouter = require("./Routes/post.routes");
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();      
 
+app.use("/upload", uploadRoute);
 app.use("/notifications" , notificationRouter);
 app.use("/users", userRouter);
 app.use("/posts", postRouter);

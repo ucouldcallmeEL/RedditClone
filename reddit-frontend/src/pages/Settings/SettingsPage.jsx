@@ -1,5 +1,6 @@
-import {useState} from "react";
+import {useState , useEffect} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import SettingsTab from "./SettingsTab";
 import SettingsAccountContent from "./SettingsTabsContent/SettingsAccountContent";
@@ -20,6 +21,8 @@ import defaultAvatar from "../../assets/Reddit_Avatar.webp";
 import "./Settings.css";
 
 function SettingsPage() {
+
+    const userId = "69397ceee2ea8af09ca7899c" //Until we Implement storage for Id
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -45,6 +48,16 @@ function SettingsPage() {
         tab === "notifications" ? 4 :
         tab === "email" ? 5 :
         0;
+
+
+    useEffect(() => {
+        async function fetchUser(){
+            const res = await axios.get(`http://localhost:5000/users/${userId}`);
+            setAvatar(res.data.profilePicture || defaultAvatar);
+            setBanner(res.data.coverPicture || null);
+        }
+        fetchUser();
+    }, []);
 
     // Handlers
     async function handleGenderChange() {
@@ -76,12 +89,30 @@ function SettingsPage() {
 
     async function handleAvatarChange() {
         const result = await openImagePopup(avatar);
-        if (result !== null) setAvatar(result.preview);
+        if (!result) return;
+
+        const form = new FormData();
+        form.append("file", result.file);
+
+        const upload = await axios.post(`http://localhost:5000/upload/profile/${userId}`, form, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        setAvatar(upload.data.url);
     }
 
     async function handleBannerChange() {
         const result = await openBannerPopup(banner);
-        if (result !== null) setBanner(result.preview);
+        if (!result) return;
+
+        const form = new FormData();
+        form.append("file", result.file);
+
+        const upload = await axios.post(`http://localhost:5000/upload/cover/${userId}`, form, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        setBanner(upload.data.url);
     }
 
     async function handleLangChange() {
