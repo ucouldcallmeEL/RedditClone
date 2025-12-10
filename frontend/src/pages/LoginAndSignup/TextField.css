@@ -1,0 +1,75 @@
+.text-field-container {
+  position: relative;
+  width: 55%;
+  margin: 10px 0;
+}
+
+.text-field-input:hover {
+    background-color: #333D42;
+}
+
+.text-field-input {
+  width: 100%;
+  background-color: #2a3236;
+  border: none;
+  border-radius: 16px;
+  padding: 24px 20px 8px 20px;
+  font-size: 16px;
+  color: #FFFFFF;
+  outline: none;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+  height: 56px;
+}
+
+/* .text-field-input:focus {
+  background-color: #4A4A4C;
+} */
+/* Blue outline when focused */
+.text-field-input.focused {
+  outline: 2px solid #4A9EFF;
+  background-color: #333D42;
+}
+
+/* Invalid */
+.text-field-container.error .text-field-input {
+  outline: 2px solid #FF453A;
+}
+
+/* Error text under the field */
+.text-field-error {
+  margin-top: 4px;
+  color: #FF453A;
+  font-size: 12px;
+  text-align: left;
+}
+
+
+.text-field-label {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8E8E93;
+  font-size: 16px;
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.text-field-label.floating {
+  top: 10px;
+  transform: translateY(0);
+  font-size: 11px;
+  color: #8E8E93;
+}
+
+.required-asterisk {
+  color: #FF453A;
+  margin-left: 2px;
+}
+
+.text-field-inner {
+  position: relative;
+  height: 56px; /* same as input */
+}

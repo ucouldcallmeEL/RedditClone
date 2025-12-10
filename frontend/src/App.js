@@ -1,12 +1,12 @@
 import React from 'react';
 import './App.css';
-import CreateCommunity from './pages/CreateCommunity/CreateCommunity';
+import LogIn from './pages/LoginAndSignup/Login';
 
 function App() {
   return (
     <div className="App">
       <div className="homepage">
-        <CreateCommunity />
+        <LogIn />
       </div>
     </div>
   );
