@@ -78,10 +78,7 @@ const deletePost = async (id) => {
     const deletedPost = await Post.findByIdAndDelete(id);
     return deletedPost;
 };
-const getPostsByCommunity = async (id) => {
-    const posts = await Post.find({ community: id });
-    return posts;
-};
+
 const getHomePosts = async (userId) => {
     const user = await User.findById(userId);
     const following = user.following;
@@ -195,6 +192,30 @@ const deleteCommunity = async (id) => {
     return deletedCommunity;
 };
 
+const getCommunityByName = async (name) => {
+    const community = await Community.findOne({ 
+        name: { $regex: new RegExp(`^${name}$`, 'i') }
+    }).populate({
+        path: 'posts',
+        populate: {
+            path: 'author',
+            select: 'name'
+        }
+    }).populate('moderators', 'name').populate('members', 'name');
+    return community;
+};
+
+const getPostsByCommunityName = async (communityName) => {
+    const community = await Community.findOne({ name: communityName }).populate({
+        path: 'posts',
+        populate: {
+            path: 'author',
+            select: 'name'
+        }
+    });
+    if (!community) return [];
+    return community.posts;
+};
 
 
 module.exports = {
@@ -213,7 +234,6 @@ module.exports = {
     getPostsByUser,
     updatePost,
     deletePost,
-    getPostsByCommunity,
     createComment,
     getComment,
     getcommentreplies,
@@ -225,5 +245,7 @@ module.exports = {
     getCommunity,
     getCommunities,
     getCommunitiesByUser,
-    deleteCommunity
+    deleteCommunity,
+    getCommunityByName,
+    getPostsByCommunityName
 };

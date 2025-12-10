@@ -1,39 +1,51 @@
-import { posts } from '../data/feed';
 import type { Post, CommunityDetails } from '../types';
 
 export function fetchCommunityPosts(communityName: string): Promise<Post[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const requested = communityName.toLowerCase();
-      const normalized = requested.startsWith('r/') ? requested : `r/${requested}`;
-      const filtered = posts.filter((p) => p.subreddit.toLowerCase() === normalized);
-      resolve(filtered);
-    }, 550);
-  });
+  return fetch(`http://localhost:3000/r/${communityName}`)
+    .then((res) => res.json())
+    .then((community: any) => {
+      if (!community || !community.posts) return [];
+      return community.posts.map((post: any) => ({
+        id: post._id,
+        title: post.title,
+        content: post.content,
+        author: post.author.name,
+        upvotes: post.upvotes,
+        downvotes: post.downvotes,
+        comments: post.comments?.length || 0,
+        subreddit: `r/${communityName}`,
+        createdAt: post.createdAt,
+        // Add default values for missing fields
+        communityIcon: 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
+        timeAgo: '2h ago', // You might want to calculate this properly
+      }));
+    });
 }
 
 export function fetchCommunityDetails(communityName: string): Promise<CommunityDetails> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        name: `r/${communityName}`,
-        members: '123.4k members',
-        description: `Welcome to ${communityName} — a place for discussions, links, and more.`,
-        avatar: 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
-        bannerColor: '#f97316',
-        bannerImage: 'https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1400&q=80',
-        createdAt: 'Jan 12, 2014',
-        moderators: ['u/mod_one', 'u/mod_two'],
-        rules: [
-          { id: '1', title: 'Be respectful' },
-          { id: '2', title: 'No spam' },
-          { id: '3', title: 'Follow Reddit rules' },
-        ],
-        bookmarks: ['Wiki', 'Recent Game Threads', 'r/PS5', 'Discord', 'Our Twitter', 'Sony Official'],
-        weeklyContributions: '1.5K',
-        online: 432,
-        joined: false,
-      });
-    }, 350);
-  });
+  return fetch(`http://localhost:3000/r/${communityName}`)
+    .then((res) => res.json())
+    .then((community: any) => ({
+      name: `r/${community.name}`,
+      members: `${community.members?.length || 0} members`,
+      description: community.description,
+      avatar: community.profilePicture,
+      bannerColor: '#f97316',
+      bannerImage: community.coverPicture,
+      createdAt: new Date(community.createdAt).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      }),
+      moderators: community.moderators?.map((mod: any) => `u/${mod.name}`) || [],
+      rules: [
+        { id: '1', title: 'Be respectful' },
+        { id: '2', title: 'No spam' },
+        { id: '3', title: 'Follow Reddit rules' },
+      ],
+      bookmarks: ['Wiki', 'Recent Game Threads'],
+      weeklyContributions: '1.5K',
+      online: 432,
+      joined: false,
+    }));
 }

@@ -1,5 +1,5 @@
 const express = require('express');
-const { databaseConnection, getHomePosts, getPosts, getPopularPosts, getPost, getCommentsByPost } = require('./DBmanager');
+const { databaseConnection, getHomePosts, getPosts, getPopularPosts, getPost, getCommentsByPost, getCommunityByName, getPostsByCommunityName } = require('./DBmanager');
 
 const app = express();
 
@@ -95,6 +95,22 @@ app.get('/post/:id', async (req, res) => {
   } catch (err) {
     console.error('Failed to fetch post details', err);
     res.status(500).send({ error: 'Failed to fetch post details' });
+  }
+});
+
+app.get('/r/:communityName', async (req, res) => {
+  try {
+    const communityName = req.params.communityName;
+    const community = await getCommunityByName(communityName);
+    
+    if (!community) {
+      return res.status(404).send({ error: 'Community not found' });
+    }
+    
+    res.send(community);
+  } catch (err) {
+    console.error('Failed to fetch community details', err);
+    res.status(500).send({ error: 'Failed to fetch community details' });
   }
 });
 

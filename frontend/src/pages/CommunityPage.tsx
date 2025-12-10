@@ -5,9 +5,7 @@ import { ChevronDown, LayoutGrid, List } from 'lucide-react';
 import CommunityHeader from '../components/CommunityHeader';
 import CommunitySidebar from '../components/CommunitySidebar';
 import PostCard from '../components/PostCard';
-import { fetchCommunityDetails, fetchCommunityPosts } from '../utils/community';
 import type { CommunityDetails, Post } from '../types';
-import { posts as allPosts } from '../data/feed';
 import { useTheme } from '../contexts/ThemeContext';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
@@ -98,21 +96,53 @@ function CommunityPage() {
     if (!communityName) return;
 
     setLoading(true);
-    Promise.all([fetchCommunityDetails(communityName), fetchCommunityPosts(communityName)])
-      .then(([c, p]) => {
-        setCommunity(c);
-        // If no posts exist in feed for this community, fabricate example posts
-        if (p.length) {
-          setPosts(p);
-        } else {
-          const examples = allPosts.slice(0, 2).map((ep) => ({
-            ...ep,
-            id: `example-${ep.id}`,
-            subreddit: `r/${communityName}`,
-            communityIcon: ep.communityIcon,
-          }));
-          setPosts(examples);
-        }
+    fetch(`http://localhost:3000/r/${communityName}`)
+      .then((res) => res.json())
+      .then((communityData: any) => {
+        // Set community details
+        const communityDetails: CommunityDetails = {
+          name: `r/${communityData.name}`,
+          members: `${communityData.members?.length || 0} members`,
+          description: communityData.description,
+          avatar: communityData.profilePicture,
+          bannerColor: '#f97316',
+          bannerImage: communityData.coverPicture,
+          createdAt: new Date(communityData.createdAt).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          moderators: communityData.moderators?.map((mod: any) => `u/${mod.name}`) || [],
+          rules: [
+            { id: '1', title: 'Be respectful' },
+            { id: '2', title: 'No spam' },
+            { id: '3', title: 'Follow Reddit rules' },
+          ],
+          bookmarks: ['Wiki', 'Recent Game Threads'],
+          weeklyContributions: '1.5K',
+          online: 432,
+          joined: false,
+        };
+        setCommunity(communityDetails);
+
+        // Set posts
+        const postsData = communityData.posts?.map((post: any) => ({
+          id: post._id,
+          title: post.title,
+          content: post.content,
+          author: post.author.name,
+          upvotes: post.upvotes,
+          downvotes: post.downvotes,
+          comments: post.comments?.length || 0,
+          subreddit: `r/${communityName}`,
+          createdAt: post.createdAt,
+          communityIcon: 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
+          timeAgo: '2h ago',
+        })) || [];
+        setPosts(postsData);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch community data', err);
       })
       .finally(() => setLoading(false));
   }, [communityName]);
