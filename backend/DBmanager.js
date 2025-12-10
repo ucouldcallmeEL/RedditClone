@@ -4,7 +4,7 @@ const Post = require('./schemas/post');
 const Comment = require('./schemas/comment');
 const Community = require('./schemas/community');
 
-uri="mongodb+srv://yehiasalman48_db_user:Y0114487332y@redditclone.tqtlvsk.mongodb.net/?appName=redditClone"
+uri="mongodb+srv://22p0210:lab9ip@mycoursesdb.udcgumx.mongodb.net/myCoursesDB?retryWrites=true&w=majority"
 const databaseConnection = async () => {
     try {
         await mongoose.connect(uri);

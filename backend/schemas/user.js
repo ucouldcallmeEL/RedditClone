@@ -22,26 +22,26 @@ const userSchema = new mongoose.Schema({
     bio: {
         type: String,    
     },
-    followers: {
-        type: Array,
-        default: []
-    },
-    following: {
-        type: Array,
-        default: []
-    },
+    followers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    following: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     karma: {
         type: Number,
         default: 0
     },
-    posts: {
-        type: Array,
-        default: []
-    },
-    comments: {
-        type: Array,
-        default: []
-    }
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 });
 
 const User = mongoose.model('User', userSchema);
