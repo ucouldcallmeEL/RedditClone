@@ -16,15 +16,15 @@
 /* Make the surrounding app-body area match the community background
    so the gap between header/left-sidebar and the community content
    uses the same dark color. Header (sticky) and left sidebar remain unchanged. */
-.community-active .app-body {
+.community-active[data-theme="dark"] .app-body {
   background: #0b1114;
 }
 
 /* Also set the page background when viewing a community so the
    gutters outside the centered column are the same dark color. The
    header and left sidebar keep their own white backgrounds on top. */
-.community-active,
-.community-active body {
+.community-active[data-theme="dark"],
+.community-active[data-theme="dark"] body {
   background-color: #0b1114;
 }
 

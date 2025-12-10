@@ -8,6 +8,7 @@ import PostCard from '../components/PostCard';
 import { fetchCommunityDetails, fetchCommunityPosts } from '../utils/community';
 import type { CommunityDetails, Post } from '../types';
 import { posts as allPosts } from '../data/feed';
+import { useTheme } from '../contexts/ThemeContext';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
 
@@ -88,6 +89,7 @@ function ViewDropdown({ compact, onChange }: { compact: boolean; onChange: (c: b
 function CommunityPage() {
   const { communityName } = useParams<{ communityName: string }>();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [community, setCommunity] = useState<CommunityDetails | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,7 +148,7 @@ function CommunityPage() {
   if (!communityName) return <main className="feed">No community specified</main>;
 
   return (
-    <main className="feed community-theme">
+    <main className={`feed ${theme === 'dark' ? 'community-theme' : ''}`}>
       {community && (
         <CommunityHeader
           community={community}
@@ -172,7 +174,7 @@ function CommunityPage() {
               displayedPosts.map((post) => (
                 <article
                   key={post.id}
-                  onClick={() => navigate(`/community/${communityName}/post/${post.id}`)}
+                  onClick={() => navigate(`/post/${post.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
                   <PostCard post={post} />

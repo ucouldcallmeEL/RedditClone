@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { Community, TrendingTopic } from '../types';
 
 type Props = {
@@ -36,7 +37,7 @@ function RightRail({ trendingTopics, communities }: Props) {
             const slug = community.name.replace(/^r\//i, '');
             return (
               <li key={community.name}>
-                <a href={`/community/${slug}`} style={{ display: 'contents', textDecoration: 'none', color: 'inherit' }}>
+                <Link to={`/community/${slug}`} style={{ display: 'contents', textDecoration: 'none', color: 'inherit' }}>
                   <img src={community.avatar} alt={community.name} loading="lazy" />
 
                   <div>
@@ -44,7 +45,7 @@ function RightRail({ trendingTopics, communities }: Props) {
                     <span>{community.members}</span>
                     <small>{community.description}</small>
                   </div>
-                </a>
+                </Link>
 
                 <button className="chip">Join</button>
               </li>

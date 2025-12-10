@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
-import PostCard from './components/PostCard';
-import PostComposer from './components/PostComposer';
 import RightRail from './components/RightRail';
 import SidebarNav from './components/SidebarNav';
-import { communities, posts, trendingTopics } from './data/feed';
+import HomePage from './pages/HomePage';
+import PostDetailPage from './pages/PostDetailPage';
+import { communities, trendingTopics } from './data/feed';
 import CommunityPage from './pages/CommunityPage';
 import AppHome from './pages/AppHome';
 
@@ -20,10 +20,13 @@ function AppContent() {
       <div className="app-body">
         <SidebarNav />
 
-        <Routes>
-          <Route path="/" element={<AppHome posts={posts} />} />
-          <Route path="/community/:communityName/*" element={<CommunityPage />} />
-        </Routes>
+        <main className="feed">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/community/:communityName/*" element={<CommunityPage />} />
+            <Route path="/post/:postId" element={<PostDetailPage />} />
+          </Routes>
+        </main>
 
         {!onCommunity && <RightRail trendingTopics={trendingTopics} communities={communities} />}
       </div>
@@ -33,9 +36,7 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <AppContent />
   );
 }
 

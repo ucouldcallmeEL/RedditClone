@@ -15,6 +15,19 @@ export type Post = {
   tags?: string[];
 };
 
+export type Comment = {
+  _id: string;
+  content: string;
+  author: {
+    _id: string;
+    name: string;
+  };
+  upvotes: number;
+  downvotes: number;
+  createdAt: string;
+  replies: Comment[];
+};
+
 export type TrendingTopic = {
   label: string;
   postsToday: number;

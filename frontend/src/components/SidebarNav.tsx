@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
   Accessibility,
@@ -166,11 +167,11 @@ function SidebarNav() {
               {sectionItems.map(({ label, icon: Icon, badge }) => {
                 const slug = label.replace(/^r\//i, '');
                 return (
-                  <a key={label} className="sidebar__link" href={`/community/${slug}`}>
+                  <Link key={label} className="sidebar__link" to={`/community/${slug}`}>
                     <Icon size={18} />
                     <span>{label}</span>
                     {badge && <span className="sidebar__badge">{badge}</span>}
-                  </a>
+                  </Link>
                 );
               })}
             </div>
