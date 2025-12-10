@@ -15,37 +15,32 @@ import "./notifications.css";
 
 function NotificationPage() {
 
-    // const notifications = [
-    //     {
-    //         icon: "🛡️",
-    //         title: "Because you joined r/fut",
-    //         message: "EA already killing TOTY",
-    //         time: "13m"
-    //     },
-    //     {
-    //         icon: "🔥",
-    //         title: "You're rolling now!",
-    //         message: "Getting started is the hardest part. Can you get to a 3-day streak?",
-    //         time: "1d"
-    //     }
-    // ];
 
     const [notifications , setNotifications] = useState([]);
     const USER_ID = "692764a74d46fe169b1cab3d";//Replace With Real Signed In User Later
     
     
     useEffect(() => {
-        const fetchUnread = async() => {
+        const fetchNotifications = async() => {
             try {
-                const res = await getUnreadNotifications(USER_ID);
+                const res = await getNotifications(USER_ID);
                 setNotifications(res.data || []);
                 console.log("Hello From Fetch")
             } catch (err) {
-                console.error("Failed To Fetch Unread Notifications" , err);
+                console.error("Failed To Fetch Notifications" , err);
             }
         };
-        fetchUnread();
+        fetchNotifications();
     }, []);
+
+    const handleMarkAllRead = async () => {
+        try {
+            await markAllRead(USER_ID);
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        } catch (err) {
+            console.error("Failed to mark all as read", err);
+        }
+    };
 
 
     return (
@@ -58,7 +53,7 @@ function NotificationPage() {
             {notifications.length > 0 && (
 
                 <div className="notif-actions">
-                    <button className="notif-btn">Mark all as read</button>
+                    <button className="notif-btn" onClick={handleMarkAllRead}>Mark all as read</button>
                     <span className="notif-divider">|</span>
                     <button className="notif-icon-btn">🗑️</button>
                     <span className="notif-divider">|</span>
@@ -79,6 +74,7 @@ function NotificationPage() {
                             title={n.type}
                             message={n.message}
                             time={new Date(n.createdAt).toLocaleString()}
+                            read={n.isRead}
                         />
                     ))}
                 </div>

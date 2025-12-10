@@ -9,7 +9,6 @@
     margin: 0 0 15px 0; 
 }
 
-
 .notif-actions {
     display: flex;
     justify-content: flex-end;
@@ -57,14 +56,27 @@
     display: flex;
     align-items: flex-start;
     padding: 10px;
-    margin-top: 15px;
+    margin: 0;
     cursor: pointer;
     transition: background 0.15s ease;
-    border: none;                 
+    border: none;
+    position: relative;
 }
 
-.notification-card:hover {
-    background: #efefef;
+.notification-card.unread { 
+    background: #eef1f3;
+}
+
+.notification-card.unread:hover {
+    background: #d9dde0;
+}
+
+.notification-card.read {
+    background: #ffffff;
+}
+
+.notification-card.read:hover {
+    background: #f0f0f0;
 }
 
 .notif-icon {
@@ -81,26 +93,25 @@
     font-size: 15px;
     font-weight: bold;
     margin: 0 0 4px 0;
-    color: #2b2b2b;
+    color: #181818;
 }
 
 .notif-message {
     font-size: 14px;
-    color: #555;
+    color: #414141;
     margin: 0 0 3px 0;
 }
 
 .notif-time {
     font-size: 13px;
-    color: #777;
+    color: #414141;
     margin-top: 0px;
 }
 
 .not-cont {
-    background: #f7f7f7;
+    background: #ffffff;
     border-radius: 6px;
 }
-
 
 .empty-notifs {
     text-align: center;
@@ -136,4 +147,86 @@
 
 .empty-btn:hover {
     background: #d8dce5;
+}
+
+/* RIGHT ACTION ICONS */
+.notif-actions-icons {
+    position: absolute;
+    top: -15px;
+    right: 0px;
+
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    background: white;
+    padding: 3px;
+    border-radius: 999px;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.12s ease;
+    transform: translateY(-2px);
+}
+
+.notification-card:hover .notif-actions-icons {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* GENERAL ICON BUTTON */
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+
+    width: 26px;
+    height: 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.icon-btn:hover {
+     background: #f0f0f0;
+}
+
+
+.dots-wrapper {
+    position: relative;
+}
+
+.popup-menu {
+    position: absolute;
+    right: 0;
+    top: 30px;
+
+    background: white;
+    min-width: 170px;
+    padding: 6px 0;
+    border-radius: 10px;
+
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+.popup-item {
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.popup-item:hover {
+    background: #f3f3f3;
 }
