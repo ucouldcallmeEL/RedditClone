@@ -15,10 +15,9 @@ const getNotifications = async(req,res) => {
 
 const markAllRead = async(req,res) => {
     try {
-        console.log("Body Recieved: " , req.body);
         await Notification.updateMany(
         { user: req.params.userId, isRead: false },
-        { isRead: true }
+        { $set: {isRead: true} }
         );
 
         res.json({ message: "All notifications marked as read" });

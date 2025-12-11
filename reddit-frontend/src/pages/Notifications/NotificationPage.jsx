@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link , useNavigate } from "react-router-dom";
 
 import { useEffect , useState } from "react";
 import {    getNotifications ,
@@ -15,6 +15,9 @@ import "./notifications.css";
 
 function NotificationPage() {
 
+
+
+    const navigate = useNavigate();
 
     const [notifications , setNotifications] = useState([]);
     const USER_ID = "692764a74d46fe169b1cab3d";//Replace With Real Signed In User Later
@@ -41,6 +44,19 @@ function NotificationPage() {
             console.error("Failed to mark all as read", err);
         }
     };
+
+    const goToNotificationSettings = () => {
+        navigate("/settings?tab=notifications");
+    }
+
+    const handleDeleteNotification = async (notifId) => {
+        try {
+            await deleteNotification(notifId)
+            setNotifications(prev => prev.filter(n => n._id !== notifId));
+        } catch (err) {
+            console.error("Failed to delete notification" , err)
+        }
+    }
 
 
     return (
@@ -75,6 +91,8 @@ function NotificationPage() {
                             message={n.message}
                             time={new Date(n.createdAt).toLocaleString()}
                             read={n.isRead}
+                            onDelete={() => handleDeleteNotification(n._id)}
+                            onManage={goToNotificationSettings}
                         />
                     ))}
                 </div>
