@@ -1,4 +1,4 @@
-auth-flow-modal {
+.auth-flow-modal {
   justify-self: center;
   align-self: center;
   display: flex;
@@ -25,25 +25,50 @@ auth-flow-modal {
   top: 1rem;
   right: 1rem;
   z-index: 10;
-
-  /* background-color: #B7CAD4;
+}
+.quit-reset-button {
+  position: relative; /* remove absolute positioning */
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 100%;
-  border: none;
-  width: 23px;
-  height: 23px;
+  background-color: #2a3236;
+  color: #fff;
   cursor: pointer;
-  padding: 0;
-  margin: 0;
+  /* background-color: #2a3236;
+  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  border-radius: 999px;
+  border: none;
+  height: 2rem;
+  width: 2rem;
   position: absolute;
   top: 1rem;
   right: 1rem;
-  z-index: 10;
-  display: inline-flex;
-  color: white;
-  font-size: 12px;
-  font-weight: 500; */
+  z-index: 10; */
+}
+.quit-reset-button svg {
+  font-family: "Segeo UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  position: relative;
+  top: 0.15rem;
+  right: -0.05rem;
+  /* width: 16px;
+  height: 16px;
+  display: block; */
+}
+.quit-reset-button:hover {
+  background-color: #333d42;
+  cursor: pointer;
 }
 
 .quit-login-button svg {
@@ -110,6 +135,7 @@ auth-flow-modal {
     Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   color: #181c1f;
   border: none;
+  width: 300px;
   /* position: relative; */
 }
 
@@ -131,6 +157,8 @@ auth-flow-modal {
 }
 
 .log-in-modal-content {
+  align-items: center;
+  justify-items: center;
   width: 70%;
 }
 
@@ -162,7 +190,7 @@ auth-flow-modal {
 
 .text-field {
   background-color: #b7cad4;
-  width: 70%;
+  width: 100%;
   margin: 10px 0;
   display: block;
 }
@@ -172,7 +200,7 @@ auth-flow-modal {
 }
 
 .text-fields-wrapper {
-  width: 70%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -186,6 +214,10 @@ auth-flow-modal {
 }
 
 .forgot-password-link {
+  align-self: left;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 16px;
   color: #b7cad4;
   font-size: 14px;
   text-align: left;
@@ -235,4 +267,42 @@ a:hover {
   color: #8e8e93;
   font-size: 16px;
   font-weight: 600;
+}
+
+.reset-pass-modal {
+  /* display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* top content at top, button at bottom 
+  height: 80vh; /* or whatever fixed height you want 
+  width: 528px;
+  padding: 2rem; */
+
+  display: flex;
+  flex-direction: column; /* stack children vertically */
+  justify-content: space-between; /* top content at top, button at bottom */
+  align-items: center;
+  justify-items: center; /* horizontally center children */
+  height: 700px; /* fixed modal height */
+  width: 528px; /* modal width */
+  padding: 2rem;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.top-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.email {
+  width: 70%;
+}
+
+.button-wrapper {
+  display: flex; /* place children side by side */
+  justify-content: space-between; /* space between buttons */
+  width: 100%; /* take full width of parent */
+  max-width: 528px;
+  gap: 400px;
+  position: relative;
 }

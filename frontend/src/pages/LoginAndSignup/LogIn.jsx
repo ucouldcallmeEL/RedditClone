@@ -4,7 +4,6 @@ import Buttons from "./Buttons";
 import Button from "./Button";
 import TextField from "./TextField";
 import "./Login.css";
-import { Link } from "react-router-dom";
 
 const LogIn = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +24,7 @@ const LogIn = () => {
   const formIsValid = isEmailValid(email) && isPasswordValid(password);
 
   return (
-    <auth-flow-modal className="log-in-modal">
+    <div className="log-in-modal auth-flow-modal">
       <button className="quit-login-button" onClick={handleClose}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -85,26 +84,27 @@ const LogIn = () => {
         <hr className="or-divider-line" />
         <span className="or-divider-text">OR</span>
       </div>
-      <TextField
-        label="Email or username"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        validator={isEmailValid}
-        errorMessage="Fill out this field."
-      />
+      <div className="email">
+        <TextField
+          label="Email or username"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          validator={isEmailValid}
+          errorMessage="Fill out this field."
+        />
 
-      <TextField
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        validator={isPasswordValid}
-        errorMessage="Fill out this field."
-      />
-
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          validator={isPasswordValid}
+          errorMessage="Fill out this field."
+        />
+      </div>
       <div className="log-in-modal-other-links">
         <div>
           <p className="forgot-password-link">
@@ -144,7 +144,7 @@ const LogIn = () => {
           onClick={formIsValid ? handleSubmit : undefined}
         /> */}
       </div>
-    </auth-flow-modal>
+    </div>
   );
 };
 
