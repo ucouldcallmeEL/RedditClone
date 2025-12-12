@@ -77,14 +77,16 @@ const ResetPass = () => {
             validator={isPhoneValid}
             errorMessage="Fill out this field."
           />
-          <p className="signin-phone-modal-text">
-            Reddit will use your phone number for account verification and to
-            personalize your ads and experience. SMS fees may apply.
-          </p>
+          <div className="signin-phone-text">
+            <p className="signin-phone-modal-text">
+              Reddit will use your phone number for account verification and to
+              personalize your ads and experience. SMS fees may apply.
+            </p>
 
-          <p className="signin-phone-link">
-            <a href="./ResetPass">Learn more.</a>
-          </p>
+            <p className="signin-phone-link">
+              <a href="./ResetPass">Learn more.</a>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -97,7 +99,7 @@ const ResetPass = () => {
         <span
           className={`log-in-button-text ${!formIsValid ? "disabled" : ""}`}
         >
-          Reset password
+          Continue
         </span>
       </div>
     </div>
