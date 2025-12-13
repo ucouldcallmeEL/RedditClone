@@ -4,12 +4,12 @@ const Post = require("../Models/Post");
 
 
 router.post("/create", async (req, res) => {
-    try {
-        const post = await Post.create({ title: req.body.title });
-        res.json({ success: true, post });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    const post = await Post.create(req.body);
+    res.status(201).json(post);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 module.exports = router;

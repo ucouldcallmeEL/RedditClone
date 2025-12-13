@@ -6,10 +6,11 @@ const connectDB = require("./Db_config/connectDB");
 
 
 //Routers
-const uploadRoute = require("./Routes/upload");
+const uploadRouter = require("./Routes/upload");
 const notificationRouter = require("./Routes/notification.routes");
 const userRouter = require("./Routes/user.routes");
 const postRouter = require("./Routes/post.routes");
+const aiRouter = require("./Routes/ai")
 
 
 
@@ -23,10 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();      
 
-app.use("/upload", uploadRoute);
-app.use("/notifications" , notificationRouter);
-app.use("/users", userRouter);
-app.use("/posts", postRouter);
+app.use("/api/upload", uploadRouter);
+app.use("/api/notifications" , notificationRouter);
+app.use("/api/users", userRouter);
+app.use("/api/posts", postRouter);
+app.use("/api/ai", aiRouter);
 
 
 app.get("/", (req, res) => {
