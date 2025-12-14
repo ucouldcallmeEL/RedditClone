@@ -1,10 +1,12 @@
 import React from "react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import TextField from "./TextField";
 import "./Login.css";
 import "./TextField.css";
 
 const ResetPass = () => {
+  const navigate = useNavigate();
   function handleClose() {
     console.log("Close button clicked");
   }
@@ -22,7 +24,7 @@ const ResetPass = () => {
       <div className="top-content">
         <div className="top-content">
           <div className="button-wrapper">
-            <button className="quit-reset-button" onClick={handleClose}>
+            <button className="quit-reset-button" onClick={() => navigate("/")}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"

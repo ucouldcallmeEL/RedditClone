@@ -1,11 +1,13 @@
 import React from "react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Buttons from "./Buttons";
 import Button from "./Button";
 import TextField from "./TextField";
 import "./Login.css";
 
 const LogIn = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -56,7 +58,7 @@ const LogIn = () => {
           icon="/phone.png"
           alt="Phone Icon"
           label="Continue with Phone Number"
-          onClick={() => console.log("Phone button")}
+          onClick={() => navigate("/signinPhone")}
         />
 
         <Button
@@ -108,20 +110,17 @@ const LogIn = () => {
       <div className="log-in-modal-other-links">
         <div>
           <p className="forgot-password-link">
-            <a className="Reset-and-signup" href="./ResetPass">
+            <Link className="Reset-and-signup" to="/reset">
               Forgot password?
-            </a>
+            </Link>
           </p>
         </div>
-        {/* <Link className="Reset-and-signup" to="/ResetPass">
-          Forgot password?
-        </Link> */}
         <div>
           <p className="signup-prompt">
             New to Reddit?{" "}
-            <a className="Reset-and-signup" href="./Signup">
+            <Link className="Reset-and-signup" to="/signup">
               Sign Up
-            </a>
+            </Link>
           </p>
         </div>
       </div>

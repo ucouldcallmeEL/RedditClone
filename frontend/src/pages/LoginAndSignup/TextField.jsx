@@ -1,38 +1,3 @@
-// import React, { useState } from 'react';
-// import './TextField.css';
-
-// const TextField = ({ 
-//   label, 
-//   type = "text", 
-//   value, 
-//   onChange, 
-//   required = false 
-// }) => {
-//   const [isFocused, setIsFocused] = useState(false);
-  
-//   const hasValue = value && value.length > 0;
-//   const isFloating = isFocused || hasValue;
-
-//   return (
-//     <div className="text-field-container">
-//       <input
-//         type={type}
-//         value={value}
-//         onChange={onChange}
-//         onFocus={() => setIsFocused(true)}
-//         onBlur={() => setIsFocused(false)}
-//         className="text-field-input"
-//       />
-//       <label className={`text-field-label ${isFloating ? 'floating' : ''}`}>
-//         {label}
-//         {required && <span className="required-asterisk">*</span>}
-//       </label>
-//     </div>
-//   );
-// };
-
-// export default TextField;
-
 import React, { useState } from 'react';
 import './TextField.css';
 
