@@ -1,0 +1,337 @@
+.auth-flow-modal {
+  justify-self: center;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 700px;
+  width: 528px;
+  padding: 2rem;
+}
+
+.quit-login-button {
+  background-color: #2a3236;
+  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  border-radius: 999px;
+  border: none;
+  height: 2rem;
+  width: 2rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+}
+.quit-reset-button {
+  position: relative; /* remove absolute positioning */
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2a3236;
+  color: #fff;
+  cursor: pointer;
+  /* background-color: #2a3236;
+  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  border-radius: 999px;
+  border: none;
+  height: 2rem;
+  width: 2rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10; */
+}
+.quit-reset-button svg {
+  font-family: "Segeo UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  position: relative;
+  top: 0.15rem;
+  right: -0.05rem;
+  /* width: 16px;
+  height: 16px;
+  display: block; */
+}
+.quit-reset-button:hover {
+  background-color: #333d42;
+  cursor: pointer;
+}
+
+.quit-login-button svg {
+  font-family: "Segeo UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  position: relative;
+  top: 0.15rem;
+  right: -0.05rem;
+  /* width: 16px;
+  height: 16px;
+  display: block; */
+}
+
+.quit-login-button:hover {
+  background-color: #333d42;
+  cursor: pointer;
+}
+
+.log-in-modal {
+  background-color: #181c1f;
+  box-sizing: border-box;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: fit-content;
+  overflow: visible;
+  border-radius: 1rem;
+  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+  margin: 50px, 100px;
+  position: relative; /* Add this for absolute positioning of close button */
+}
+
+.log-in-modal-text {
+  color: #b7cad4;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: center;
+  margin: 1em 0 1em;
+}
+
+.log-in-modal .log-in-modal-title {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin: 1em 0 0.5em;
+}
+
+.LogIn-button {
+  background-color: white;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin: 10px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  color: #181c1f;
+  border: none;
+  width: 300px;
+  /* position: relative; */
+}
+
+.LogIn-button img,
+.LogIn-button svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.LogIn-button span {
+  flex: 1;
+  text-align: center;
+}
+
+.logos {
+  width: 2px;
+  height: 2px;
+}
+
+.log-in-modal-content {
+  align-items: center;
+  justify-items: center;
+  width: 70%;
+}
+
+.or-divider {
+  position: relative;
+  width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.or-divider-line {
+  width: 100%;
+  border: none;
+  border-top: 1px solid #323131;
+  margin: 0;
+}
+
+.or-divider-text {
+  position: absolute;
+  /* background-color: #181C1F; */
+  color: #b7cad4;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.text-field {
+  background-color: #b7cad4;
+  width: 100%;
+  margin: 10px 0;
+  display: block;
+}
+
+.or-divider-text {
+  color: #b7cad4;
+}
+
+.text-fields-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-in-modal-other-links {
+  align-self: left;
+  text-align: left;
+  width: 70%;
+  margin-bottom: 16px;
+}
+
+.forgot-password-link {
+  align-self: left;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 16px;
+  color: #b7cad4;
+  font-size: 14px;
+  text-align: left;
+}
+
+.signup-prompt {
+  color: #b7cad4;
+  font-size: 14px;
+  text-align: left;
+}
+a {
+  text-decoration: none;
+  color: #648efc;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.Reset-and-signup:hover {
+  color: #90a9fd;
+  text-decoration: none;
+}
+
+.LogIn-button.disabled {
+  background-color: #24282b;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* .LogIn-button.disabled:hover {
+  background-color: #333D42;
+} */
+.login-action-button {
+  color: White;
+  background-color: #d93900;
+}
+.login-action-button:hover {
+  background-color: #ae2c00;
+}
+.log-in-button-text {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.log-in-button-text.disabled {
+  color: #8e8e93;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.reset-pass-modal {
+  /* display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* top content at top, button at bottom 
+  height: 80vh; /* or whatever fixed height you want 
+  width: 528px;
+  padding: 2rem; */
+
+  display: flex;
+  flex-direction: column; /* stack children vertically */
+  justify-content: space-between; /* top content at top, button at bottom */
+  align-items: center;
+  justify-items: center; /* horizontally center children */
+  height: 700px; /* fixed modal height */
+  width: 528px; /* modal width */
+  padding: 2rem;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.top-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.email {
+  width: 70%;
+}
+
+.button-wrapper {
+  display: flex; /* place children side by side */
+  justify-content: space-between; /* space between buttons */
+  width: 100%; /* take full width of parent */
+  max-width: 528px;
+  gap: 400px;
+  position: relative;
+}
+
+.signin-phone-text {
+  margin: 0;
+  gap: 0;
+}
+
+.signin-phone-modal-text {
+  align-self: left;
+  text-align: left;
+  width: 100%;
+  color: #b7cad4;
+  font-size: 10.5px;
+  font-weight: 400;
+  text-align: left;
+  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+.signin-phone-link {
+  align-self: left;
+  text-align: left;
+  width: 100%;
+  color: white;
+  font-size: 11px;
+  text-align: left;
+  font-weight: 600;
+  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
