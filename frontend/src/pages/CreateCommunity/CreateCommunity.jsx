@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import "./CreateCommunity.css";
+import ImageCropModal from "./ImageCropModal";
+import CloseButton from "../../components/CloseButton";
+import CustomButton from "../../components/CustomButton";
+import ToggleButton from "../../components/ToggleButton";
+import CommunityTypeOption from "../../components/CommunityTypeOption";
+import TextField from "../../components/TextField";
 
 // Reusable component for available topics section
 const AvailableTopicsSection = ({
@@ -47,16 +53,39 @@ const AvailableTopicsSection = ({
   );
 };
 
-const CreateCommunity = () => {
+const CreateCommunity = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTopics, setSelectedTopics] = useState([]);
   const [selectedCommunityType, setSelectedCommunityType] = useState("public");
   const [communityMaturity, setCommunityMaturity] = useState("false");
+  const [communityName, setCommunityName] = useState("");
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isNameTouched, setIsNameTouched] = useState(false);
+  const [hasTyped, setHasTyped] = useState(false);
+  const [isNameTaken, setIsNameTaken] = useState(false);
+  const [isNameInvalidPattern, setIsNameInvalidPattern] = useState(false);
+  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [communityDescription, setCommunityDescription] = useState("");
+  const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
+  const [bannerImage, setBannerImage] = useState(null);
+  const [bannerImageUrl, setBannerImageUrl] = useState(null);
+  const [iconImage, setIconImage] = useState(null);
+  const [iconImageUrl, setIconImageUrl] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [cropImageType, setCropImageType] = useState(null); // 'banner' or 'icon'
+  const [cropImagePreview, setCropImagePreview] = useState(null);
+  const [topicFilter, setTopicFilter] = useState("");
 
   const totalPages = 4;
 
   // Check if at least one topic is selected in page 1
-  const isNextButtonDisabled = currentPage === 1 && selectedTopics.length === 0;
+  const isNextButtonDisabled =
+    (currentPage === 1 && selectedTopics.length === 0) ||
+    (currentPage === 3 &&
+      (communityName.length < 3 ||
+        isNameTaken ||
+        isNameInvalidPattern ||
+        communityDescription.length === 0));
 
   // Handle community type selection
   const handleCommunityTypeSelect = (type) => {
@@ -69,12 +98,64 @@ const CreateCommunity = () => {
   };
 
   // Handle next page navigation
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (currentPage === 3) {
+      setIsNameTouched(true);
+      // Don't proceed if validation fails
+      if (communityName.length < 3 || isNameTaken || isNameInvalidPattern) {
+        // If name is valid length but not checked yet, check it now
+        if (communityName.length >= 3 && !isCheckingName) {
+          const nameExists = await checkCommunityNameExists(communityName);
+          setIsNameTaken(nameExists);
+          if (nameExists) {
+            return;
+          }
+        } else {
+          return;
+        }
+      }
+    }
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     } else {
       // Handle final submission
       console.log("Form submitted");
+      // Close modal after submission
+      handleClose();
+    }
+  };
+
+  // Handle close modal
+  const handleClose = () => {
+    // Reset all form state
+    setCurrentPage(1);
+    setSelectedTopics([]);
+    setSelectedCommunityType("public");
+    setCommunityMaturity("false");
+    setCommunityName("");
+    setIsNameFocused(false);
+    setIsNameTouched(false);
+    setHasTyped(false);
+    setIsNameTaken(false);
+    setIsNameInvalidPattern(false);
+    setIsCheckingName(false);
+    setCommunityDescription("");
+    setIsDescriptionFocused(false);
+    if (bannerImageUrl) {
+      URL.revokeObjectURL(bannerImageUrl);
+    }
+    setBannerImage(null);
+    setBannerImageUrl(null);
+    if (iconImageUrl) {
+      URL.revokeObjectURL(iconImageUrl);
+    }
+    setIconImage(null);
+    setIconImageUrl(null);
+    setTopicFilter("");
+
+    // Call onClose if provided
+    if (onClose) {
+      onClose();
     }
   };
 
@@ -83,8 +164,144 @@ const CreateCommunity = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     } else {
-      // Close modal or reset
-      console.log("Modal closed");
+      // Close modal on first page
+      handleClose();
+    }
+  };
+
+  // Handle name change
+  const handleNameChange = (newValue) => {
+    // Remove all spaces from the input
+    const valueWithoutSpaces = newValue.replace(/\s/g, '');
+    setCommunityName(valueWithoutSpaces);
+    setHasTyped(true);
+    // Reset name taken error when user types
+    if (isNameTaken) {
+      setIsNameTaken(false);
+    }
+    // Validate pattern
+    const pattern = /^[A-Za-z0-9][A-Za-z0-9_]{2,20}$/;
+    if (valueWithoutSpaces.length > 0) {
+      setIsNameInvalidPattern(!pattern.test(valueWithoutSpaces));
+    } else {
+      setIsNameInvalidPattern(false);
+    }
+  };
+
+  // Handle name blur
+  const handleNameBlur = async () => {
+    setIsNameFocused(false);
+    if (hasTyped) {
+      setIsNameTouched(true);
+      // Validate pattern
+      const pattern = /^[A-Za-z0-9][A-Za-z0-9_]{2,20}$/;
+      if (communityName.length > 0) {
+        setIsNameInvalidPattern(!pattern.test(communityName));
+      }
+      // Check if name is valid length and pattern before checking database
+      if (
+        communityName.length >= 3 &&
+        pattern.test(communityName)
+      ) {
+        const nameExists = await checkCommunityNameExists(
+          communityName
+        );
+        setIsNameTaken(nameExists);
+      }
+    }
+  };
+
+  // Handle banner image selection
+  const handleBannerImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCropImageType("banner");
+      const url = URL.createObjectURL(file);
+      setCropImagePreview(url);
+      setIsCropModalOpen(true);
+    }
+  };
+
+  // Handle icon image selection
+  const handleIconImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCropImageType("icon");
+      const url = URL.createObjectURL(file);
+      setCropImagePreview(url);
+      setIsCropModalOpen(true);
+    }
+  };
+
+  // Handle banner image deletion
+  const handleBannerImageDelete = () => {
+    if (bannerImageUrl) {
+      URL.revokeObjectURL(bannerImageUrl);
+    }
+    setBannerImage(null);
+    setBannerImageUrl(null);
+  };
+
+  // Handle icon image deletion
+  const handleIconImageDelete = () => {
+    if (iconImageUrl) {
+      URL.revokeObjectURL(iconImageUrl);
+    }
+    setIconImage(null);
+    setIconImageUrl(null);
+  };
+
+  // Handle crop modal close
+  const handleCropModalClose = () => {
+    if (cropImagePreview) {
+      URL.revokeObjectURL(cropImagePreview);
+    }
+    setIsCropModalOpen(false);
+    setCropImagePreview(null);
+    setCropImageType(null);
+  };
+
+  // Handle crop save - receives the cropped file from the modal
+  const handleCropSave = (croppedFile) => {
+    if (!croppedFile) return;
+
+    const croppedUrl = URL.createObjectURL(croppedFile);
+
+    if (cropImageType === "banner") {
+      setBannerImage(croppedFile);
+      setBannerImageUrl(croppedUrl);
+    } else {
+      setIconImage(croppedFile);
+      setIconImageUrl(croppedUrl);
+    }
+
+    handleCropModalClose();
+  };
+
+  // Check if community name already exists in database
+  const checkCommunityNameExists = async (name) => {
+    if (!name || name.length < 3) {
+      return false;
+    }
+
+    setIsCheckingName(true);
+    try {
+      // TODO: Replace with actual API call when backend is implemented
+      // Example: const response = await fetch(`/api/communities/check?name=${name}`);
+      // const data = await response.json();
+      // return data.exists;
+
+      // Placeholder: Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // For now, return false (name is available)
+      // When backend is ready, replace this with actual API call
+      return false;
+    } catch (error) {
+      console.error("Error checking community name:", error);
+      return false;
+    } finally {
+      setIsCheckingName(false);
     }
   };
 
@@ -146,6 +363,8 @@ const CreateCommunity = () => {
                 name="filter"
                 className="search-input"
                 placeholder="Filter topics"
+                value={topicFilter}
+                onChange={(e) => setTopicFilter(e.target.value)}
               />
             </div>
             <h3>Topics {selectedTopics.length}/3</h3>
@@ -172,27 +391,65 @@ const CreateCommunity = () => {
                 </div>
               ))}
             </div>
-            {topicCategories.map((category, index) => (
-              <AvailableTopicsSection
-                key={index}
-                title={category.title}
-                topics={category.topics}
-                selectedTopics={selectedTopics}
-                onTopicClick={handleTopicClick}
-              />
-            ))}
+            {topicCategories.map((category, index) => {
+              // Filter topics based on search input
+              // Match if search term is at the beginning of a word or is a complete word
+              const filteredTopics = category.topics.filter((topic) => {
+                if (!topicFilter) return true; // Show all if no filter
+
+                const topicLower = topic.toLowerCase();
+                const filterLower = topicFilter.toLowerCase();
+
+                // Check if filter is at the beginning of the topic
+                if (topicLower.startsWith(filterLower)) {
+                  return true;
+                }
+
+                // Check if filter is at the beginning of any word in the topic
+                // Split by spaces and check each word
+                const words = topicLower.split(/\s+/);
+                for (const word of words) {
+                  if (word.startsWith(filterLower)) {
+                    return true;
+                  }
+                }
+
+                // Check if filter matches a complete word (word boundary)
+                // Use regex to match whole words
+                const wordBoundaryRegex = new RegExp(
+                  `\\b${filterLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+                  "i"
+                );
+                if (wordBoundaryRegex.test(topic)) {
+                  return true;
+                }
+
+                return false;
+              });
+
+              // Only show category if it has matching topics
+              if (filteredTopics.length === 0) {
+                return null;
+              }
+
+              return (
+                <AvailableTopicsSection
+                  key={index}
+                  title={category.title}
+                  topics={filteredTopics}
+                  selectedTopics={selectedTopics}
+                  onTopicClick={handleTopicClick}
+                />
+              );
+            })}
           </>
         );
       case 2:
         return (
           <div>
-            <div
-              className={`community-type-container ${
-                selectedCommunityType === "public" ? "selected" : ""
-              }`}
-              onClick={() => handleCommunityTypeSelect("public")}
-            >
-              <svg
+            <CommunityTypeOption
+              icon={
+                <svg
                 rpl=""
                 fill="currentColor"
                 height="20"
@@ -204,47 +461,14 @@ const CreateCommunity = () => {
               >
                 <path d="M10 1c-4.96 0-9 4.04-9 9s4.04 9 9 9 9-4.04 9-9-4.04-9-9-9zm7.2 9c0 .27-.02.54-.05.8h-2.97c-.1 2.33-.63 4.38-1.41 5.84-.75.31-1.56.5-2.42.54.87-.53 2.06-2.85 2.22-6.38H7.41c.16 3.54 1.35 5.85 2.22 6.38a7 7 0 01-2.42-.54c-.78-1.46-1.31-3.52-1.41-5.84H2.83c-.03-.26-.05-.53-.05-.8s.02-.54.05-.8H5.8c.1-2.33.63-4.38 1.41-5.84.75-.31 1.56-.5 2.42-.54-.87.53-2.06 2.85-2.22 6.38h5.16c-.16-3.54-1.35-5.85-2.22-6.38a7 7 0 012.42.54c.78 1.46 1.31 3.52 1.41 5.84h2.97c.03.26.05.53.05.8z"></path>
               </svg>
-              <div className="community-type-details">
-                <span className="community-type-name">Public</span>
-                <p className="community-type-description">
-                  Anyone can view, post, and comment to this community
-                </p>
-              </div>
-              {selectedCommunityType === "public" ? (
-                <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-selected"
-                  height="16"
-                  icon-name="radio-button-fill"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                  <path d="M10 14a4 4 0 100-8 4 4 0 000 8z"></path>
-                </svg>
-              ) : (
-                <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-unselected"
-                  height="16"
-                  icon-name="radio-button-outline"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                </svg>
-              )}
-            </div>
-            <div
-              className={`community-type-container ${
-                selectedCommunityType === "restricted" ? "selected" : ""
-              }`}
-              onClick={() => handleCommunityTypeSelect("restricted")}
-            >
+              }
+              name="Public"
+              description="Anyone can view, post, and comment to this community"
+              checked={selectedCommunityType === "public"}
+              onClick={() => handleCommunityTypeSelect("public")}
+            />
+            <CommunityTypeOption
+            icon = {
               <svg
                 rpl=""
                 fill="currentColor"
@@ -257,48 +481,15 @@ const CreateCommunity = () => {
               >
                 <path d="M19.08 8.47C17.28 5.11 13.8 3.03 10 3.03S2.72 5.11.92 8.47c-.51.96-.51 2.1 0 3.06 1.8 3.36 5.28 5.44 9.08 5.44s7.28-2.09 9.08-5.44c.51-.96.51-2.1 0-3.06zM10 13.25c-1.79 0-3.25-1.46-3.25-3.25S8.21 6.75 10 6.75s3.25 1.46 3.25 3.25-1.46 3.25-3.25 3.25z"></path>
               </svg>
-              <div className="community-type-details">
-                <span className="community-type-name">Restricted</span>
-                <p className="community-type-description">
-                  Anyone can view, but only approved users can contribute
-                </p>
-              </div>
-              {selectedCommunityType === "restricted" ? (
+            }
+              name="Restricted"
+              description="Anyone can view, but only approved users can contribute"
+              checked={selectedCommunityType === "restricted"}
+              onClick={() => handleCommunityTypeSelect("restricted")}
+            />
+            <CommunityTypeOption
+              icon={
                 <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-selected"
-                  height="16"
-                  icon-name="radio-button-fill"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                  <path d="M10 14a4 4 0 100-8 4 4 0 000 8z"></path>
-                </svg>
-              ) : (
-                <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-unselected"
-                  height="16"
-                  icon-name="radio-button-outline"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                </svg>
-              )}
-            </div>
-            <div
-              className={`community-type-container ${
-                selectedCommunityType === "private" ? "selected" : ""
-              }`}
-              onClick={() => handleCommunityTypeSelect("private")}
-            >
-              <svg
                 rpl=""
                 fill="currentColor"
                 height="20"
@@ -311,41 +502,12 @@ const CreateCommunity = () => {
                 {" "}
                 <path d="M15.993 8.168h-.429V6.61a5.572 5.572 0 00-5.566-5.566A5.572 5.572 0 004.432 6.61v1.558h-.429a2.005 2.005 0 00-2.005 2.005v3.692a5.054 5.054 0 005.054 5.054h5.892a5.054 5.054 0 005.054-5.054v-3.692a2.005 2.005 0 00-2.005-2.005zM10.998 15h-2v-3h2v3zm2.767-6.832H6.232V6.61A3.771 3.771 0 0110 2.844a3.77 3.77 0 013.767 3.766l-.001 1.558z"></path>{" "}
               </svg>
-              <div className="community-type-details">
-                <span className="community-type-name">Private</span>
-                <p className="community-type-description">
-                  Only approved users can view and contribute
-                </p>
-              </div>
-              {selectedCommunityType === "private" ? (
-                <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-selected"
-                  height="16"
-                  icon-name="radio-button-fill"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                  <path d="M10 14a4 4 0 100-8 4 4 0 000 8z"></path>
-                </svg>
-              ) : (
-                <svg
-                  rpl=""
-                  fill="currentColor"
-                  className="community-type-radio-button-unselected"
-                  height="16"
-                  icon-name="radio-button-outline"
-                  viewBox="0 0 20 20"
-                  width="16"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10 2.8c3.97 0 7.2 3.23 7.2 7.2s-3.23 7.2-7.2 7.2-7.2-3.23-7.2-7.2S6.03 2.8 10 2.8zM10 1a9 9 0 10.001 18.001A9 9 0 0010 1z"></path>
-                </svg>
-              )}
-            </div>
+              }
+              name="Private"
+              description="Only approved users can view and contribute"
+              checked={selectedCommunityType === "private"}
+              onClick={() => handleCommunityTypeSelect("private")}
+            />
             <div className="community-type-divider"></div>
             <div
               className={`community-maturity-container ${
@@ -371,46 +533,376 @@ const CreateCommunity = () => {
                   Only approved users can view and contribute
                 </p>
               </div>
-              <span className={`switch-button ${
-                communityMaturity === "true" ? "true" : ""
-              }`}>
-                <span className={`button-circle ${
-                  communityMaturity === "true" ? "true" : ""
-                }`}>
-                  {communityMaturity === "true" && (
-                    <svg
-                      rpl=""
-                      aria-hidden="true"
-                      fill="currentColor"
-                      height="12"
-                      icon-name="checkmark-12"
-                      viewBox="0 0 12 12"
-                      width="12"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M4.21 9.95c-.31 0-.61-.12-.85-.35L.58 6.82a.706.706 0 010-.99c.27-.27.72-.27.99 0l2.64 2.64 6.22-6.22c.27-.27.72-.27.99 0s.27.72 0 .99L5.06 9.6c-.23.23-.54.35-.85.35z"></path>
-                    </svg>
-                  )}
-                </span>
-              </span>
+              <ToggleButton
+                checked={communityMaturity === "true"}
+                onClick={handleCommunityMaturitySelect}
+              />
             </div>
             <p className="reddit-rules-text">
-              By continuing, you agree to our Mod Code of Conduct and acknowledge that you understand the Reddit Rules.
+              By continuing, you agree to our Mod Code of Conduct and
+              acknowledge that you understand the Reddit Rules.
             </p>
           </div>
         );
       case 3:
+        const isNameTooShort =
+          isNameTouched && !isNameFocused && communityName.length < 3;
+        const isNameInvalidPatternError =
+          isNameTouched && !isNameFocused && isNameInvalidPattern;
+        const isNameInvalid =
+          isNameTooShort ||
+          (isNameTouched && !isNameFocused && isNameTaken) ||
+          isNameInvalidPatternError;
         return (
-          <div>
-            <h3>Page 3 Content</h3>
-            <p>This is page 3</p>
+          <div className="community-page-content">
+            <div className="community-info-container">
+              {/* <div
+                className={`community-name-container ${
+                  isNameInvalid ? "invalid" : ""
+                } ${isNameFocused ? "focused" : ""}`}
+              >
+                <label
+                  htmlFor="communityNameInput"
+                  className={`community-name-label ${
+                    isNameFocused || communityName ? "floating" : ""
+                  }`}
+                >
+                  Community name <span className="required-asterisk">*</span>
+                </label>
+                <div className="community-name-input-wrapper">
+                  {communityName && (
+                    <span
+                      className={`community-name-prefix ${
+                        isNameFocused || communityName ? "floating" : ""
+                      }`}
+                    >
+                      r/
+                    </span>
+                  )}
+                  <input
+                    type="text"
+                    id="communityNameInput"
+                    className="community-name-input"
+                    value={communityName}
+                    maxLength={21}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setCommunityName(newValue);
+                      setHasTyped(true);
+                      // Reset name taken error when user types
+                      if (isNameTaken) {
+                        setIsNameTaken(false);
+                      }
+                      // Validate pattern
+                      const pattern = /^[A-Za-z0-9][A-Za-z0-9_]{2,20}$/;
+                      if (newValue.length > 0) {
+                        setIsNameInvalidPattern(!pattern.test(newValue));
+                      } else {
+                        setIsNameInvalidPattern(false);
+                      }
+                    }}
+                    onFocus={() => setIsNameFocused(true)}
+                    onBlur={async () => {
+                      setIsNameFocused(false);
+                      if (hasTyped) {
+                        setIsNameTouched(true);
+                        // Validate pattern
+                        const pattern = /^[A-Za-z0-9][A-Za-z0-9_]{2,20}$/;
+                        if (communityName.length > 0) {
+                          setIsNameInvalidPattern(!pattern.test(communityName));
+                        }
+                        // Check if name is valid length and pattern before checking database
+                        if (
+                          communityName.length >= 3 &&
+                          pattern.test(communityName)
+                        ) {
+                          const nameExists = await checkCommunityNameExists(
+                            communityName
+                          );
+                          setIsNameTaken(nameExists);
+                        }
+                      }
+                    }}
+                  />
+                </div>
+                {isNameInvalid && (
+                  <svg
+                    rpl=""
+                    className="trailing-icon invalid"
+                    fill="currentColor"
+                    height="20"
+                    icon-name="error-outline"
+                    viewBox="0 0 20 20"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M11.21 13.5a1.21 1.21 0 11-2.42 0 1.21 1.21 0 012.42 0zM19 10c0-4.963-4.038-9-9-9s-9 4.037-9 9 4.038 9 9 9 9-4.037 9-9zm-1.801 0c0 3.97-3.229 7.2-7.199 7.2-3.97 0-7.199-3.23-7.199-7.2S6.03 2.8 10 2.8c3.97 0 7.199 3.23 7.199 7.2zm-6.441 1.24l.242-6H9l.242 6h1.516z"></path>
+                  </svg>
+                )}
+              </div>
+              <div className="community-name-footer">
+                {(isNameTooShort ||
+                  (isNameTouched && !isNameFocused && isNameTaken) ||
+                  isNameInvalidPatternError) && (
+                  <p className="community-name-error">
+                    {isNameTooShort &&
+                      "Please lengthen this text to 3 characters or more"}
+                    {isNameTouched &&
+                      !isNameFocused &&
+                      isNameTaken &&
+                      `r/${communityName} is already taken`}
+                    {isNameInvalidPatternError &&
+                      "Only letters, numbers and underscore are allowed"}
+                  </p>
+                )}
+                <span
+                  className={`community-name-counter ${
+                    isNameInvalid ? "invalid" : ""
+                  }`}
+                >
+                  {Math.min(communityName.length, 21)}/21
+                </span>
+              </div> */}
+              <TextField
+                label="Community name"
+                value={communityName}
+                maxLength={21}
+                onChange={handleNameChange}
+                onFocus={() => setIsNameFocused(true)}
+                onBlur={handleNameBlur}
+                prefix="r/"
+                showPrefix={!!communityName}
+                required={true}
+                id="communityNameInput"
+                containerClassName={`${
+                  isNameInvalid ? "invalid" : ""
+                } ${isNameFocused ? "focused" : ""}`.trim()}
+                labelClassName={
+                  isNameFocused || communityName ? "floating" : ""
+                }
+                prefixClassName={
+                  isNameFocused || communityName ? "floating" : ""
+                }
+                counterClassName={isNameInvalid ? "invalid" : ""}
+                errorMessage={
+                  isNameTooShort
+                    ? "Please lengthen this text to 3 characters or more"
+                    : isNameTouched &&
+                      !isNameFocused &&
+                      isNameTaken
+                    ? `r/${communityName} is already taken`
+                    : isNameInvalidPatternError
+                    ? "Only letters, numbers and underscore are allowed"
+                    : null
+                }
+                showErrorIcon={isNameInvalid && isNameTouched && !isNameFocused}
+                counterText={`${Math.min(communityName.length, 21)}/21`}
+                pattern="^[A-Za-z0-9][A-Za-z0-9_]{2,20}$"
+              />
+              <div className="community-description-container">
+                <label
+                  htmlFor="communityDescriptionInput"
+                  className={`community-description-label ${
+                    isDescriptionFocused || communityDescription
+                      ? "floating"
+                      : ""
+                  }`}
+                >
+                  Description <span className="required-asterisk">*</span>
+                </label>
+                <textarea
+                  id="communityDescriptionInput"
+                  className="community-description-input"
+                  value={communityDescription}
+                  onChange={(e) => setCommunityDescription(e.target.value)}
+                  onFocus={() => setIsDescriptionFocused(true)}
+                  onBlur={() => setIsDescriptionFocused(false)}
+                />
+              </div>
+              <span className={`community-description-counter`}>
+                {communityDescription.length}
+              </span>
+            </div>
+            <div className="community-summary-container">
+              <span className="community-summary-name">
+                r/{communityName.length > 0 ? communityName : "communityname"}
+              </span>
+              <span className="community-summary-stats">
+                1 weekly visitor · 1 weekly contributor
+              </span>
+              <span className="community-summary-description">
+                {communityDescription.length > 0
+                  ? communityDescription
+                  : "Your community description"}
+              </span>
+            </div>
           </div>
         );
       case 4:
         return (
-          <div>
-            <h3>Page 4 Content</h3>
-            <p>This is page 4</p>
+          <div className="community-page-content">
+            <div className="community-info-container">
+              <div className="community-banner-container">
+                <span className="community-banner-title">Banner</span>
+                <div className="community-banner-controls">
+                  <input
+                    type="file"
+                    id="banner-file-input"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg,image/jpg"
+                    style={{ display: "none" }}
+                    onChange={handleBannerImageChange}
+                  />
+                  <CustomButton
+                    className="small"
+                    onClick={() =>
+                      document.getElementById("banner-file-input").click()
+                    }
+                  >
+                    <svg
+                      rpl=""
+                      fill="currentColor"
+                      height="20"
+                      icon-name="image"
+                      viewBox="0 0 20 20"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {" "}
+                      <path d="M14.6 2H5.4A3.4 3.4 0 002 5.4v9.2A3.4 3.4 0 005.4 18h9.2a3.4 3.4 0 003.4-3.4V5.4A3.4 3.4 0 0014.6 2zM5.4 3.8h9.2c.882 0 1.6.718 1.6 1.6v9.2c0 .484-.22.913-.561 1.207l-5.675-5.675a3.39 3.39 0 00-2.404-.996c-.87 0-1.74.332-2.404.996L3.8 11.488V5.4c0-.882.718-1.6 1.6-1.6zM3.8 14.6v-.567l2.629-2.628a1.59 1.59 0 011.131-.469c.427 0 .829.166 1.131.469l4.795 4.795H5.4c-.882 0-1.6-.718-1.6-1.6zm6.95-7.1a1.75 1.75 0 113.5 0 1.75 1.75 0 01-3.5 0z"></path>{" "}
+                    </svg>
+                    {bannerImage ? "Change" : "Add"}
+                  </CustomButton>
+                  {bannerImage && (
+                    <div className="community-image-display">
+                      <span className="community-image-filename">
+                        {bannerImage.name}
+                      </span>
+                      <CustomButton
+                        className="icon"
+                        onClick={handleBannerImageDelete}
+                      >
+                        <svg
+                          rpl=""
+                          fill="currentColor"
+                          height="16"
+                          icon-name="delete"
+                          viewBox="0 0 20 20"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M15.2 15.7c0 .83-.67 1.5-1.5 1.5H6.3c-.83 0-1.5-.67-1.5-1.5V7.6H3v8.1C3 17.52 4.48 19 6.3 19h7.4c1.82 0 3.3-1.48 3.3-3.3V7.6h-1.8v8.1zM17.5 5.8c.5 0 .9-.4.9-.9S18 4 17.5 4h-3.63c-.15-1.68-1.55-3-3.27-3H9.4C7.68 1 6.28 2.32 6.13 4H2.5c-.5 0-.9.4-.9.9s.4.9.9.9h15zM7.93 4c.14-.68.75-1.2 1.47-1.2h1.2c.72 0 1.33.52 1.47 1.2H7.93z"></path>
+                        </svg>
+                      </CustomButton>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="community-icon-container">
+                <span className="community-icon-title">Icon</span>
+                <div className="community-icon-controls">
+                  <input
+                    type="file"
+                    id="icon-file-input"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg,image/jpg"
+                    style={{ display: "none" }}
+                    onChange={handleIconImageChange}
+                  />
+                  <CustomButton
+                    className="small"
+                    onClick={() =>
+                      document.getElementById("icon-file-input").click()
+                    }
+                  >
+                    <svg
+                      rpl=""
+                      fill="currentColor"
+                      height="20"
+                      icon-name="image"
+                      viewBox="0 0 20 20"
+                      width="20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {" "}
+                      <path d="M14.6 2H5.4A3.4 3.4 0 002 5.4v9.2A3.4 3.4 0 005.4 18h9.2a3.4 3.4 0 003.4-3.4V5.4A3.4 3.4 0 0014.6 2zM5.4 3.8h9.2c.882 0 1.6.718 1.6 1.6v9.2c0 .484-.22.913-.561 1.207l-5.675-5.675a3.39 3.39 0 00-2.404-.996c-.87 0-1.74.332-2.404.996L3.8 11.488V5.4c0-.882.718-1.6 1.6-1.6zM3.8 14.6v-.567l2.629-2.628a1.59 1.59 0 011.131-.469c.427 0 .829.166 1.131.469l4.795 4.795H5.4c-.882 0-1.6-.718-1.6-1.6zm6.95-7.1a1.75 1.75 0 113.5 0 1.75 1.75 0 01-3.5 0z"></path>{" "}
+                    </svg>
+                    {iconImage ? "Change" : "Add"}
+                  </CustomButton>
+                  {iconImage && (
+                    <div className="community-image-display">
+                      <span className="community-image-filename">
+                        {iconImage.name}
+                      </span>
+                      <CustomButton
+                        className="icon"
+                        onClick={handleIconImageDelete}
+                      >
+                        <svg
+                          rpl=""
+                          fill="currentColor"
+                          height="16"
+                          icon-name="delete"
+                          viewBox="0 0 20 20"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path d="M15.2 15.7c0 .83-.67 1.5-1.5 1.5H6.3c-.83 0-1.5-.67-1.5-1.5V7.6H3v8.1C3 17.52 4.48 19 6.3 19h7.4c1.82 0 3.3-1.48 3.3-3.3V7.6h-1.8v8.1zM17.5 5.8c.5 0 .9-.4.9-.9S18 4 17.5 4h-3.63c-.15-1.68-1.55-3-3.27-3H9.4C7.68 1 6.28 2.32 6.13 4H2.5c-.5 0-.9.4-.9.9s.4.9.9.9h15zM7.93 4c.14-.68.75-1.2 1.47-1.2h1.2c.72 0 1.33.52 1.47 1.2H7.93z"></path>
+                        </svg>
+                      </CustomButton>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="community-summary-container">
+              <div className="community-banner-wrapper">
+                {bannerImageUrl && (
+                  <img
+                    src={bannerImageUrl}
+                    alt="Community banner"
+                    className="community-banner-image"
+                  />
+                )}
+              </div>
+              <div className="community-summary-wrapper">
+                <span className="community-icon-wrapper">
+                  {iconImageUrl ? (
+                    <img
+                      src={iconImageUrl}
+                      alt="Community icon"
+                      className="community-icon-image"
+                    />
+                  ) : (
+                    <svg
+                      rpl=""
+                      fill="currentColor"
+                      className="community-icon-svg"
+                      height="48"
+                      icon-name="community"
+                      viewBox="0 0 20 20"
+                      width="48"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {" "}
+                      <path d="M9.633 8.086c-.27 0-.536.066-.799.199a1.665 1.665 0 00-.652.596c-.173.265-.258.581-.258.948v3.961H5.999V6.321h1.876v1.074h.035c.251-.344.567-.628.948-.851a2.547 2.547 0 011.311-.335c.172 0 .335.014.488.042.153.028.267.058.342.091l-.774 1.848a.766.766 0 00-.244-.073 1.873 1.873 0 00-.349-.032l.001.001zM19 10a9 9 0 01-9 9 9 9 0 01-9-9 9 9 0 019-9 9 9 0 019 9zm-1.8 0a7.17 7.17 0 00-1.661-4.594L11.98 13.79h-1.955l4.108-9.677A7.152 7.152 0 0010 2.8c-3.97 0-7.2 3.23-7.2 7.2s3.23 7.2 7.2 7.2 7.2-3.23 7.2-7.2z"></path>{" "}
+                    </svg>
+                  )}
+                </span>
+                <div className="community-summary-data">
+                  <span className="community-summary-name">
+                    r/
+                    {communityName.length > 0 ? communityName : "communityname"}
+                  </span>
+                  <span className="community-summary-stats">
+                    1 weekly visitor · 1 weekly contributor
+                  </span>
+                </div>
+              </div>
+              <span className="community-summary-description">
+                {communityDescription.length > 0
+                  ? communityDescription
+                  : "Your community description"}
+              </span>
+            </div>
           </div>
         );
       default:
@@ -470,18 +962,7 @@ const CreateCommunity = () => {
         </div>
 
         <div className="button-container">
-          <button className="close-button">
-            <svg
-              fill="currentColor"
-              height="16"
-              viewBox="0 0 20 20"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
-              className="close-icon"
-            >
-              <path d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"></path>
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} />
         </div>
       </div>
       <div className="modal-body">{renderPageContent()}</div>
@@ -498,21 +979,29 @@ const CreateCommunity = () => {
         </div>
         <div className="footer-buttons-container">
           <div className="button-container">
-            <button className="cancel-button" onClick={handleCancel}>
+            <CustomButton onClick={handleCancel}>
               {currentPage > 1 ? "Back" : "Cancel"}
-            </button>
+            </CustomButton>
           </div>
           <div className="button-container">
-            <button
-              className="next-button"
+            <CustomButton
               disabled={isNextButtonDisabled}
               onClick={handleNext}
+              className="blue-button"
             >
               {currentPage === totalPages ? "Create Community" : "Next"}
-            </button>
+            </CustomButton>
           </div>
         </div>
       </div>
+      {isCropModalOpen && cropImagePreview && cropImageType && (
+        <ImageCropModal
+          imageUrl={cropImagePreview}
+          imageType={cropImageType}
+          onClose={handleCropModalClose}
+          onSave={handleCropSave}
+        />
+      )}
     </div>
   );
 };
