@@ -456,7 +456,7 @@ const TextArea = ({
       </div>
     </div>
   </>
-  );
+);
 };
 
 export default TextArea;
