@@ -18,7 +18,7 @@ const CreateUser = () => {
   const handleSubmit = (e) => {
     e?.preventDefault?.();
     if (!formIsValid) return;
-    console.log({ username, password });
+    navigate("/interests");
   };
   const formIsValid = isUsernameValid(username) && isPasswordValid(password);
 
@@ -27,7 +27,10 @@ const CreateUser = () => {
       <div className="top-content">
         <div className="top-content">
           <div className="button-wrapper">
-            <button className="quit-reset-button" onClick={() => navigate("/signup")}>
+            <button
+              className="quit-reset-button"
+              onClick={() => navigate("/signup")}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
