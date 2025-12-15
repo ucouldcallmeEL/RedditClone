@@ -10,16 +10,16 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   //   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(email);
+  const handleSubmit = () => {
+    navigate("/create-user");
   };
 
   const handleClose = () => {
     console.log("Close button clicked");
   };
 
-  const isEmailValid = (val) => /\S+@\S+\.\S+/.test(val) || val.length > 3;
+  const isEmailValid = (val) =>
+    /^[^\s@]+@[^\s@]+\.(com|net|org|edu)$/i.test(val);
   //   const isPasswordValid = (val) => val.length > 0;
 
   const formIsValid = isEmailValid(email); // && isPasswordValid(password);
