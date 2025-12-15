@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { Community, TrendingTopic } from '../types';
 
 type Props = {
@@ -32,21 +33,24 @@ function RightRail({ trendingTopics, communities }: Props) {
           <button className="ghost-btn">Explore</button>
         </div>
         <ul className="community-list">
-          {communities.map((community) => (
-            <li key={community.name}>
-              <img
-                src={community.avatar}
-                alt={community.name}
-                loading="lazy"
-              />
-              <div>
-                <p>{community.name}</p>
-                <span>{community.members}</span>
-                <small>{community.description}</small>
-              </div>
-              <button className="chip">Join</button>
-            </li>
-          ))}
+          {communities.map((community) => {
+            const slug = community.name.replace(/^r\//i, '');
+            return (
+              <li key={community.name}>
+                <Link to={`/community/${slug}`} style={{ display: 'contents', textDecoration: 'none', color: 'inherit' }}>
+                  <img src={community.avatar} alt={community.name} loading="lazy" />
+
+                  <div>
+                    <p>{community.name}</p>
+                    <span>{community.members}</span>
+                    <small>{community.description}</small>
+                  </div>
+                </Link>
+
+                <button className="chip">Join</button>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </aside>

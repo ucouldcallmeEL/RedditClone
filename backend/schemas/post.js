@@ -14,10 +14,10 @@ const postSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    comments: {
-        type: Array,
-        default: []
-    },
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }],
     upvotes: {
         type: Number,
         default: 0

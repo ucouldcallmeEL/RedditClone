@@ -17,18 +17,18 @@ const communitySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    members: {
-        type: Array,
-        default: []
-    },
-    posts: {
-        type: Array,
-        default: []
-    },
-    moderators: {
-        type: Array,
-        default: []
-    },
+    members: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
+    moderators: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     createdAt: {
         type: Date,
         default: Date.now

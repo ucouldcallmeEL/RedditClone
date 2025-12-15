@@ -29,10 +29,10 @@ const commentSchema = new mongoose.Schema({
         ref: 'Comment',
         default: null
     },
-    replies: {
-        type: Array,
-        default: []
-    }
+    replies: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 }, {
     timestamps: true  // Adds createdAt and updatedAt fields automatically
 });

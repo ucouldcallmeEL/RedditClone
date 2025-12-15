@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
   Accessibility,
@@ -163,13 +164,16 @@ function SidebarNav() {
               className="sidebar__section-body"
               hidden={isCollapsed}
             >
-              {sectionItems.map(({ label, icon: Icon, badge }) => (
-                <button key={label} className="sidebar__link">
-                  <Icon size={18} />
-                  <span>{label}</span>
-                  {badge && <span className="sidebar__badge">{badge}</span>}
-                </button>
-              ))}
+              {sectionItems.map(({ label, icon: Icon, badge }) => {
+                const slug = label.replace(/^r\//i, '');
+                return (
+                  <Link key={label} className="sidebar__link" to={`/community/${slug}`}>
+                    <Icon size={18} />
+                    <span>{label}</span>
+                    {badge && <span className="sidebar__badge">{badge}</span>}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         );
