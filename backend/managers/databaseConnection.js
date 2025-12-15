@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const uri = "mongodb+srv://22p0210:lab9ip@mycoursesdb.udcgumx.mongodb.net/myCoursesDB?retryWrites=true&w=majority";
+const uri="mongodb+srv://yehiasalman48_db_user:Y0114487332y@redditclone.tqtlvsk.mongodb.net/?appName=redditClone"
 
 const databaseConnection = async () => {
     try {

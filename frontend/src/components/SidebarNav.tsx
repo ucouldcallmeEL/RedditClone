@@ -83,7 +83,14 @@ const collapsibleSections = [
   { id: 'policies', title: 'Policies', items: policyLinks },
 ];
 
-function SidebarNav() {
+type FeedFilter = 'home' | 'popular' | 'all';
+
+type Props = {
+  activeFilter?: FeedFilter;
+  onSelectFilter?: (filter: FeedFilter) => void;
+};
+
+function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
     collapsibleSections.reduce(
@@ -129,12 +136,40 @@ function SidebarNav() {
 
       <div className="sidebar__section">
         <nav>
-          {items.map(({ label, icon: Icon }) => (
-            <button key={label} className="sidebar__link">
-              <Icon size={18} />
-              <span>{label}</span>
-            </button>
-          ))}
+          {items.map(({ label, icon: Icon }) => {
+            const isFilterItem = ['Home', 'Popular', 'All'].includes(label);
+
+            const handleClick = () => {
+              if (!onSelectFilter || !isFilterItem) {
+                return;
+              }
+
+              if (label === 'Home') {
+                onSelectFilter('home');
+              } else if (label === 'Popular') {
+                onSelectFilter('popular');
+              } else if (label === 'All') {
+                onSelectFilter('all');
+              }
+            };
+
+            const isActive =
+              (label === 'Home' && activeFilter === 'home') ||
+              (label === 'Popular' && activeFilter === 'popular') ||
+              (label === 'All' && activeFilter === 'all');
+
+            return (
+              <button
+                key={label}
+                className={`sidebar__link${isActive ? ' sidebar__link--active' : ''}`}
+                type="button"
+                onClick={handleClick}
+              >
+                <Icon size={18} />
+                <span>{label}</span>
+              </button>
+            );
+          })}
         </nav>
       </div>
 

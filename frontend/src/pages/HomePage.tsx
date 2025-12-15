@@ -4,26 +4,44 @@ import PostCard from '../components/PostCard';
 import PostComposer from '../components/PostComposer';
 import type { Post } from '../types';
 
-function HomePage() {
+type FeedFilter = 'home' | 'popular' | 'all';
+
+type Props = {
+  feedFilter?: FeedFilter;
+};
+
+function HomePage({ feedFilter = 'home' }: Props) {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    fetchPosts(feedFilter);
+  }, [feedFilter]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (filter: FeedFilter = 'home') => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/r/all');
+
+      let url = 'http://localhost:3000/';
+
+      if (filter === 'all') {
+        url = 'http://localhost:3000/all';
+      } else if (filter === 'popular') {
+        url = 'http://localhost:3000/popular?time=all';
+      }
+
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
       
-      const backendPosts = await response.json();
+      const data = await response.json();
+
+      // Normalize shape: /all returns an array, / and /popular return { posts: [...] }
+      const backendPosts = Array.isArray(data) ? data : data.posts || [];
       
       // Transform backend data to frontend format
       const transformedPosts: Post[] = backendPosts.map((post: any) => ({
@@ -91,7 +109,7 @@ function HomePage() {
       ) : error ? (
         <div className="error card">
           {error}
-          <button className="btn btn--primary" onClick={fetchPosts} style={{ marginTop: '1rem' }}>
+          <button className="btn btn--primary" onClick={() => fetchPosts(feedFilter)} style={{ marginTop: '1rem' }}>
             Retry
           </button>
         </div>
