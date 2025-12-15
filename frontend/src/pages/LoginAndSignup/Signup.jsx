@@ -25,8 +25,8 @@ const Signup = () => {
   const formIsValid = isEmailValid(email); // && isPasswordValid(password);
 
   return (
-    <div className="log-in-modal auth-flow-modal">
-      <div className="reset-pass-modal">
+    <div className="log-in-modal auth-flow-modal reset-pass-modal">
+      <div>
         <div className="top-content">
           <button className="quit-login-button" onClick={handleClose}>
             <svg

@@ -1,7 +1,15 @@
 .text-field-container {
   position: relative;
   width: 100%;
-  margin: 10px 0;
+  margin: 10px 0 20px 0;
+}
+
+/* Extra space ONLY when error text is visible */
+/* .text-field-container.error {
+  margin-bottom: 28px; /* adjust as needed 
+} */
+.text-field-error {
+  min-height: 14px; /* keeps layout stable */
 }
 
 .text-field-input:hover {
@@ -20,6 +28,7 @@
   box-sizing: border-box;
   transition: background-color 0.2s ease;
   height: 56px;
+  padding: 24px 48px 8px 20px; /* 👈 space for icon */
 }
 
 /* .text-field-input:focus {
@@ -42,6 +51,7 @@
   color: #ff453a;
   font-size: 12px;
   text-align: left;
+  margin-left: 10px;
 }
 
 .text-field-label {
@@ -71,4 +81,23 @@
 .text-field-inner {
   position: relative;
   height: 56px; /* same as input */
+}
+
+.status-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon.success {
+  color: #016e0b;
+}
+
+.status-icon.error {
+  color: #ff4f40;
 }
