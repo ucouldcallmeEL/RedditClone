@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./CreatePost.css";
 import CloseButton from "../../components/CloseButton";
 import ToggleButton from "../../components/ToggleButton";
@@ -26,6 +26,7 @@ const CreatePost = ({ onNavigateHome }) => {
   const [activeToolbarButtons, setActiveToolbarButtons] = useState({});
   const [isLinkInvalidFormat, setIsLinkInvalidFormat] = useState(false);
   const [uploadedMedia, setUploadedMedia] = useState([]);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [postLink, setPostLink] = useState("");
   const [isLinkFocused, setIsLinkFocused] = useState(false);
   const [isLinkTouched, setIsLinkTouched] = useState(false);
@@ -44,7 +45,11 @@ const CreatePost = ({ onNavigateHome }) => {
     spoiler: false,
     brand: false,
   });
-
+  const [isDragOver, setIsDragOver] = useState(false);
+  const mediaInputRef = useRef(null);
+  const [isMediaGridOpen, setIsMediaGridOpen] = useState(false);
+  const [gridMedia, setGridMedia] = useState([]);
+  const gridMediaInputRef = useRef(null);
   const isCommunitySelected = Boolean(selectedCommunityOption);
 
   const communityOptions = [
@@ -123,8 +128,93 @@ const CreatePost = ({ onNavigateHome }) => {
   const handleMediaUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setUploadedMedia(files);
+      setUploadedMedia((prev) => {
+        const next = [...prev, ...files];
+        // If this is the first upload, show the first file
+        if (prev.length === 0) {
+          setCurrentMediaIndex(0);
+        }
+        return next;
+      });
     }
+  };
+
+  // Handle drag-and-drop media upload
+  const handleMediaDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter(
+      (file) => file.type.startsWith("image/") || file.type.startsWith("video/")
+    );
+    if (files.length > 0) {
+      setUploadedMedia((prev) => {
+        const next = [...prev, ...files];
+        if (prev.length === 0) {
+          setCurrentMediaIndex(0);
+        }
+        return next;
+      });
+    }
+  };
+
+  const handleNextMedia = () => {
+    if (uploadedMedia.length === 0) return;
+    setCurrentMediaIndex((prev) => (prev + 1) % uploadedMedia.length);
+  };
+
+  const handlePrevMedia = () => {
+    if (uploadedMedia.length === 0) return;
+    setCurrentMediaIndex(
+      (prev) => (prev - 1 + uploadedMedia.length) % uploadedMedia.length
+    );
+  };
+
+  // Delete from main carousel
+  const handleDeleteMediaAt = (indexToDelete) => {
+    if (uploadedMedia.length === 0) return;
+    setUploadedMedia((prev) => {
+      const next = prev.filter((_, index) => index !== indexToDelete);
+      if (next.length === 0) {
+        setCurrentMediaIndex(0);
+      } else if (currentMediaIndex >= next.length) {
+        setCurrentMediaIndex(next.length - 1);
+      }
+      return next;
+    });
+  };
+
+  const handleDeleteCurrentMedia = () => {
+    if (uploadedMedia.length === 0) return;
+    handleDeleteMediaAt(currentMediaIndex);
+  };
+
+  // -------- Media grid (edit all) helpers --------
+
+  const openMediaGrid = () => {
+    setGridMedia(uploadedMedia);
+    setIsMediaGridOpen(true);
+  };
+
+  const handleGridMediaAdd = (e) => {
+    const files = Array.from(e.target.files).filter(
+      (file) => file.type.startsWith("image/") || file.type.startsWith("video/")
+    );
+    if (files.length > 0) {
+      setGridMedia((prev) => [...prev, ...files]);
+    }
+  };
+
+  const handleDeleteGridMediaAt = (indexToDelete) => {
+    setGridMedia((prev) => prev.filter((_, index) => index !== indexToDelete));
+  };
+
+  const handleSaveMediaGrid = () => {
+    setUploadedMedia(gridMedia);
+    if (gridMedia.length === 0) {
+      setCurrentMediaIndex(0);
+    } else if (currentMediaIndex >= gridMedia.length) {
+      setCurrentMediaIndex(gridMedia.length - 1);
+    }
+    setIsMediaGridOpen(false);
   };
 
   const handleToggleTag = (tagKey) => {
@@ -536,42 +626,198 @@ const CreatePost = ({ onNavigateHome }) => {
               )}
 
               {selectedPostType === "images" && (
-                <div className="post-images-container">
-                  <div className="post-images-placeholder">
-                    <p className="post-image-prompt-text">
-                      Drag and Drop or upload media
-                    </p>
-                    <label htmlFor="media-upload" style={{ cursor: "pointer" }}>
-                      <input
-                        type="file"
-                        id="media-upload"
-                        accept="image/*,video/*"
-                        multiple
-                        onChange={handleMediaUpload}
-                        style={{ display: "none" }}
-                      />
-                      <button
-                        type="button"
-                        className="upload-media-button"
-                        onClick={() =>
-                          document.getElementById("media-upload").click()
-                        }
-                      >
-                        <svg
-                          rpl=""
-                          fill="currentColor"
-                          height="16"
-                          icon-name="upload"
-                          viewBox="0 0 20 20"
-                          width="16"
-                          xmlns="http://www.w3.org/2000/svg"
+                <>
+                  <div
+                    className={`post-images-container ${
+                      isDragOver ? "dragover" : ""
+                    } ${uploadedMedia.length > 0 ? "has-media" : ""}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragOver(true);
+                    }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={(e) => {
+                      handleMediaDrop(e);
+                      setIsDragOver(false);
+                    }}
+                  >
+                    {/* Hidden file input shared by upload and Add buttons */}
+                    <input
+                      ref={mediaInputRef}
+                      type="file"
+                      id="media-upload"
+                      accept="image/*,video/*"
+                      multiple
+                      onChange={handleMediaUpload}
+                      style={{ display: "none" }}
+                    />
+
+                    {uploadedMedia.length === 0 ? (
+                      <div className="post-images-placeholder">
+                        <p className="post-image-prompt-text">
+                          Drag and Drop or upload media
+                        </p>
+                        <label
+                          htmlFor="media-upload"
+                          style={{ cursor: "pointer" }}
                         >
-                          <path d="M10.3 16H6c-2.757 0-5-2.243-5-5a5.006 5.006 0 014.827-4.997c1.226-2.516 3.634-4.067 6.348-4.001a6.991 6.991 0 016.823 6.823 6.65 6.65 0 01-.125 1.434l-1.714-1.714c-.229-2.617-2.366-4.678-5.028-4.744-2.161-.059-4.058 1.307-4.892 3.463l-.247.638S6.448 7.798 6 7.798a3.204 3.204 0 00-3.2 3.2c0 1.764 1.436 3.2 3.2 3.2h4.3V16zm6.616-5.152l-3.28-3.28a.901.901 0 00-1.273 0l-3.28 3.28a.898.898 0 000 1.272.898.898 0 001.272 0l1.744-1.743v7.117a.9.9 0 001.8 0v-7.117l1.744 1.743a.898.898 0 001.272 0 .898.898 0 00.001-1.272z"></path>
-                        </svg>
-                      </button>
-                    </label>
+                          <button
+                            type="button"
+                            className="upload-media-button"
+                            onClick={() => mediaInputRef.current?.click()}
+                          >
+                            <svg
+                              rpl=""
+                              fill="currentColor"
+                              height="16"
+                              icon-name="upload"
+                              viewBox="0 0 20 20"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M10.3 16H6c-2.757 0-5-2.243-5-5a5.006 5.006 0 014.827-4.997c1.226-2.516 3.634-4.067 6.348-4.001a6.991 6.991 0 016.823 6.823 6.65 6.65 0 01-.125 1.434l-1.714-1.714c-.229-2.617-2.366-4.678-5.028-4.744-2.161-.059-4.058 1.307-4.892 3.463l-.247.638S6.448 7.798 6 7.798a3.204 3.204 0 00-3.2 3.2c0 1.764 1.436 3.2 3.2 3.2h4.3V16zm6.616-5.152l-3.28-3.28a.901.901 0 00-1.273 0l-3.28 3.28a.898.898 0 000 1.272.898.898 0 001.272 0l1.744-1.743v7.117a.9.9 0 001.8 0v-7.117l1.744 1.743a.898.898 0 001.272 0 .898.898 0 00.001-1.272z"></path>
+                            </svg>
+                          </button>
+                        </label>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="post-images-preview">
+                          {(() => {
+                            const file = uploadedMedia[currentMediaIndex];
+                            const url = URL.createObjectURL(file);
+                            return file.type.startsWith("image/") ? (
+                              <img
+                                src={url}
+                                alt={file.name}
+                                className="post-image-preview-item"
+                              />
+                            ) : (
+                              <video
+                                src={url}
+                                className="post-image-preview-item"
+                                controls
+                              />
+                            );
+                          })()}
+                        </div>
+                        {uploadedMedia.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="media-button media-button-nav left"
+                              onClick={handlePrevMedia}
+                            >
+                              <svg
+                                rpl=""
+                                className="rpl-rtl-icon"
+                                fill="currentColor"
+                                height="16"
+                                icon-name="chevron-left"
+                                viewBox="0 0 20 20"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                {" "}
+                                <path d="M13.5 2.1a.898.898 0 01.636 1.536L7.773 10l6.363 6.364a.898.898 0 010 1.272.898.898 0 01-1.272 0l-7-7a.898.898 0 010-1.272l7-7A.897.897 0 0113.5 2.1z"></path>
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              className="media-button media-button-nav right"
+                              onClick={handleNextMedia}
+                            >
+                              <svg
+                                rpl=""
+                                className="rpl-rtl-icon"
+                                fill="currentColor"
+                                height="16"
+                                icon-name="chevron-right"
+                                viewBox="0 0 20 20"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                {" "}
+                                <path d="M6.5 17.9a.898.898 0 01-.636-1.536L12.227 10 5.864 3.636a.898.898 0 010-1.272.898.898 0 011.272 0l7 7a.898.898 0 010 1.272l-7 7a.897.897 0 01-.636.264z"></path>
+                              </svg>
+                            </button>
+                            <div className="media-counter">
+                              {currentMediaIndex + 1}/{uploadedMedia.length}
+                            </div>
+                          </>
+                        )}
+                        <div className="media-actions">
+                          <div className="media-actions-left">
+                            <button
+                              type="button"
+                              className="media-button"
+                              onClick={() => mediaInputRef.current?.click()}
+                            >
+                              <svg
+                                rpl=""
+                                fill="currentColor"
+                                height="20"
+                                icon-name="image"
+                                viewBox="0 0 20 20"
+                                width="20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                {" "}
+                                <path d="M14.6 2H5.4A3.4 3.4 0 002 5.4v9.2A3.4 3.4 0 005.4 18h9.2a3.4 3.4 0 003.4-3.4V5.4A3.4 3.4 0 0014.6 2zM5.4 3.8h9.2c.882 0 1.6.718 1.6 1.6v9.2c0 .484-.22.913-.561 1.207l-5.675-5.675a3.39 3.39 0 00-2.404-.996c-.87 0-1.74.332-2.404.996L3.8 11.488V5.4c0-.882.718-1.6 1.6-1.6zM3.8 14.6v-.567l2.629-2.628a1.59 1.59 0 011.131-.469c.427 0 .829.166 1.131.469l4.795 4.795H5.4c-.882 0-1.6-.718-1.6-1.6zm6.95-7.1a1.75 1.75 0 113.5 0 1.75 1.75 0 01-3.5 0z"></path>{" "}
+                              </svg>
+                              Add
+                            </button>
+                            <button
+                              type="button"
+                              className="media-button"
+                              onClick={openMediaGrid}
+                            >
+                              <svg
+                                rpl=""
+                                fill="currentColor"
+                                height="16"
+                                icon-name="edit"
+                                viewBox="0 0 20 20"
+                                width="16"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                {" "}
+                                <path d="M14.016 3.8c.583 0 1.132.227 1.545.64.413.413.64.961.64 1.545a2.17 2.17 0 01-.64 1.545l-8.67 8.67-3.079-.01-.01-3.079 8.669-8.671c.413-.413.962-.64 1.545-.64zm0-1.8a3.97 3.97 0 00-2.817 1.167l-8.948 8.947a.858.858 0 00-.251.609l.014 4.408a.858.858 0 00.855.855L7.277 18h.003c.227 0 .446-.09.606-.251l8.947-8.947A3.985 3.985 0 0014.016 2z"></path>
+                              </svg>
+                              Edit All
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="media-button"
+                            onClick={handleDeleteCurrentMedia}
+                          >
+                            <svg
+                              rpl=""
+                              fill="currentColor"
+                              height="16"
+                              icon-name="delete"
+                              viewBox="0 0 20 20"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M15.2 15.7c0 .83-.67 1.5-1.5 1.5H6.3c-.83 0-1.5-.67-1.5-1.5V7.6H3v8.1C3 17.52 4.48 19 6.3 19h7.4c1.82 0 3.3-1.48 3.3-3.3V7.6h-1.8v8.1zM17.5 5.8c.5 0 .9-.4.9-.9S18 4 17.5 4h-3.63c-.15-1.68-1.55-3-3.27-3H9.4C7.68 1 6.28 2.32 6.13 4H2.5c-.5 0-.9.4-.9.9s.4.9.9.9h15zM7.93 4c.14-.68.75-1.2 1.47-1.2h1.2c.72 0 1.33.52 1.47 1.2H7.93z"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </div>
+                  {isCommunitySelected && (
+                    <TextArea
+                      value={postBody}
+                      activeToolbarButtons={activeToolbarButtons}
+                      onToolbarButtonClick={handleToolbarButtonClick}
+                      onChange={(newValue) => setPostBody(newValue)}
+                      placeholder="Body text (optional)"
+                    />
+                  )}
+                </>
               )}
 
               {selectedPostType === "link" && (
@@ -653,6 +899,15 @@ const CreatePost = ({ onNavigateHome }) => {
                         : ""
                     }`.trim()}
                   />
+                  {isCommunitySelected && (
+                    <TextArea
+                      value={postBody}
+                      activeToolbarButtons={activeToolbarButtons}
+                      onToolbarButtonClick={handleToolbarButtonClick}
+                      onChange={(newValue) => setPostBody(newValue)}
+                      placeholder="Body text (optional)"
+                    />
+                  )}
                 </>
               )}
               {selectedPostType === "poll" && (
@@ -824,6 +1079,100 @@ const CreatePost = ({ onNavigateHome }) => {
               <CustomButton onClick={handleCancelTags}>Cancel</CustomButton>
               <CustomButton className="blue-button" onClick={handleAddTags}>
                 Add
+              </CustomButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isMediaGridOpen && gridMedia.length > 0 && (
+        <div
+          className="media-grid-overlay"
+          onClick={() => setIsMediaGridOpen(false)}
+        >
+          <div
+            className="media-grid-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="media-grid-header">
+              <h2 className="media-grid-title">Edit gallery</h2>
+              <CloseButton onClick={() => setIsMediaGridOpen(false)} />
+            </div>
+            <div className="media-grid-body">
+              {gridMedia.map((file, index) => {
+                const url = URL.createObjectURL(file);
+                const isImage = file.type.startsWith("image/");
+                return (
+                  <div key={index} className="media-grid-item-wrapper">
+                    {isImage ? (
+                      <img
+                        src={url}
+                        alt={file.name}
+                        className="media-grid-item"
+                      />
+                    ) : (
+                      <video
+                        src={url}
+                        className="media-grid-item"
+                        controls
+                      />
+                    )}
+                    <button
+                      type="button"
+                      className="media-grid-item-delete"
+                      onClick={() => handleDeleteGridMediaAt(index)}
+                    >
+                      <svg
+                        rpl=""
+                        fill="currentColor"
+                        height="16"
+                        icon-name="delete"
+                        viewBox="0 0 20 20"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M15.2 15.7c0 .83-.67 1.5-1.5 1.5H6.3c-.83 0-1.5-.67-1.5-1.5V7.6H3v8.1C3 17.52 4.48 19 6.3 19h7.4c1.82 0 3.3-1.48 3.3-3.3V7.6h-1.8v8.1zM17.5 5.8c.5 0 .9-.4.9-.9S18 4 17.5 4h-3.63c-.15-1.68-1.55-3-3.27-3H9.4C7.68 1 6.28 2.32 6.13 4H2.5c-.5 0-.9.4-.9.9s.4.9.9.9h15zM7.93 4c.14-.68.75-1.2 1.47-1.2h1.2c.72 0 1.33.52 1.47 1.2H7.93z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="media-grid-footer">
+              <input
+                ref={gridMediaInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={handleGridMediaAdd}
+                style={{ display: "none" }}
+              />
+              <CustomButton
+                className="media-grid-add-button"
+                onClick={() => gridMediaInputRef.current?.click()}
+              >
+                <svg
+                  rpl=""
+                  fill="currentColor"
+                  height="20"
+                  icon-name="image"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {" "}
+                  <path d="M14.6 2H5.4A3.4 3.4 0 002 5.4v9.2A3.4 3.4 0 005.4 18h9.2a3.4 3.4 0 003.4-3.4V5.4A3.4 3.4 0 0014.6 2zM5.4 3.8h9.2c.882 0 1.6.718 1.6 1.6v9.2c0 .484-.22.913-.561 1.207l-5.675-5.675a3.39 3.39 0 00-2.404-.996c-.87 0-1.74.332-2.404.996L3.8 11.488V5.4c0-.882.718-1.6 1.6-1.6zM3.8 14.6v-.567l2.629-2.628a1.59 1.59 0 011.131-.469c.427 0 .829.166 1.131.469l4.795 4.795H5.4c-.882 0-1.6-.718-1.6-1.6zm6.95-7.1a1.75 1.75 0 113.5 0 1.75 1.75 0 01-3.5 0z"></path>{" "}
+                </svg>
+                Add more photos
+              </CustomButton>
+              <CustomButton onClick={() => setIsMediaGridOpen(false)}>
+                Back
+              </CustomButton>
+              <CustomButton
+                className="blue-button"
+                 onClick={handleSaveMediaGrid}
+              >
+                Save
               </CustomButton>
             </div>
           </div>
