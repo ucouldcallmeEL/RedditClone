@@ -1,0 +1,91 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.popup {
+  font-family: Arial, Helvetica, sans-serif;
+  background: white;
+  width: 380px;
+  max-width: 90%;
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: popupFade 0.18s ease-out;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px;
+  resize: vertical;
+  border-radius: 20px;
+  border: 1px solid #d0d3d7;
+  background: #f6f7f8;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box; 
+  overflow: hidden; 
+  margin-bottom: 16px;    
+  font-family: Arial, Helvetica, sans-serif;    
+}
+
+.title {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.desc {
+  margin: 0 0 15px;
+  font-size: 14px;
+  color: #606368;
+}
+
+
+.textarea:focus {
+  border-color: #8b8e93;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cancel {
+  background: #f6f7f8;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save {
+  background: #0079d3;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save:hover {
+  background: #006cc1;
+}
+.cancel:hover {
+  background: #bdbcbc;
+}
+
+@keyframes popupFade {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

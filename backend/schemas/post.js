@@ -18,6 +18,18 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
     }],
+
+    mediaUrl: {
+        type: String
+    },
+    mediaId: {
+        type: String 
+    },
+    mediaType: {
+        type: String,   
+        enum: ["image", "video"]
+    },
+    
     upvotes: {
         type: Number,
         default: 0

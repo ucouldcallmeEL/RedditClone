@@ -1,0 +1,23 @@
+.box {
+  background: #f7f9fa;             
+  padding: 4px 18px;          
+  border-radius: 12px;         
+  font-size: 14px;              
+  color: #1a1a1b;               
+  line-height: 1.45;            
+  margin-top: 18px;             
+}
+
+.box a {
+  color: #0079d3;               
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.box a:hover {
+  text-decoration: underline;    
+}
+
+.titleFaded{
+  color: #576f76 !important;
+}
