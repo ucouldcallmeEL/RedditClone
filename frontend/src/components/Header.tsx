@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   Settings as SettingsIcon,
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import redditLogo from '../../../resources/Reddit_Lockup.svg';
 
@@ -39,6 +40,7 @@ function Header() {
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!menuOpen) {
@@ -77,6 +79,9 @@ function Header() {
           src={redditLogo}
           alt="Reddit logo"
           className="header__logo-img"
+          role="button"
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
         />
       </div>
 
@@ -89,9 +94,9 @@ function Header() {
         <button className="icon-btn" aria-label="Messages">
           <MessageCircle size={18} />
         </button>
-        <button className="icon-btn" aria-label="Notifications">
+        <Link className="icon-btn" aria-label="Notifications" to="/notifications">
           <Bell size={18} />
-        </button>
+        </Link>
         <div className="profile-menu__trigger" ref={triggerRef}>
           <button
             className="profile"

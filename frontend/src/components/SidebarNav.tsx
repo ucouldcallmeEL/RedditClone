@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
   Accessibility,
@@ -91,6 +91,7 @@ type Props = {
 };
 
 function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
     collapsibleSections.reduce(
@@ -146,6 +147,7 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
 
               if (label === 'Home') {
                 onSelectFilter('home');
+                navigate('/');
               } else if (label === 'Popular') {
                 onSelectFilter('popular');
               } else if (label === 'All') {

@@ -5,9 +5,9 @@ import RightRail from './components/RightRail';
 import SidebarNav from './components/SidebarNav';
 import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
-import { communities, trendingTopics } from './data/feed';
 import CommunityPage from './pages/CommunityPage';
-import AppHome from './pages/AppHome';
+import NotificationPage from './pages/Notifications/NotificationPage';
+import SettingsPage from './pages/Settings/SettingsPage';
 
 type FeedFilter = 'home' | 'popular' | 'all';
 
@@ -15,7 +15,7 @@ function AppContent() {
   const location = useLocation();
   const [feedFilter, setFeedFilter] = useState<FeedFilter>('home');
 
-  const onCommunity = location.pathname.startsWith('/community');
+  const onMainFeed = location.pathname === '/';
 
   return (
     <div className="app-shell">
@@ -29,19 +29,19 @@ function AppContent() {
             <Route path="/" element={<HomePage feedFilter={feedFilter} />} />
             <Route path="/community/:communityName/*" element={<CommunityPage />} />
             <Route path="/post/:postId" element={<PostDetailPage />} />
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
 
-        {!onCommunity && <RightRail trendingTopics={trendingTopics} communities={communities} />}
+        {onMainFeed && <RightRail />}
       </div>
     </div>
   );
 }
 
 function App() {
-  return (
-    <AppContent />
-  );
+  return <AppContent />;
 }
 
 export default App;
