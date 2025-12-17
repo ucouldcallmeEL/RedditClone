@@ -85,13 +85,42 @@
 
 .status-icon {
   position: absolute;
-  right: 16px;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Only add extra right space when there is a right button (e.g. UsernamePass) */
+.text-field-container.has-right-button .text-field-input {
+  padding-right: 72px;
+}
+
+.text-field-container.has-right-button .status-icon {
+  right: 44px;
+}
+
+.text-field-right-button {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.text-field-right-button svg {
+  width: 18px;
+  height: 18px;
 }
 
 .status-icon.success {

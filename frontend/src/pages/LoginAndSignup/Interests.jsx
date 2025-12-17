@@ -131,7 +131,7 @@ const Interests = () => {
           }
           onClick={handleContinue}
           disabled={!hasSelection}
-          className={hasSelection ? "login-action-button" : ""}
+          className={hasSelection ? "login-action-button continue-button-interests" : ""}
         />
       </div>
     </div>

@@ -19,8 +19,10 @@ const TextField = ({
   value,
   onChange,
   required = false,
-  validator, // <-- new
-  errorMessage, // <-- new
+  validator,
+  errorMessage,
+  rightButton,
+  onRightButtonClick,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
@@ -32,7 +34,11 @@ const TextField = ({
   const showError = isTouched && !isValid && !isFocused;
 
   return (
-    <div className={`text-field-container ${showError ? "error" : ""}`}>
+    <div
+      className={`text-field-container ${showError ? "error" : ""} ${
+        rightButton ? "has-right-button" : ""
+      }`}
+    >
       <div className="text-field-inner">
         <input
           type={type}
@@ -54,6 +60,23 @@ const TextField = ({
           <span className={`status-icon ${isValid ? "success" : "error"}`}>
             {isValid ? <SuccessIcon /> : <ErrorIcon />}
           </span>
+        )}
+
+        {/* Optional right-side button (e.g., regenerate username) */}
+        {rightButton && (
+          <button
+            type="button"
+            className="text-field-right-button"
+            onClick={() => {
+              if (onRightButtonClick) {
+                onRightButtonClick();
+              }
+              // Mark as touched so validation icon appears after first click
+              if (!isTouched) setIsTouched(true);
+            }}
+          >
+            {rightButton}
+          </button>
         )}
 
         <label className={`text-field-label ${isFloating ? "floating" : ""}`}>

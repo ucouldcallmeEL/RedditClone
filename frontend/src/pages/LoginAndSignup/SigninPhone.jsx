@@ -16,9 +16,67 @@ const SigninPhone = () => {
     const cleaned = val.replace(/[\s-()]/g, "");
     return /^(\+)?\d{8,15}$/.test(cleaned);
   };
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(phone);
+    if (!formIsValid) return;
+
+    const cleaned = phone.replace(/[\s-()]/g, "");
+
+    try {
+      // First, try to sign in with the phone number
+      const response = await fetch("http://localhost:4000/api/users/phone/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone: cleaned }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Phone signin error:", data);
+        return;
+      }
+
+      if (data.isNewUser) {
+        // Phone not found -> create a new user with this phone
+        const signupResponse = await fetch(
+          "http://localhost:4000/api/users/phone/signup",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ phone: cleaned }),
+          }
+        );
+
+        const signupData = await signupResponse.json();
+
+        if (!signupResponse.ok) {
+          console.error("Phone signup error:", signupData);
+          return;
+        }
+
+        // Store token if you want to keep the user logged in
+        if (signupData.token) {
+          localStorage.setItem("authToken", signupData.token);
+        }
+
+        // Redirect to interests page for new users
+        navigate("/interests");
+      } else {
+        // Existing user: store token and proceed as logged in
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+        }
+        // You can change this to wherever you want to land after login
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Phone signin/signup failed:", err);
+    }
   };
   const formIsValid = isPhoneValid(phone);
 

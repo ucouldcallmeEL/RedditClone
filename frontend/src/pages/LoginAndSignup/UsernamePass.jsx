@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "./TextField";
 import "./Login.css";
@@ -21,6 +20,40 @@ const CreateUser = () => {
     navigate("/interests");
   };
   const formIsValid = isUsernameValid(username) && isPasswordValid(password);
+
+  const fetchGeneratedUsername = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/users/generate-username"
+      );
+      const data = await response.json();
+      if (response.ok && data.username) {
+        setUsername(data.username);
+      }
+    } catch (err) {
+      console.error("Failed to generate username:", err);
+    }
+  };
+
+  useEffect(() => {
+    // Generate an initial username when the page loads
+    fetchGeneratedUsername();
+    
+    // We intentionally only run this on mount
+    // eslint-disable-next-line
+  }, []);
+
+  const GenerateUsernameIcon = () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M17.895 10a.9.9 0 01-1.8 0c0-2.812-2.286-5.1-5.1-5.1h-2.92l1.363 1.362A.898.898 0 018.8 7.798a.897.897 0 01-.637-.264L5.265 4.636a.898.898 0 010-1.272l2.898-2.9a.897.897 0 011.274 0 .898.898 0 010 1.273L8.074 3.099h2.921c3.806 0 6.9 3.095 6.9 6.9zm-8.891 6.9h2.921l-1.363 1.362a.898.898 0 00.638 1.536.897.897 0 00.636-.264l2.899-2.898a.898.898 0 000-1.272l-2.899-2.898a.897.897 0 00-1.274 0 .898.898 0 000 1.272l1.364 1.362H9.003a5.106 5.106 0 01-5.1-5.1.9.9 0 00-1.8 0c0 3.805 3.096 6.9 6.9 6.9z"></path>
+    </svg>
+  );
 
   return (
     <div className="log-in-modal auth-flow-modal reset-pass-modal">
@@ -86,6 +119,8 @@ const CreateUser = () => {
             required
             validator={isUsernameValid}
             errorMessage="Choose a username."
+            rightButton={<GenerateUsernameIcon />}
+            onRightButtonClick={fetchGeneratedUsername}
           />
 
           <TextField

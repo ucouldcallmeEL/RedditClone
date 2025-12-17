@@ -31,11 +31,60 @@ const getusersByCommunity = async (id) => {
     return users;
 };
 
+// Authentication functions
+const findByEmail = async (email) => {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    return user;
+};
+
+const findByUsername = async (username) => {
+    const user = await User.findOne({ username: username });
+    return user;
+};
+
+const findByEmailOrUsername = async (identifier) => {
+    // Try to find by email first, then by username
+    const user = await User.findOne({
+        $or: [
+            { email: identifier.toLowerCase() },
+            { username: identifier }
+        ]
+    });
+    return user;
+};
+
+const findByPhone = async (phone) => {
+    const user = await User.findOne({ phone: phone });
+    return user;
+};
+
+// const checkEmailExists = async (email) => {
+//     const user = await User.findOne({ email: email.toLowerCase() });
+//     return !!user;
+// };
+
+// const checkUsernameExists = async (username) => {
+//     const user = await User.findOne({ username: username });
+//     return !!user;
+// };
+
+// const checkPhoneExists = async (phone) => {
+//     const user = await User.findOne({ phone: phone });
+//     return !!user;
+// };
+
 module.exports = {
     createUser,
     getUser,
     getUsers,
     updateUser,
     deleteUser,
-    getusersByCommunity
+    getusersByCommunity,
+    findByEmail,
+    findByUsername,
+    findByEmailOrUsername,
+    findByPhone,
+    // checkEmailExists,
+    // checkUsernameExists,
+    // checkPhoneExists
 };
