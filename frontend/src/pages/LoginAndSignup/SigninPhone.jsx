@@ -140,7 +140,7 @@ const SigninPhone = () => {
       </div>
 
       <div
-        className={`LogIn-button login-action-button ${
+        className={`LogIn-button login-action-button log-in-modal-content ${
           !formIsValid ? "disabled" : ""
         }`}
         onClick={formIsValid ? handleSubmit : undefined}
