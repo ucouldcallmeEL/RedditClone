@@ -5,7 +5,9 @@ import {
   MessageCircle,
   Share2,
 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Post } from '../types';
+import { apiClient } from '../../services/apiClient';
 
 type Props = {
   post: Post;
@@ -13,8 +15,39 @@ type Props = {
 };
 
 function PostCard({ post, onClick }: Props) {
+  const [summary, setSummary] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // hide tooltip on outside click
+    function onDoc(e: MouseEvent) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setVisible(false);
+      }
+    }
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, []);
+
+  const fetchSummary = async () => {
+    if (summary || loading) return;
+    setLoading(true);
+    try {
+      const res = await apiClient.post(`/api/ai/summarize/${post.id}`);
+      setSummary(res?.data?.summary || 'No summary available');
+    } catch (err) {
+      console.error('Summary fetch error', err);
+      setSummary('Failed to fetch summary');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <article className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+    <article className="post card" ref={containerRef} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <header className="post__meta">
         <img
           src={post.communityIcon}
@@ -33,9 +66,35 @@ function PostCard({ post, onClick }: Props) {
         </div>
       </header>
 
+      {/* AI summary button in the top-right of the card */}
+      <div
+        className="ai-summary-trigger"
+        onMouseEnter={() => {
+          setVisible(true);
+          fetchSummary();
+        }}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => {
+          setVisible(true);
+          fetchSummary();
+        }}
+        onBlur={() => setVisible(false)}
+        role="button"
+        aria-label="Show AI summary"
+        tabIndex={0}
+      >
+        <span className="ai-gradient-text">AI</span>
+        {visible && (
+          <div className="ai-summary-popup" onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}>
+            {loading && <div>Loading summary…</div>}
+            {!loading && <div>{summary ?? 'Hover to generate summary'}</div>}
+          </div>
+        )}
+      </div>
+
       <div className="post__content">
         <h2>{post.title}</h2>
-        {post.body && <p>{post.body}</p>}
+        {post.body && <p style={{ margin: 0 }}>{post.body}</p>}
 
         {post.isSpoiler && (
           <div className="post__spoiler">
