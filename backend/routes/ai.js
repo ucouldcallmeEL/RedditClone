@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const express = require("express");
 const router = express.Router();
-const Post = require("../../reddit-backend/Models/Post")
+const Post = require("../schemas/post");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

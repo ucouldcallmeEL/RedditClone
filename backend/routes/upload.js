@@ -1,8 +1,10 @@
 const express = require("express");
 const multer = require("multer");
-const cloudinary = require("../Db_config/cloudinary");
-const Post = require("../../reddit-backend/Models/Post");
-const User = require("../../reddit-backend/Models/User");
+const cloudinary = require("../managers/cloudinary");
+// routes/ -> ../schemas/
+// Note: filenames in /schemas are lowercase in this repo.
+const Post = require("../schemas/post");
+const User = require("../schemas/user");
 
 const router = express.Router();
 const upload = multer({ storage: multer.diskStorage({}) });
