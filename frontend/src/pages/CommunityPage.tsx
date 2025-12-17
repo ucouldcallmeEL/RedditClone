@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../styles/community.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, LayoutGrid, List } from 'lucide-react';
@@ -91,13 +91,22 @@ function CommunityPage() {
   const [community, setCommunity] = useState<CommunityDetails | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterKey>('hot');
+  const [compactView, setCompactView] = useState(false);
 
   useEffect(() => {
     if (!communityName) return;
 
     setLoading(true);
-    fetch(`http://localhost:3000/r/${communityName}`)
-      .then((res) => res.json())
+    setError(null);
+    fetch(`http://localhost:3000/r/${communityName}?filter=${filter}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+      })
       .then((communityData: any) => {
         // Set community details
         const communityDetails: CommunityDetails = {
@@ -143,9 +152,10 @@ function CommunityPage() {
       })
       .catch((err) => {
         console.error('Failed to fetch community data', err);
+        setError(err.message || 'Failed to load community');
       })
       .finally(() => setLoading(false));
-  }, [communityName]);
+  }, [communityName, filter]);
 
   // add a root class while this page is mounted so we can adjust layout widths
   useEffect(() => {
@@ -153,62 +163,6 @@ function CommunityPage() {
     document.documentElement.classList.add(cls);
     return () => document.documentElement.classList.remove(cls);
   }, []);
-
-  const [filter, setFilter] = useState<FilterKey>('hot');
-  const [compactView, setCompactView] = useState(false);
-
-  const displayedPosts = useMemo(() => {
-    if (!posts || posts.length === 0) return [] as Post[];
-
-    switch (filter) {
-      case 'hot':
-        // Reddit-style hot algorithm: considers engagement and recency
-        return [...posts].sort((a, b) => {
-          const aScore = a.upvotes - a.downvotes + a.comments;
-          const bScore = b.upvotes - b.downvotes + b.comments;
-          const aDate = new Date(a.createdAt).getTime();
-          const bDate = new Date(b.createdAt).getTime();
-          const now = Date.now();
-          
-          // Decay factor based on age (newer posts get boost)
-          const aAge = (now - aDate) / (1000 * 60 * 60); // hours ago
-          const bAge = (now - bDate) / (1000 * 60 * 60);
-          
-          const aHot = aScore / Math.pow(aAge + 2, 1.8);
-          const bHot = bScore / Math.pow(bAge + 2, 1.8);
-          
-          return bHot - aHot;
-        });
-      case 'new':
-        // Sort by creation date, newest first
-        return [...posts].sort((a, b) => {
-          const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return bDate - aDate; // Newest first
-        });
-      case 'top':
-        // Sort by net upvotes (upvotes - downvotes), highest first
-        return [...posts].sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
-      case 'rising':
-        // Sort by comment velocity (most discussed posts that are relatively new)
-        return [...posts].sort((a, b) => {
-          const aDate = new Date(a.createdAt).getTime();
-          const bDate = new Date(b.createdAt).getTime();
-          const now = Date.now();
-          
-          const aAge = (now - aDate) / (1000 * 60 * 60); // hours ago
-          const bAge = (now - bDate) / (1000 * 60 * 60);
-          
-          // Comments per hour (higher = rising faster)
-          const aVelocity = a.comments / (aAge + 1); // +1 to avoid division by zero
-          const bVelocity = b.comments / (bAge + 1);
-          
-          return bVelocity - aVelocity;
-        });
-      default:
-        return posts;
-    }
-  }, [posts, filter]);
 
   if (!communityName) return <main className="feed">No community specified</main>;
 
@@ -235,8 +189,10 @@ function CommunityPage() {
 
             {loading ? (
               <p>Loading…</p>
-            ) : displayedPosts.length ? (
-              displayedPosts.map((post) => (
+            ) : error ? (
+              <p>Error: {error}</p>
+            ) : posts.length ? (
+              posts.map((post) => (
                 <article
                   key={post.id}
                   onClick={() => navigate(`/post/${post.id}`)}

@@ -203,8 +203,9 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
             >
               {sectionItems.map(({ label, icon: Icon, badge }) => {
                 const slug = label.replace(/^r\//i, '');
+                const to = label === 'Communities' ? '/communities' : `/community/${slug}`;
                 return (
-                  <Link key={label} className="sidebar__link" to={`/community/${slug}`}>
+                  <Link key={label} className="sidebar__link" to={to}>
                     <Icon size={18} />
                     <span>{label}</span>
                     {badge && <span className="sidebar__badge">{badge}</span>}
