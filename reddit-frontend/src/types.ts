@@ -13,6 +13,8 @@ export type Post = {
   author: string;
   createdAt: string;
   tags?: string[];
+  userUpvoted?: boolean;
+  userDownvoted?: boolean;
 };
 
 export type Comment = {

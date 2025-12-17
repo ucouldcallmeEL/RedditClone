@@ -2,6 +2,9 @@ import {useState} from "react"
 
 import ProfileHeader from "./ProfileHeader"
 import ProfileMain from "./ProfileMain"
+import ProfileSidebar from "./ProfileSidebar";
+import ProfileTabs from "./ProfileTabs";
+
 
 import "./Profile.css"
 import React from "react"
@@ -13,11 +16,19 @@ function ProfilePage(){
 
     return(
         <div className="profile-page">
-            <ProfileHeader
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}/>
+            <div className="profile-layout">
+                <div className="profile-left">
+                    <ProfileHeader />
 
-            <ProfileMain activeTab={activeTab}/>
+                    <ProfileTabs
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                    />
+
+                    <ProfileMain activeTab={activeTab} />
+                </div>
+                <ProfileSidebar />
+            </div>
         </div>
     )
 }
