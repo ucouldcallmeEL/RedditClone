@@ -11,7 +11,7 @@ const {
     generateUsername
 } = require('../controllers/userController');
 
-// Authentication routes
+// Authentication routes (public)
 router.post('/login', login);
 router.post('/signup/check-email', checkEmail);
 router.post('/signup', signup);

@@ -11,7 +11,11 @@ const Signup = () => {
   //   const [password, setPassword] = useState("");
 
   const handleSubmit = () => {
-    navigate("/create-user");
+    // Store email temporarily for the next step
+    if (email) {
+      localStorage.setItem("signupEmail", email);
+    }
+    navigate("/create-user", { state: { email } });
   };
 
   const handleClose = () => {

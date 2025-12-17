@@ -6,6 +6,18 @@ const createCommunity = async (community) => {
     return newCommunity;
 };
 
+// Fetch all communities whose name contains the given substring (case-insensitive)
+const getCommunitiesByNameSubstring = async (substring) => {
+    if (!substring || typeof substring !== 'string') {
+        return [];
+    }
+
+    // Case-insensitive \"contains\" search on the name field
+    const regex = new RegExp(substring, 'i');
+    const communities = await Community.find({ name: { $regex: regex } });
+    return communities;
+};
+
 const getCommunity = async (id) => {
     const community = await Community.findById(id);
     return community;
@@ -58,5 +70,6 @@ module.exports = {
     getCommunitiesByUser,
     deleteCommunity,
     getCommunityByName,
-    getPostsByCommunityName
+    getPostsByCommunityName,
+    getCommunitiesByNameSubstring
 };

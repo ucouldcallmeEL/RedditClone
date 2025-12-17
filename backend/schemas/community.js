@@ -32,6 +32,25 @@ const communitySchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    topics: {
+        type: [String],
+        required: true
+    },
+    type: {
+        type: String,
+        required: true,
+        enum: ["public", "private", "restricted"],
+        default: "public"
+    },
+    isNSFW: {
+        type: Boolean,
+        default: false
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 });
 

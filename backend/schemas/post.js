@@ -9,25 +9,53 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    link: {
+        type: String,
+        required: false
+    },
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    community: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Community',
+        required: false
     },
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
     }],
 
-    mediaUrl: {
-        type: String
-    },
-    mediaId: {
-        type: String 
-    },
-    mediaType: {
-        type: String,   
-        enum: ["image", "video"]
+    mediaUrls: [{
+        url: {
+            type: String,
+            required: true
+        },
+        mediaId: {
+            type: String
+        },
+        mediaType: {
+            type: String,
+            enum: ["image", "video"],
+            required: true
+        }
+    }],
+    
+    tags: {
+        nsfw: {
+            type: Boolean,
+            default: false
+        },
+        spoiler: {
+            type: Boolean,
+            default: false
+        },
+        brand: {
+            type: Boolean,
+            default: false
+        }
     },
     
     upvotes: {

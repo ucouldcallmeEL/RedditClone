@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import TextField from "./TextField";
+import { userRoutes, apiPost, apiGet } from "../../config/apiRoutes";
 import "./Login.css";
 import "./TextField.css";
 
 const CreateUser = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get email from location state or localStorage
+  const [email] = useState(location.state?.email || localStorage.getItem("signupEmail") || "");
+  
   function handleClose() {
     console.log("Close button clicked");
   }
@@ -14,18 +19,49 @@ const CreateUser = () => {
   const [password, setPassword] = useState("");
   const isUsernameValid = (val) => val.trim().length >= 3;
   const isPasswordValid = (val) => val.length > 0;
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = async (e) => {
     e?.preventDefault?.();
-    if (!formIsValid) return;
-    navigate("/interests");
+    if (!formIsValid || !email) return;
+
+    try {
+      const response = await apiPost(userRoutes.signup, {
+        email: email,
+        username: username,
+        password: password,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Signup error:", data.error);
+        // TODO: Show error message to user
+        return;
+      }
+
+      // Store token and user data
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      // Clear temporary email storage
+      localStorage.removeItem("signupEmail");
+
+      navigate("/interests");
+    } catch (error) {
+      console.error("Signup error:", error);
+      // TODO: Show error message to user
+    }
   };
+  
   const formIsValid = isUsernameValid(username) && isPasswordValid(password);
 
   const fetchGeneratedUsername = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/users/generate-username"
-      );
+      const response = await apiGet(userRoutes.generateUsername);
       const data = await response.json();
       if (response.ok && data.username) {
         setUsername(data.username);

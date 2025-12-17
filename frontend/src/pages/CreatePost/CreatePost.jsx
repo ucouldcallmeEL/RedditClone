@@ -1,10 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./CreatePost.css";
 import CloseButton from "../../components/CloseButton";
 import ToggleButton from "../../components/ToggleButton";
 import CustomButton from "../../components/CustomButton";
 import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
+import { getUserCommunities, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
 
 // Placeholder components for external components
 const HeaderBar = () => {
@@ -15,7 +17,8 @@ const Sidebar = () => {
   return <div className="sidebar-placeholder"></div>;
 };
 
-const CreatePost = ({ onNavigateHome }) => {
+const CreatePost = () => {
+  const navigate = useNavigate();
   const [selectedPostType, setSelectedPostType] = useState("text");
   const [postTitle, setPostTitle] = useState("");
   const [postBody, setPostBody] = useState("");
@@ -50,37 +53,81 @@ const CreatePost = ({ onNavigateHome }) => {
   const [isMediaGridOpen, setIsMediaGridOpen] = useState(false);
   const [gridMedia, setGridMedia] = useState([]);
   const gridMediaInputRef = useRef(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [communityOptions, setCommunityOptions] = useState([]);
+  const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   const isCommunitySelected = Boolean(selectedCommunityOption);
 
-  const communityOptions = [
-    {
-      id: "account",
-      label: "u/malakmwagdy",
-      members: "Your profile",
-      type: "account",
-    },
-    {
-      id: "PS5",
-      label: "r/PS5",
-      members: "8,062,490 members",
-      subscribed: "Subscribed",
-      type: "community",
-    },
-    {
-      id: "ExampleCommunity",
-      label: "r/ExampleCommunity",
-      members: "120,000 members",
-      subscribed: "Subscribed",
-      type: "community",
-    },
-    {
-      id: "YourCommunity1",
-      label: "r/YourCommunity1",
-      members: "54,321 members",
-      subscribed: "",
-      type: "community",
-    },
-  ];
+  // Get current user from localStorage on component mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setCurrentUser(user);
+        
+        // Create account option for user's profile
+        const accountOption = {
+          id: "account",
+          label: `u/${user.name || user.username || "user"}`,
+          members: "Your profile",
+          type: "account",
+          imageUrl: user.profilePicture || null,
+        };
+        
+        // Set initial community options with just the account
+        setCommunityOptions([accountOption]);
+      } catch (error) {
+        console.error("Error parsing stored user data:", error);
+      }
+    }
+  }, []);
+
+  // Fetch user's subscribed communities when dropdown opens
+  const handleOpenCommunitySearch = async () => {
+    setShowCommunitySearch(true);
+    
+    // If we already have communities loaded, don't fetch again
+    if (communityOptions.length > 1) {
+      return;
+    }
+
+    setIsLoadingCommunities(true);
+    try {
+      const response = await apiGet(getUserCommunities());
+      if (response.ok) {
+        const communities = await response.json();
+        
+        // Format communities to match expected structure
+        const formattedCommunities = communities.map((community) => ({
+          id: community.name,
+          label: `r/${community.name}`,
+          members: `${community.members?.length || 0} members`,
+          subscribed: "Subscribed",
+          type: "community",
+          imageUrl: community.profilePicture || null,
+          communityId: community._id,
+        }));
+
+        // Combine account option with communities
+        const accountOption = communityOptions.find(opt => opt.type === "account") || {
+          id: "account",
+          label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+          members: "Your profile",
+          type: "account",
+          imageUrl: currentUser?.profilePicture || null,
+        };
+
+        setCommunityOptions([accountOption, ...formattedCommunities]);
+      } else {
+        console.error("Failed to fetch user communities:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching user communities:", error);
+    } finally {
+      setIsLoadingCommunities(false);
+    }
+  };
 
   const postTypes = [
     { id: "text", label: "Text" },
@@ -235,6 +282,66 @@ const CreatePost = ({ onNavigateHome }) => {
     setShowTagsModal(false);
   };
 
+  // Handle post submission
+  const handleSubmitPost = async () => {
+    if (!isFormValid()) return;
+
+    try {
+      // Build post data based on post type
+      const postData = {
+        title: postTitle,
+        content: postBody || "", // TextArea content (can be HTML) - always included
+      };
+
+      // Add community if selected (not for profile posts)
+      if (selectedCommunityOption && selectedCommunityOption.type === "community") {
+        postData.community = selectedCommunityOption.communityId;
+      }
+
+      // Add link if it's a link post (link and content can coexist)
+      if (selectedPostType === "link" && postLink) {
+        postData.link = postLink;
+      }
+
+      // Add media URLs array if there are uploaded media files
+      if (uploadedMedia.length > 0) {
+        // TODO: Upload to Cloudinary and get real URLs
+        // For now, using blob URLs as placeholders
+        postData.mediaUrls = uploadedMedia.map((file) => ({
+          url: URL.createObjectURL(file),
+          mediaType: file.type.startsWith("image/") ? "image" : "video",
+          // mediaId will be set after Cloudinary upload
+        }));
+      }
+
+      // Add tags if any are selected
+      if (selectedTags.nsfw || selectedTags.spoiler || selectedTags.brand) {
+        postData.tags = {
+          nsfw: selectedTags.nsfw,
+          spoiler: selectedTags.spoiler,
+          brand: selectedTags.brand,
+        };
+      }
+
+      const response = await apiPost(postRoutes.create, postData);
+
+      if (response.ok) {
+        const createdPost = await response.json();
+        console.log("Post created successfully:", createdPost);
+        
+        // Navigate to home page after successful post creation
+        navigate("/");
+      } else {
+        const error = await response.json();
+        console.error("Failed to create post:", error);
+        // TODO: Show error message to user
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+      // TODO: Show error message to user
+    }
+  };
+
   // Validation function to check if form is valid based on post type
   const isFormValid = () => {
     // Title must always be filled (length > 0)
@@ -279,7 +386,7 @@ const CreatePost = ({ onNavigateHome }) => {
               {!showCommunitySearch ? (
                 <button
                   className="community-select-dropdown"
-                  onClick={() => setShowCommunitySearch(true)}
+                  onClick={handleOpenCommunitySearch}
                 >
                   <span className="community-select-avatar">
                     {selectedCommunityOption?.imageUrl ? (
@@ -387,7 +494,9 @@ const CreatePost = ({ onNavigateHome }) => {
                     </div>
                   </div>
                   <div className="community-search-list">
-                    {filteredCommunities.length === 0 ? (
+                    {isLoadingCommunities ? (
+                      <div className="community-search-empty">Loading communities...</div>
+                    ) : filteredCommunities.length === 0 ? (
                       <div className="community-search-empty">No matches</div>
                     ) : (
                       filteredCommunities.map((option) => (
@@ -965,6 +1074,7 @@ const CreatePost = ({ onNavigateHome }) => {
                     <CustomButton
                       className="blue-button"
                       disabled={!isFormValid()}
+                      onClick={handleSubmitPost}
                     >
                       Post
                     </CustomButton>

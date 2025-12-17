@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import TextField from "./TextField";
+import { userRoutes, apiPost } from "../../config/apiRoutes";
 import "./Login.css";
 import "./TextField.css";
 import { Link, useNavigate } from "react-router-dom";
@@ -24,14 +25,7 @@ const SigninPhone = () => {
 
     try {
       // First, try to sign in with the phone number
-      const response = await fetch("http://localhost:4000/api/users/phone/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone: cleaned }),
-      });
-
+      const response = await apiPost(userRoutes.phoneSignin, { phone: cleaned });
       const data = await response.json();
 
       if (!response.ok) {
@@ -41,17 +35,7 @@ const SigninPhone = () => {
 
       if (data.isNewUser) {
         // Phone not found -> create a new user with this phone
-        const signupResponse = await fetch(
-          "http://localhost:4000/api/users/phone/signup",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ phone: cleaned }),
-          }
-        );
-
+        const signupResponse = await apiPost(userRoutes.phoneSignup, { phone: cleaned });
         const signupData = await signupResponse.json();
 
         if (!signupResponse.ok) {
@@ -59,19 +43,24 @@ const SigninPhone = () => {
           return;
         }
 
-        // Store token if you want to keep the user logged in
+        // Store token and user data
         if (signupData.token) {
-          localStorage.setItem("authToken", signupData.token);
+          localStorage.setItem("token", signupData.token);
+        }
+        if (signupData.user) {
+          localStorage.setItem("user", JSON.stringify(signupData.user));
         }
 
         // Redirect to interests page for new users
         navigate("/interests");
       } else {
-        // Existing user: store token and proceed as logged in
+        // Existing user: store token and user data
         if (data.token) {
-          localStorage.setItem("authToken", data.token);
+          localStorage.setItem("token", data.token);
         }
-        // You can change this to wherever you want to land after login
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
         navigate("/");
       }
     } catch (err) {

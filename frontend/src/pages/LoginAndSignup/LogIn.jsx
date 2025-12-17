@@ -4,20 +4,55 @@ import { Link, useNavigate } from "react-router-dom";
 import Buttons from "./Buttons";
 import Button from "./Button";
 import TextField from "./TextField";
+import { userRoutes, apiPost } from "../../config/apiRoutes";
 import "./Login.css";
 
-const LogIn = () => {
+const LogIn = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(email, password);
+    if (!formIsValid) return;
+
+    try {
+      const response = await apiPost(userRoutes.login, {
+        identifier: email,
+        password: password,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Login error:", data.error);
+        // TODO: Show error message to user
+        return;
+      }
+
+      // Store token and user data
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      // Close modal and navigate
+      if (onClose) {
+        onClose();
+      }
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+      // TODO: Show error message to user
+    }
   };
 
   const handleClose = () => {
-    console.log("Close button clicked");
+    if (onClose) {
+      onClose();
+    }
   };
 
   const isEmailValid = (val) => /\S+@\S+\.\S+/.test(val) || val.length > 3;

@@ -6,6 +6,7 @@ import SelectTopicsPage from "./pages/SelectTopicsPage";
 import CommunityTypePage from "./pages/CommunityTypePage";
 import CommunityInfoPage from "./pages/CommunityInfoPage";
 import StyleCommunityPage from "./pages/StyleCommunityPage";
+import { communityRoutes, apiPost, apiGet } from "../../config/apiRoutes";
 
 const CreateCommunity = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,9 +71,47 @@ const CreateCommunity = ({ onClose }) => {
       setCurrentPage(currentPage + 1);
     } else {
       // Handle final submission
-      console.log("Form submitted");
-      // Close modal after submission
-      handleClose();
+      const success = await handleCreateCommunity();
+      if (success) {
+        // Close modal after successful submission
+        handleClose();
+      }
+    }
+  };
+
+  // Handle create community
+  const handleCreateCommunity = async () => {
+    try {
+      // Build community data object
+      const communityData = {
+        name: communityName,
+        description: communityDescription,
+        profilePicture: iconImageUrl || "", // Icon is profile picture
+        coverPicture: bannerImageUrl || "", // Banner is cover picture
+        members: [], // Will be populated by backend from authenticated user
+        moderators: [], // Will be populated by backend from authenticated user
+        topics: selectedTopics,
+        type: selectedCommunityType,
+        isNSFW: communityMaturity === "true" // Convert string to boolean
+      };
+
+      // Call backend API using centralized route
+      const response = await apiPost(communityRoutes.create, communityData);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to create community:", errorData.error || "Unknown error");
+        // TODO: Show error message to user (e.g., using a toast notification)
+        return false;
+      }
+
+      const createdCommunity = await response.json();
+      console.log("Community created successfully:", createdCommunity);
+      return true;
+    } catch (error) {
+      console.error("Error creating community:", error);
+      // TODO: Show error message to user
+      return false;
     }
   };
 
@@ -187,7 +226,7 @@ const CreateCommunity = ({ onClose }) => {
     setIconImageUrl(null);
   };
 
-  // Check if community name already exists in database
+  // Check if community name already exists in database (calls backend)
   const checkCommunityNameExists = async (name) => {
     if (!name || name.length < 3) {
       return false;
@@ -195,16 +234,23 @@ const CreateCommunity = ({ onClose }) => {
 
     setIsCheckingName(true);
     try {
-      // TODO: Replace with actual API call when backend is implemented
-      // Example: const response = await fetch(`/api/communities/check?name=${name}`);
-      // const data = await response.json();
-      // return data.exists;
+      // Use centralized route for checking community name
+      const response = await apiGet(communityRoutes.checkName(name));
 
-      // Placeholder: Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (response.ok) {
+        // Backend returns 200 + true when community exists
+        const data = await response.json();
+        // If backend sends { exists: true } change this accordingly
+        return data === true || data.exists === true;
+      }
 
-      // For now, return false (name is available)
-      // When backend is ready, replace this with actual API call
+      // 404 = not found = name is available
+      if (response.status === 404) {
+        return false;
+      }
+
+      // Any other status -> treat as "don't block creation" but log it
+      console.error("Unexpected response checking community name:", response);
       return false;
     } catch (error) {
       console.error("Error checking community name:", error);
