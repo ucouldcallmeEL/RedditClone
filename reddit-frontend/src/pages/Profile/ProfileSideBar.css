@@ -1,41 +1,125 @@
-.profile-sidebar {
-  width: 312px;
+.profile-sidebar-scroll {
+  width: 360px;
   flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.profile-sidebar-scroll:hover {
+  scrollbar-color: #babbbc transparent;
+}
+
+.profile-sidebar-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.profile-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.profile-sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.profile-sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: #f6f7f8;
+}
+
+.profile-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #e8e9eb;
+}
+
+.profile-sidebar {
+  background: #f6f7f8;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.sidebar-banner {
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(135deg, #0079d3 0%, #001a4d 100%);
+  border-radius: 0;
+  margin-bottom: 0;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.banner-edit-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #1a1a1b;
+  position: absolute;
+  right: 35px;
+  bottom: 16px;
+}
+
+.banner-edit-btn:hover {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-card {
-  background: white;
-  border-radius: 8px;
+  background: transparent;
+  border-radius: 0;
   padding: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #edeff1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: none;
+}
+
+.sidebar-card:last-of-type {
+  border-bottom: none;
 }
 
 .sidebar-card h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 500;
+  margin: 8px 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
   color: #1a1a1b;
 }
 
 .sidebar-card h4 {
   margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: #1a1a1b;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c7c7c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .share-btn {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 20px;
   border: 1px solid #0079d3;
   background: transparent;
   color: #0079d3;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 16px;
   transition: all 0.15s ease;
 }
@@ -45,17 +129,157 @@
   color: white;
 }
 
-.sidebar-stats {
-  display: flex;
-  justify-content: space-around;
-  margin: 16px 0;
-  padding: 12px 0;
-  border-top: 1px solid #edeff1;
+.sidebar-followers {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px solid #edeff1;
 }
 
-.sidebar-stats div {
-  text-align: center;
+.followers-count {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1b;
+}
+
+.follower-name {
+  margin: 0;
+  font-size: 12px;
+  color: #818384;
+}
+
+.sidebar-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-item strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1b;
+  margin-bottom: 4px;
+}
+
+.stat-item span {
+  font-size: 12px;
+  color: #818384;
+  font-weight: 500;
+}
+
+.achievements-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievements-badges {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.achievements-section p {
+  margin: 0;
+  font-size: 13px;
+  color: #1a1a1b;
+  line-height: 1.5;
+}
+
+.unlocked-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #edeff1;
+}
+
+.view-all {
+  color: #0079d3;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-list li {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edeff1;
+}
+
+.settings-list li:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.setting-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1b;
+}
+
+.setting-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #818384;
+  line-height: 1.4;
+}
+
+.update-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #edeff1;
+  background: #f6f7f8;
+  color: #1a1a1b;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.update-btn:hover {
+  background: #edeff1;
+  border-color: #818384;
+}
+
+.add-social-btn {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 20px;
+  border: 1px solid #edeff1;
+  background: #f6f7f8;
+  color: #1a1a1b;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.add-social-btn:hover {
+  background: #edeff1;
+  border-color: #818384;
 }
 
 .sidebar-stats strong {

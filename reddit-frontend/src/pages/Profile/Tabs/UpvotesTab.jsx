@@ -22,11 +22,15 @@ function UpvotesTab() {
 
           <div className="overview__posts">
             {upvotedPosts.map((post) => (
-              <PostCard
+              <div
                 key={post.id}
-                post={post}
-                onClick={() => console.log("Post clicked", post.id)}
-              />
+                className="overview-item"
+              >
+                <PostCard
+                  post={post}
+                  onClick={() => console.log("Post clicked", post.id)}
+                />
+              </div>
             ))}
           </div>
         </>

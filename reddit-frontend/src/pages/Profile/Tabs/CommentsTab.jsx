@@ -66,7 +66,12 @@ function CommentsTab() {
 
           <div className="overview__posts">
             {allComments.map((comm) => (
-              <Comment key={comm._id} comment={comm} />
+              <div
+                key={comm._id}
+                className="overview-item"
+              >
+                <Comment comment={comm} />
+              </div>
             ))}
           </div>
         </>

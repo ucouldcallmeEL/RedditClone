@@ -41,44 +41,50 @@ function OverviewTab() {
 
   return (
     <div className="overview">
-      <Link className="no-underline" to="/settings?tab=profile"><div className="overview__filter">
-        <div className="filter-left">
-          <Eye size={18} />
-          <span>Showing all content</span>
-        </div>
-        <span className="arrow">›</span>
-      </div>
-      </Link>
+      {items.length > 0 ? (
+        <>
+          <Link className="no-underline" to="/settings?tab=profile"><div className="overview__filter">
+            <div className="filter-left">
+              <Eye size={18} />
+              <span>Showing all content</span>
+            </div>
+            <span className="arrow">›</span>
+          </div>
+          </Link>
 
-      <div className="overview__create">
-        <button className="create-btn">
-          <Plus size={18} />
-          Create Post
-        </button>
-        <button className="icon-btn">
-          <SlidersHorizontal size={18} />
-        </button>
-      </div>
+          <div className="overview__create">
+            <button className="create-btn">
+              <Plus size={18} />
+              Create Post
+            </button>
+            <button className="icon-btn">
+              <SlidersHorizontal size={18} />
+            </button>
+          </div>
 
-      <div className="overview__posts">
-        {items.length > 0 ? (
-          items.map((item, index) => (
-            item.type === 'post' ? (
-              <PostCard
-                key={`post-${item.data.id}`}
-                post={item.data}
-                onClick={() => console.log("Post clicked", item.data.id)}
-              />
-            ) : (
-              <div key={`comment-${item.data._id}`} className="comment-preview">
-                <Comment comment={item.data} />
+          <div className="overview__posts">
+            {items.map((item, index) => (
+              <div
+                key={`${item.type}-${item.type === "post" ? item.data.id : item.data._id}`}
+                className="overview-item"
+              >
+                {item.type === "post" ? (
+                  <PostCard
+                    post={item.data}
+                    onClick={() => console.log("Post clicked", item.data.id)}
+                  />
+                ) : (
+                  <div className="comment-preview">
+                    <Comment comment={item.data} />
+                  </div>
+                )}
               </div>
-            )
-          ))
-        ) : (
-          <EmptyState message="Looks like you haven't posted or commented anything yet" />
-        )}
-      </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <EmptyState message="No posts or comments yet" />
+      )}
     </div>
   );
 }

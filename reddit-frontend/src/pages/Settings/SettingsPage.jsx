@@ -52,7 +52,7 @@ function SettingsPage() {
 
     useEffect(() => {
         async function fetchUser(){
-            const res = await axios.get(`http://localhost:5000/users/${userId}`);
+            const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
             setAvatar(res.data.profilePicture || defaultAvatar);
             setBanner(res.data.coverPicture || null);
         }
@@ -94,7 +94,7 @@ function SettingsPage() {
         const form = new FormData();
         form.append("file", result.file);
 
-        const upload = await axios.post(`http://localhost:5000/upload/profile/${userId}`, form, {
+        const upload = await axios.post(`http://localhost:5000/api/upload/profile/${userId}`, form, {
             headers: { "Content-Type": "multipart/form-data" }
         });
 
@@ -108,7 +108,7 @@ function SettingsPage() {
         const form = new FormData();
         form.append("file", result.file);
 
-        const upload = await axios.post(`http://localhost:5000/upload/cover/${userId}`, form, {
+        const upload = await axios.post(`http://localhost:5000/api/upload/cover/${userId}`, form, {
             headers: { "Content-Type": "multipart/form-data" }
         });
 
