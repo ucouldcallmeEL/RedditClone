@@ -1,6 +1,7 @@
 const { createUser, findByEmailOrUsername, findByEmail, findByPhone, findByUsername /*checkEmailExists, checkUsernameExists, checkPhoneExists*/ } = require('../managers/userManager');
 const { hashPassword, comparePassword, generateToken } = require('../utils/auth');
 const crypto = require('crypto');
+const User = require('../schemas/user');
 
 // Helper data for username generation
 const ADJECTIVES = [
@@ -107,7 +108,7 @@ const checkEmail = async (req, res) => {
 // Signup - Step 2: Create user with username and password
 const signup = async (req, res) => {
     try {
-        const { email, username, password, name } = req.body;
+        const { email, username, password } = req.body;
 
         // Validation
         if (!email) {
@@ -289,13 +290,23 @@ const phoneSignup = async (req, res) => {
         const hashedPassword = await hashPassword(randomPassword);
 
         // Create user with phone
+        // Use a unique placeholder email to avoid sparse index conflicts with null emails
+        // We'll remove it immediately after creation
+        const placeholderEmail = `phone_${phone}_${Date.now()}@temp.local`;
         const userData = {
             phone,
             username: username,
-            password: hashedPassword
+            password: hashedPassword,
+            email: placeholderEmail
         };
 
+        console.log('Creating user with data:', { phone, username });
         const newUser = await createUser(userData);
+        
+        // Remove the placeholder email immediately after creation
+        // This allows multiple phone-only users without email conflicts
+        newUser.email = undefined;
+        await newUser.save({ validateBeforeSave: false });
 
         // Generate token
         const token = generateToken(newUser._id);
@@ -311,9 +322,30 @@ const phoneSignup = async (req, res) => {
         });
     } catch (error) {
         console.error('Phone signup error:', error);
+        console.error('Error details:', {
+            code: error.code,
+            keyPattern: error.keyPattern,
+            keyValue: error.keyValue,
+            message: error.message
+        });
+        
         if (error.code === 11000) {
+            // Handle duplicate key error
             const field = Object.keys(error.keyPattern)[0];
-            return res.status(409).json({ error: `${field} already exists` });
+            const value = error.keyValue[field];
+            let errorMessage = `${field} already exists`;
+            
+            // More user-friendly error messages
+            if (field === 'phone') {
+                errorMessage = 'Phone number already registered';
+            } else if (field === 'username') {
+                errorMessage = 'Username already exists. Please try again.';
+            } else if (field === 'email') {
+                // This shouldn't happen for phone signup, but handle it gracefully
+                errorMessage = 'An account with this information already exists. Please try logging in.';
+            }
+            
+            return res.status(409).json({ error: errorMessage, field, value });
         }
         res.status(500).json({ error: 'Internal server error' });
     }

@@ -72,6 +72,23 @@ export const userRoutes = {
 };
 
 /**
+ * Topic API Routes
+ */
+export const topicRoutes = {
+  // Get all topics grouped by category
+  getAll: `${API_BASE_URL}/topics`,
+  
+  // Get all topics as flat list
+  getList: `${API_BASE_URL}/topics/list`,
+  
+  // Get topics by category
+  getByCategory: (category) => `${API_BASE_URL}/topics/category/${encodeURIComponent(category)}`,
+  
+  // Create a new topic (admin)
+  create: `${API_BASE_URL}/topics`,
+};
+
+/**
  * Get user's subscribed communities (uses authenticated user)
  */
 export const getUserCommunities = () => `${API_BASE_URL}/communities/user/me`;
