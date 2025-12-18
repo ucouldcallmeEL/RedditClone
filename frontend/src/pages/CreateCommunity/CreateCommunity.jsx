@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./CreateCommunity.css";
 import CloseButton from "../../components/CloseButton";
 import CustomButton from "../../components/CustomButton";
@@ -6,7 +6,7 @@ import SelectTopicsPage from "./pages/SelectTopicsPage";
 import CommunityTypePage from "./pages/CommunityTypePage";
 import CommunityInfoPage from "./pages/CommunityInfoPage";
 import StyleCommunityPage from "./pages/StyleCommunityPage";
-import { communityRoutes, apiPost, apiGet } from "../../config/apiRoutes";
+import { communityRoutes, topicRoutes, apiPost, apiGet } from "../../config/apiRoutes";
 
 const CreateCommunity = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,8 +27,38 @@ const CreateCommunity = ({ onClose }) => {
   const [iconImage, setIconImage] = useState(null);
   const [iconImageUrl, setIconImageUrl] = useState(null);
   const [topicFilter, setTopicFilter] = useState("");
+  const [topicCategories, setTopicCategories] = useState([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
 
   const totalPages = 4;
+
+// Fetch topics from API on component mount
+useEffect(() => {
+  const fetchTopics = async () => {
+    try {
+      setTopicsLoading(true);
+      const response = await apiGet(topicRoutes.getAll);
+      if (!response.ok) {
+        throw new Error('Failed to fetch topics');
+      }
+      const data = await response.json();
+      // Filter to only show Entertainment and Gaming categories for community creation
+      const filteredCategories = data.filter(cat => 
+        cat.title === 'Entertainment' || cat.title === 'Gaming'
+      );
+      setTopicCategories(filteredCategories);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      // Fallback to empty array or default topics if API fails
+      setTopicCategories([]);
+    } finally {
+      setTopicsLoading(false);
+    }
+  };
+
+  fetchTopics();
+}, []);
+
 
   // Check if at least one topic is selected in page 1
   const isNextButtonDisabled =
@@ -259,18 +289,6 @@ const CreateCommunity = ({ onClose }) => {
       setIsCheckingName(false);
     }
   };
-
-  // Available topics organized by category
-  const topicCategories = [
-    {
-      title: "Entertainment",
-      topics: ["Anime & Manga", "Cosplay", "Movies", "TV Shows"],
-    },
-    {
-      title: "Gaming",
-      topics: ["Video Games", "Board Games", "Esports"],
-    },
-  ];
 
   // Check if a topic is selected
   const isTopicSelected = (topicName) => {

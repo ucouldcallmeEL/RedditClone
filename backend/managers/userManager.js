@@ -39,7 +39,7 @@ const findByEmail = async (email) => {
 
 // Find user by username (name field)
 const findByUsername = async (username) => {
-    const user = await User.findOne({ name: username });
+    const user = await User.findOne({ username: username });
     return user;
 };
 
@@ -55,8 +55,8 @@ const findByEmailOrUsername = async (identifier) => {
     let user = await User.findOne({ email: identifier.toLowerCase() });
     if (user) return user;
     
-    // If not found by email, try to find by username (name field)
-    user = await User.findOne({ name: identifier });
+    // If not found by email, try to find by username
+    user = await User.findOne({ username: identifier });
     return user;
 };
 

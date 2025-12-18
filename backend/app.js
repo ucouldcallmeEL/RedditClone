@@ -78,19 +78,21 @@ const uploadRouter = require("./routes/upload");
 const notificationRouter = require("./routes/notification.routes");
 const userRouter = require("./routes/userRoutes"); // Changed from user.routes to userRoutes
 const aiRouter = require("./routes/ai");
+const topicRoutes = require('./routes/topicRoutes');
 
 // Use routes    
 
 app.use('/r', communityRoutes);
-app.use('/post', postRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/', homeRoutes);
 app.use("/api/upload", uploadRouter);
 app.use("/api/notifications" , notificationRouter);
 app.use("/api/users", userRouter);
+app.use('/topics', topicRoutes);
 // Reuse the same router for both:
 // - frontend fetches: GET /post/:id
 // - API create:      POST /api/posts/create
-app.use("/api/posts", postRoutes);
+// app.use("/api/posts", postRoutes);
 app.use("/api/ai", aiRouter);
 
 // app.use('/api/communities', communityRoutes);

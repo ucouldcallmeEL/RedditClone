@@ -6,7 +6,7 @@ import ToggleButton from "../../components/ToggleButton";
 import CustomButton from "../../components/CustomButton";
 import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
-import { getUserCommunities, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
+import { communityRoutes, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
 
 // Placeholder components for external components
 const HeaderBar = () => {
@@ -94,7 +94,7 @@ const CreatePost = () => {
 
     setIsLoadingCommunities(true);
     try {
-      const response = await apiGet(getUserCommunities());
+      const response = await apiGet(communityRoutes.getUserCommunities(currentUser._id));
       if (response.ok) {
         const communities = await response.json();
         

@@ -33,7 +33,7 @@ export const communityRoutes = {
  */
 export const postRoutes = {
   // Create a new post
-  create: `${API_BASE_URL}/posts/create`,
+  create: `${API_BASE_URL}/api/posts/create`,
   
   // Get post details by ID
   getById: (id) => `${API_BASE_URL}/posts/${id}`,
@@ -56,25 +56,42 @@ export const postRoutes = {
  */
 export const userRoutes = {
   // User authentication/login
-  login: `${API_BASE_URL}/users/login`,
+  login: `${API_BASE_URL}/api/users/login`,
   
   // User registration/signup
-  signup: `${API_BASE_URL}/users/signup`,
-  phoneSignin: `${API_BASE_URL}/users/phone/signin`,
-  phoneSignup: `${API_BASE_URL}/users/phone/signup`,
-  generateUsername: `${API_BASE_URL}/users/generate-username`,
+  signup: `${API_BASE_URL}/api/users/signup`,
+  phoneSignin: `${API_BASE_URL}/api/users/phone/signin`,
+  phoneSignup: `${API_BASE_URL}/api/users/phone/signup`,
+  generateUsername: `${API_BASE_URL}/api/users/generate-username`,
   
   // Get user profile
-  getProfile: (userId) => `${API_BASE_URL}/users/${userId}`,
+  getProfile: (userId) => `${API_BASE_URL}/api/users/${userId}`,
   
   // Update user profile
   updateProfile: (userId) => `${API_BASE_URL}/users/${userId}`,
 };
 
 /**
+ * Topic API Routes
+ */
+export const topicRoutes = {
+  // Get all topics grouped by category
+  getAll: `${API_BASE_URL}/topics`,
+  
+  // Get all topics as flat list
+  getList: `${API_BASE_URL}/topics/list`,
+  
+  // Get topics by category
+  getByCategory: (category) => `${API_BASE_URL}/topics/category/${encodeURIComponent(category)}`,
+  
+  // Create a new topic (admin)
+  create: `${API_BASE_URL}/topics`,
+};
+
+/**
  * Get user's subscribed communities (uses authenticated user)
  */
-export const getUserCommunities = () => `${API_BASE_URL}/communities/user/me`;
+// export const getUserCommunities = () => `${API_BASE_URL}/communities/user/me`;
 
 /**
  * Get authentication token from localStorage

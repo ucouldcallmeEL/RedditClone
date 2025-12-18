@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 import InterestsTopicsSection from "./InterestsTopicsSection";
+import { apiGet, topicRoutes } from "../../config/apiRoutes";
+
 import "./Login.css";
 
 const Interests = ({ onClose }) => {
   const navigate = useNavigate();
 
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [topicsByCategory, setTopicsByCategory] = useState([]);
   
   const handleClose = () => {
     if (onClose) {
@@ -17,31 +22,28 @@ const Interests = ({ onClose }) => {
     }
   };
 
-  const popularInterests = [
-    "AlexandriaEgy",
-    "askegypt",
-    "PersonalFinanceEgypt",
-    "EGYescapism",
-    "Stranger Things",
-    "College football",
-    "Pop Culture Chat",
-    "Tech news",
-    "ArcRaiders",
-    "US news",
-  ];
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        setLoading(true);
+        const response = await apiGet(topicRoutes.getAll);
+        if (!response.ok) {
+          throw new Error("Failed to fetch topics");
+        }
+        const data = await response.json();
+        setTopicsByCategory(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching topics:", err);
+        setError("Failed to load topics. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const placesInterests = [
-    "Places in the Middle East",
-    "Syria",
-    "SaudiForSaudis",
-    "Places in Europe",
-    "Places in North America",
-    "Egypt",
-    "Places in Asia",
-    "CAIRO",
-    "Travel & Holiday",
-    "RedditMasr",
-  ];
+    fetchTopics();
+  }, []);
+
 
   const toggleInterest = (interest) => {
     setSelectedInterests((prev) =>
@@ -112,34 +114,36 @@ const Interests = ({ onClose }) => {
             Pick things you'd like to see in your home feed.
           </p>
 
-          <section className="interests-section">
-            <InterestsTopicsSection
-              title="Popular"
-              topics={popularInterests}
-              selectedTopics={selectedInterests}
-              onTopicClick={toggleInterest}
-            />
-          </section>
-
-          <section className="interests-section">
-            <InterestsTopicsSection
-              title="Places & Travel"
-              topics={placesInterests}
-              selectedTopics={selectedInterests}
-              onTopicClick={toggleInterest}
-            />
-          </section>
+          {loading ? (
+            <p className="log-in-modal-text">Loading topics...</p>
+          ) : error ? (
+            <p className="log-in-modal-text" style={{ color: "#ff453a" }}>
+              {error}
+            </p>
+          ) : (
+            topicsByCategory.map((category) => (
+              <section key={category.title} className="interests-section">
+                <InterestsTopicsSection
+                  title={category.title}
+                  topics={category.topics}
+                  selectedTopics={selectedInterests}
+                  onTopicClick={toggleInterest}
+                />
+              </section>
+            ))
+          )}
         </div>
       </div>
 
       <div className="log-in-modal-content interests-bottom">
         <Button
-          label={
-            hasSelection ? "Continue" : "Select at least 1 to continue"
-          }
+            label={hasSelection ? "Continue" : "Select at least 1 to continue"}
+
           onClick={handleContinue}
           disabled={!hasSelection}
-          className={hasSelection ? "login-action-button continue-button-interests" : ""}
+          className={
+            hasSelection ? "login-action-button continue-button-interests" : ""
+          }
         />
       </div>
     </div>

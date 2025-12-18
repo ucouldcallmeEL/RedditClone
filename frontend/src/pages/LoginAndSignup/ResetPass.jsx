@@ -20,6 +20,7 @@ const ResetPass = ({ onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(email);
+    navigate("/");
   };
   const formIsValid = isEmailValid(email);
 
