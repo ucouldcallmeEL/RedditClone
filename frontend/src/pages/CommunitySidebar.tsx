@@ -1,12 +1,14 @@
-import SidebarCard from './SidebarCard';
+import SidebarCard from '../components/SidebarCard';
 import type { CommunityDetails } from '../types';
-import { Pencil, Calendar, Globe, ChevronDown } from 'lucide-react';
+import { Calendar, Globe, ChevronDown } from 'lucide-react';
 
 type Props = {
   community: CommunityDetails;
+  isModerator?: boolean;
+  onInviteModerator?: (username: string) => Promise<void> | void;
 };
 
-function CommunitySidebar({ community }: Props) {
+function CommunitySidebar({ community, isModerator, onInviteModerator }: Props) {
   return (
     <aside className="community-sidebar">
       <SidebarCard>
@@ -49,6 +51,41 @@ function CommunitySidebar({ community }: Props) {
                 <span>{b}</span>
                 {b.toLowerCase().includes('recent') || b.toLowerCase().includes('official') ? <ChevronDown size={14} /> : null}
               </button>
+            ))}
+          </div>
+        </div>
+
+        <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid #eef2f7' }} />
+
+        <div className="community-moderators">
+          <div className="section-heading" style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+            <h3 style={{ margin: 0 }}>Moderators</h3>
+            {/** Invite button only visible to moderators */}
+            {isModerator ? (
+              <button
+                className="chip chip--ghost"
+                style={{ marginLeft: 'auto' }}
+                onClick={async () => {
+                  try {
+                    const username = prompt('Enter username to invite as moderator (without u/):');
+                    if (!username) return;
+                    await onInviteModerator?.(username.trim());
+                  } catch (e) {
+                    console.warn('Invite failed', e);
+                  }
+                }}
+              >
+                Invite
+              </button>
+            ) : null}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginTop: '.6rem' }}>
+            {(community.moderators ?? []).map((m, idx) => (
+              <div key={(m as string) + idx} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                <div style={{ fontWeight: 700 }}>{m}</div>
+                <small style={{ color: '#94a3b8' }}>Moderator</small>
+              </div>
             ))}
           </div>
         </div>

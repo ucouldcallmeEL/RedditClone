@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import '../styles/community.css';
+import '../../styles/community.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, LayoutGrid, List } from 'lucide-react';
-import CommunityHeader from './CommunityPage/CommunityHeader';
-import CommunitySidebar from './CommunitySidebar';
-import PostCard from '../components/PostCard';
-import type { CommunityDetails, Post } from '../types';
-import { useTheme } from '../contexts/ThemeContext';
+import CommunityHeader from './CommunityHeader';
+import CommunitySidebar from '../CommunitySidebar';
+import PostCard from '../../components/PostCard';
+import type { CommunityDetails, Post } from '../../types';
+import { useTheme } from '../../contexts/ThemeContext';
 
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../../services/apiClient';
+import { CreatePostButton, ModToolsButton, JoinLeaveButton } from './CommunityButtons';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
 
@@ -98,14 +99,13 @@ function CommunityPage() {
   const [compactView, setCompactView] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
 
-const getCurrentUserFromStorage = () => {
-  // fetchhhhhhhhhhhhhhhhhhhhhhhhhh current userrrrrrrrrrrrr dataaaaa from token or sessionnor wtvr
-  return { 
-    id: "69397d04292782398b5f6821", 
-    name: "yehia", 
-    username: "test_user" 
+  const getCurrentUserFromStorage = () => {
+    return {
+      id: '69397d04292782398b5f6821',
+      name: 'yehia',
+      username: 'test_user',
+    };
   };
-};
 
   useEffect(() => {
     if (!communityName) return;
@@ -119,7 +119,6 @@ const getCurrentUserFromStorage = () => {
 
         const currentUser = getCurrentUserFromStorage();
 
-        // Determine whether the current user is a member
         let isJoined = false;
         if (currentUser && communityData.members?.length) {
           isJoined = communityData.members.some((m: any) => {
@@ -129,7 +128,6 @@ const getCurrentUserFromStorage = () => {
           });
         }
 
-        // Set community details from authoritative backend data (member count sourced from DB)
         const communityDetails: CommunityDetails = {
           name: `r/${communityData.name}`,
           id: communityData._id,
@@ -151,7 +149,6 @@ const getCurrentUserFromStorage = () => {
         };
         setCommunity(communityDetails);
 
-        // determine moderator status via backend endpoint
         try {
           const modResp = await apiClient.get(`/r/${communityName}/is-mod`, { params: { userId: currentUser?.id } });
           setIsModerator(!!modResp?.data?.isModerator);
@@ -160,7 +157,6 @@ const getCurrentUserFromStorage = () => {
           setIsModerator(false);
         }
 
-        // Map posts
         const postsData = communityData.posts?.map((post: any) => ({
           id: post._id,
           title: post.title,
@@ -172,7 +168,6 @@ const getCurrentUserFromStorage = () => {
           subreddit: `r/${communityName}`,
           createdAt: post.createdAt,
           communityIcon: communityData.profilePicture || 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
-          // timeAgo: '2h ago',
         })) || [];
         setPosts(postsData);
       } catch (err: any) {
@@ -183,10 +178,7 @@ const getCurrentUserFromStorage = () => {
       }
     };
 
-    // initial load
     loadCommunity();
-
-    // expose loader for onToggleJoin
     (window as any).__loadCommunity = loadCommunity;
   }, [communityName, filter]);
 
@@ -197,7 +189,6 @@ const getCurrentUserFromStorage = () => {
       await apiClient.post(`/r/${communityName}/invite-mod`, { username, communityId });
     } catch (err) {
       console.warn('Failed to invite moderator', err);
-      // fallthrough
     }
 
     try {
@@ -209,11 +200,11 @@ const getCurrentUserFromStorage = () => {
     }
   };
 
-  // helper to toggle membership via backend and then reload authoritative data
   const handleToggleJoin = async (joined: boolean) => {
     if (!communityName) return;
+    // if the user is leaving, hide mod tools immediately for better UX
+    if (!joined) setIsModerator(false);
     try {
-      // attempt backend update; endpoints may be added later — fail gracefully
       const currentUser = getCurrentUserFromStorage();
       const userId = currentUser?.id || currentUser?.name || null;
       const communityId = community?.id || null;
@@ -224,11 +215,20 @@ const getCurrentUserFromStorage = () => {
         await apiClient.post(`/r/${communityName}/leave`, { userId, communityId });
       }
     } catch (err) {
-      // ignore errors — we'll refresh anyway to get authoritative count when available
       console.warn('join/leave API call failed', err);
     }
+    // refresh moderator state immediately (ensure mod tools hide promptly)
+    try {
+      const currentUser = getCurrentUserFromStorage();
+      const userId = currentUser?.id || currentUser?.name || null;
+      const modResp = await apiClient.get(`/r/${communityName}/is-mod`, { params: { userId } });
+      setIsModerator(!!modResp?.data?.isModerator);
+    } catch (e) {
+      console.warn('Failed to refresh moderator status after join/leave', e);
+      setIsModerator(false);
+    }
 
-    // reload community details from backend (member count comes from DB)
+    // then reload community details
     try {
       if (typeof (window as any).__loadCommunity === 'function') {
         await (window as any).__loadCommunity();
@@ -238,8 +238,6 @@ const getCurrentUserFromStorage = () => {
     }
   };
 
-
-  // add a root class while this page is mounted so we can adjust layout widths
   useEffect(() => {
     const cls = 'community-active';
     document.documentElement.classList.add(cls);
@@ -256,24 +254,19 @@ const getCurrentUserFromStorage = () => {
           isModerator={isModerator}
           onOpenModTools={() => navigate(`/r/${communityName}/mod-tools`)}
           onToggleJoin={(joined) => {
-            // call backend then reload authoritative data
             void handleToggleJoin(joined);
           }}
         />
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1rem' }}>
-        {/* Sort & view toolbar */}
         <div style={{ gridColumn: '1 / span 2', marginTop: '.5rem' }}>
           <div className="filter-bar" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
             <SortDropdown active={filter} onChange={(f) => setFilter(f)} />
             <ViewDropdown compact={compactView} onChange={(c) => setCompactView(c)} />
-            {/* post count removed as requested */}
           </div>
         </div>
         <div>
           <section className="card">
-            {/* Posts heading removed per request */}
-
             {loading ? (
               <p>Loading…</p>
             ) : error ? (

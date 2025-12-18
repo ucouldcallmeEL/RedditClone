@@ -161,7 +161,6 @@ const addMemberToCommunity = async (communityIdOrName, userId) => {
     // return fresh populated community
     return await getCommunityByName(community.name);
 };
-
 const removeMemberFromCommunity = async (communityIdOrName, userId) => {
     if (!userId) throw new Error('userId is required');
     const User = require('../schemas/user');
@@ -185,14 +184,23 @@ const removeMemberFromCommunity = async (communityIdOrName, userId) => {
     }
     if (!community) throw new Error('Community not found');
 
-    community.members = community.members || [];
-    const initialLen = community.members.length;
-    community.members = community.members.filter(m => String(m._id || m) !== String(user._id));
-    if (community.members.length !== initialLen) {
-        await community.save();
-    }
+    // Use an atomic update to remove the user from both members and moderators arrays
+    const Community = require('../schemas/community');
+    await Community.findByIdAndUpdate(community._id, {
+        $pull: { members: user._id, moderators: user._id }
+    });
 
+    // Return fresh populated community
     return await getCommunityByName(community.name);
+};
+
+// simple ismod(userId, communityName) as requested: returns true if userId is listed in community.moderators
+const ismod = async (userId, communityName) => {
+    if (!userId || !communityName) return false;
+    const community = await getCommunityByName(communityName);
+    if (!community) return false;
+    const mods = community.moderators || [];
+    return mods.some(m => String(m._id || m) === String(userId));
 };
 
 // ...existing code...
@@ -209,4 +217,6 @@ module.exports = {
     removeMemberFromCommunity
     ,
     getTopCommunitiesForUser
+    ,
+    ismod,
 };
