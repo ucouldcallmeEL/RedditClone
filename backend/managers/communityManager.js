@@ -106,6 +106,25 @@ const getPostsByCommunityName = async (communityName) => {
     return community.posts;
 };
 
+// Return top N communities where the user is a member, sorted by member count desc
+const getTopCommunitiesForUser = async (userId, limit = 3) => {
+    if (!userId) throw new Error('userId is required');
+
+    // reuse existing helper to get communities for a user
+    const communities = await getCommunitiesByUser(userId);
+
+    // ensure populated fields (getCommunitiesByUser returns raw models so populate if needed)
+    const populated = await Community.populate(communities, [
+        { path: 'posts', populate: { path: 'author', select: 'name' } },
+        { path: 'moderators', select: 'name' },
+        { path: 'members', select: 'name' },
+    ]);
+
+    // sort by member count descending and limit
+    populated.sort((a, b) => (b.members?.length || 0) - (a.members?.length || 0));
+    return populated.slice(0, limit);
+};
+
 
 // Added functions: addMemberToCommunity, removeMemberFromCommunity
 const addMemberToCommunity = async (communityIdOrName, userId) => {
@@ -188,4 +207,6 @@ module.exports = {
     getPostsByCommunityName,
     addMemberToCommunity,
     removeMemberFromCommunity
+    ,
+    getTopCommunitiesForUser
 };

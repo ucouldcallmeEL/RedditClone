@@ -1,5 +1,5 @@
 const { getPosts } = require('../managers/postManager');
-const { getCommunityWithFilteredPosts, getCommunities, addMemberToCommunity, removeMemberFromCommunity } = require('../managers/communityManager');
+const { getCommunityWithFilteredPosts, getCommunities, getCommunitiesByUser, getTopCommunitiesForUser: managerGetTopCommunitiesForUser, addMemberToCommunity, removeMemberFromCommunity } = require('../managers/communityManager');
 
 const getCommunityDetails = async (req, res) => {
   try {
@@ -23,6 +23,21 @@ const getAllCommunities = async (req, res) => {
   } catch (err) {
     console.error('Failed to fetch communities', err);
     res.status(500).send({ error: 'Failed to fetch communities' });
+  }
+};
+
+// Return top N communities the specified user is a member of (sorted by member count desc)
+const getTopCommunitiesForUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    // Use manager helper to get top communities directly
+    const top = await managerGetTopCommunitiesForUser(userId, 3);
+    res.send(top);
+  } catch (err) {
+    console.error('Failed to fetch top communities for user', err);
+    res.status(500).send({ error: 'Failed to fetch top communities for user' });
   }
 };
 
@@ -57,6 +72,7 @@ const leaveCommunity = async (req, res) => {
 module.exports = {
   getCommunityDetails,
   getAllCommunities,
+  getTopCommunitiesForUser,
   joinCommunity,
   leaveCommunity,
 };
