@@ -106,6 +106,77 @@ const getPostsByCommunityName = async (communityName) => {
     return community.posts;
 };
 
+
+// Added functions: addMemberToCommunity, removeMemberFromCommunity
+const addMemberToCommunity = async (communityIdOrName, userId) => {
+    if (!userId) throw new Error('userId is required');
+    const User = require('../schemas/user');
+
+    // resolve user by id or name/email
+    let user = null;
+    if (/^[0-9a-fA-F]{24}$/.test(String(userId))) {
+        user = await User.findById(userId);
+    }
+    if (!user) {
+        user = await User.findOne({ $or: [{ name: userId }, { email: userId }] });
+    }
+    if (!user) throw new Error('User not found');
+
+    // resolve community by name (primary) or id if an ObjectId is provided
+    let community = null;
+    if (/^[0-9a-fA-F]{24}$/.test(String(communityIdOrName))) {
+        community = await Community.findById(communityIdOrName);
+    } else {
+        // treat input as community name
+        community = await getCommunityByName(communityIdOrName);
+    }
+    if (!community) throw new Error('Community not found');
+
+    community.members = community.members || [];
+    const alreadyMember = community.members.some(m => String(m._id || m) === String(user._id));
+    if (!alreadyMember) {
+        community.members.push(user._id);
+        await community.save();
+    }
+
+    // return fresh populated community
+    return await getCommunityByName(community.name);
+};
+
+const removeMemberFromCommunity = async (communityIdOrName, userId) => {
+    if (!userId) throw new Error('userId is required');
+    const User = require('../schemas/user');
+
+    // resolve user by id or name/email
+    let user = null;
+    if (/^[0-9a-fA-F]{24}$/.test(String(userId))) {
+        user = await User.findById(userId);
+    }
+    if (!user) {
+        user = await User.findOne({ $or: [{ name: userId }, { email: userId }] });
+    }
+    if (!user) throw new Error('User not found');
+
+    // resolve community by name (primary) or id if an ObjectId is provided
+    let community = null;
+    if (/^[0-9a-fA-F]{24}$/.test(String(communityIdOrName))) {
+        community = await Community.findById(communityIdOrName);
+    } else {
+        community = await getCommunityByName(communityIdOrName);
+    }
+    if (!community) throw new Error('Community not found');
+
+    community.members = community.members || [];
+    const initialLen = community.members.length;
+    community.members = community.members.filter(m => String(m._id || m) !== String(user._id));
+    if (community.members.length !== initialLen) {
+        await community.save();
+    }
+
+    return await getCommunityByName(community.name);
+};
+
+// ...existing code...
 module.exports = {
     createCommunity,
     getCommunity,
@@ -114,5 +185,7 @@ module.exports = {
     deleteCommunity,
     getCommunityByName,
     getCommunityWithFilteredPosts,
-    getPostsByCommunityName
+    getPostsByCommunityName,
+    addMemberToCommunity,
+    removeMemberFromCommunity
 };

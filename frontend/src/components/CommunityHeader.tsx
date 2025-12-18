@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserPlus, Check, Plus } from 'lucide-react';
 import type { CommunityDetails } from '../types';
 
@@ -9,6 +9,11 @@ type Props = {
 
 function CommunityHeader({ community, onToggleJoin }: Props) {
   const [joined, setJoined] = useState<boolean>(!!community.joined);
+
+  // keep internal joined state in sync when parent updates community.joined
+  useEffect(() => {
+    setJoined(!!community.joined);
+  }, [community.joined]);
 
   const toggle = () => {
     setJoined((v) => {
@@ -39,7 +44,7 @@ function CommunityHeader({ community, onToggleJoin }: Props) {
 
         <div style={{ flex: 1 }}>
           <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{community.name}</h1>
-          <p style={{ margin: 0, color: '#64748b' }}>{community.members} • {community.online?.toLocaleString() ?? 0} online</p>
+          <p style={{ margin: 0, color: '#64748b' }}>{community.members}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
@@ -47,8 +52,17 @@ function CommunityHeader({ community, onToggleJoin }: Props) {
             <Plus size={14} /> Create Post
           </button>
 
-          <button className={`chip`} onClick={toggle} aria-pressed={joined}>
-            {joined ? <><Check size={14} /> Joined</> : <><UserPlus size={14} /> Join</>}
+          <button
+            className={`chip`}
+            onClick={toggle}
+            aria-pressed={joined}
+            style={
+              joined
+                ? { background: '#ef4444', color: '#fff', border: '1px solid #ef4444' }
+                : undefined
+            }
+          >
+            {joined ? <><UserPlus size={14} /> Leave</> : <><UserPlus size={14} /> Join</>}
           </button>
         </div>
       </div>
