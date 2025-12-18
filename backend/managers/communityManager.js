@@ -29,26 +29,27 @@ const deleteCommunity = async (id) => {
 const getCommunityByName = async (name) => {
     const community = await Community.findOne({
         name: { $regex: new RegExp(`^${name}$`, 'i') }
-    }).populate({
-        path: 'posts',
-        populate: {
-            path: 'author',
-            select: 'name'
-        }
-    }).populate('moderators', 'name').populate('members', 'name');
+    }).populate('moderators', 'name').populate('members', 'name').populate('owner', 'name');
     return community;
 };
 
 const getPostsByCommunityName = async (communityName) => {
-    const community = await Community.findOne({ name: communityName }).populate({
-        path: 'posts',
-        populate: {
-            path: 'author',
-            select: 'name'
-        }
-    });
+    // Find the community first to get its ID
+    const community = await Community.findOne({ name: communityName });
     if (!community) return [];
-    return community.posts;
+    
+    // Query posts by community ID (posts now have a community field instead of communities having posts array)
+    const Post = require('../schemas/post');
+    const posts = await Post.find({ community: community._id }).populate('author', 'name');
+    return posts;
+};
+
+// Get communities by name substring (for search)
+const getCommunitiesByNameSubstring = async (substring) => {
+    const communities = await Community.find({
+        name: { $regex: substring, $options: 'i' }
+    }).limit(10);
+    return communities;
 };
 
 module.exports = {
@@ -58,5 +59,6 @@ module.exports = {
     getCommunitiesByUser,
     deleteCommunity,
     getCommunityByName,
-    getPostsByCommunityName
+    getPostsByCommunityName,
+    getCommunitiesByNameSubstring
 };

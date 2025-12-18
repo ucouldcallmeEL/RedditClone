@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserPlus, Check, Plus } from 'lucide-react';
 import type { CommunityDetails } from '../types';
 
@@ -8,6 +9,7 @@ type Props = {
 };
 
 function CommunityHeader({ community, onToggleJoin }: Props) {
+  const navigate = useNavigate();
   const [joined, setJoined] = useState<boolean>(!!community.joined);
 
   const toggle = () => {
@@ -16,6 +18,10 @@ function CommunityHeader({ community, onToggleJoin }: Props) {
       onToggleJoin?.(nv);
       return nv;
     });
+  };
+
+  const handleCreatePost = () => {
+    navigate('/posts/create');
   };
 
   return (
@@ -43,7 +49,7 @@ function CommunityHeader({ community, onToggleJoin }: Props) {
         </div>
 
         <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
-          <button className="chip chip--ghost create-post" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }} onClick={() => { /* placeholder: open composer */ }}>
+          <button className="chip chip--ghost create-post" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }} onClick={handleCreatePost}>
             <Plus size={14} /> Create Post
           </button>
 

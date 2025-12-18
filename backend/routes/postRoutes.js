@@ -1,21 +1,36 @@
 const express = require("express");
-const { getPostDetails } = require("../controllers/postController");
-const Post = require("../schemas/post");
+const { getPostDetails, addPost } = require("../controllers/postController");
+const { getAllPosts, getHomeFeed, getPopularPostsHandler } = require("../controllers/homeController");
+const { getPostsByUser } = require("../managers/postManager");
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Existing behavior used by frontend: GET /post/:id (also works as GET /api/posts/:id once mounted there)
-router.get("/:id", getPostDetails);
+// Create a post (protected - requires authentication) - must come before /:id
+router.post("/create", authenticate, addPost);
 
-// Create a post (previously in post.routes.js)
-// Intended mount: POST /api/posts/create
-router.post("/create", async (req, res) => {
+// Get all posts
+router.get("/", getAllPosts);
+
+// Get popular posts
+router.get("/popular", getPopularPostsHandler);
+
+// Get home feed posts (requires userId in query or authenticated user)
+router.get("/home/:userId", getHomeFeed);
+
+// Get posts by user
+router.get("/user/:userId", async (req, res) => {
   try {
-    const post = await Post.create(req.body);
-    res.status(201).json(post);
+    const userId = req.params.userId;
+    const posts = await getPostsByUser(userId);
+    res.json(posts);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Error fetching user posts:', err);
+    res.status(500).json({ error: 'Failed to fetch user posts' });
   }
 });
+
+// Get post details by ID (must come last to avoid matching other routes)
+router.get("/:id", getPostDetails);
 
 module.exports = router;

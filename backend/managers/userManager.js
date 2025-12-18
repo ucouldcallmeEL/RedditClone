@@ -31,11 +31,44 @@ const getusersByCommunity = async (id) => {
     return users;
 };
 
+// Find user by email
+const findByEmail = async (email) => {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    return user;
+};
+
+// Find user by username (name field)
+const findByUsername = async (username) => {
+    const user = await User.findOne({ name: username });
+    return user;
+};
+
+// Find user by phone number
+const findByPhone = async (phone) => {
+    const user = await User.findOne({ phone: phone });
+    return user;
+};
+
+// Find user by email or username
+const findByEmailOrUsername = async (identifier) => {
+    // Try to find by email first (case-insensitive)
+    let user = await User.findOne({ email: identifier.toLowerCase() });
+    if (user) return user;
+    
+    // If not found by email, try to find by username (name field)
+    user = await User.findOne({ name: identifier });
+    return user;
+};
+
 module.exports = {
     createUser,
     getUser,
     getUsers,
     updateUser,
     deleteUser,
-    getusersByCommunity
+    getusersByCommunity,
+    findByEmail,
+    findByUsername,
+    findByPhone,
+    findByEmailOrUsername
 };

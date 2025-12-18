@@ -8,8 +8,8 @@ import {
     markOneRead,
     deleteNotification,
     clearAllNotifications,
-} from "../../../services/notificationService";
-import { API_BASE_URL } from "../../../services/config";
+} from "../../services/notificationService";
+import { API_BASE_URL } from "../../services/config";
 
 import NotificationCard from "./NotificationCard";
 import EmptyNotifications from "./EmptyNotifications";

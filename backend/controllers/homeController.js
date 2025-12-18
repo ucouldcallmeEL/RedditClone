@@ -11,7 +11,8 @@ const getAllPosts = async (req, res) => {
 };
 
 const getHomeFeed = async (req, res) => {
-  const userId = req.user?.id || req.userId || req.query.userId || req.body?.userId;
+  // Get userId from route params (since route is /home/:userId)
+  const userId = req.params.userId || req.user?._id || req.user?.id || req.query.userId || req.body?.userId;
   if (!userId) {
     try {
       const posts = await getPosts();
@@ -39,7 +40,8 @@ const getHomeFeed = async (req, res) => {
 
 const getPopularPostsHandler = async (req, res) => {
   try {
-    const timeFilter = req.query.time || 'all';
+    // Support both 'filter' (from frontend) and 'time' (legacy) query params
+    const timeFilter = req.query.filter || req.query.time || 'all';
     const validFilters = ['today', 'week', 'month', 'all'];
     if (!validFilters.includes(timeFilter)) {
       return res.status(400).send({

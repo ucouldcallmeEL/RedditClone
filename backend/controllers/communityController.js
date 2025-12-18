@@ -1,5 +1,10 @@
 const { getPosts } = require('../managers/postManager');
-const { getCommunityByName } = require('../managers/communityManager');
+const { 
+  getCommunityByName, 
+  createCommunity, 
+  getCommunitiesByNameSubstring,
+  getCommunitiesByUser 
+} = require('../managers/communityManager');
 
 const getCommunityDetails = async (req, res) => {
   try {
@@ -15,6 +20,68 @@ const getCommunityDetails = async (req, res) => {
   }
 };
 
+// Check if community name exists
+const checkCommunityNameExists = async (req, res) => {
+  try {
+    const communityName = req.params.communityName;
+    const community = await getCommunityByName(communityName);
+    res.json({ exists: !!community, isNameTaken: !!community });
+  } catch (err) {
+    console.error('Error checking community name:', err);
+    res.status(500).json({ error: 'Failed to check community name' });
+  }
+};
+
+// Create a new community
+const postCommunity = async (req, res) => {
+  try {
+    // Get authenticated user from token (set by authenticate middleware)
+    const userId = req.user._id;
+
+    // Build community data
+    const communityData = {
+      ...req.body,
+      owner: userId,
+      members: [userId],
+      moderators: [userId],
+    };
+
+    const community = await createCommunity(communityData);
+    res.status(201).json(community);
+  } catch (err) {
+    console.error('Error creating community:', err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Search communities by substring
+const fetchCommunitiesBySubstring = async (req, res) => {
+  try {
+    const substring = req.params.substring;
+    const communities = await getCommunitiesByNameSubstring(substring);
+    res.json(communities);
+  } catch (err) {
+    console.error('Error fetching communities by substring:', err);
+    res.status(500).json({ error: 'Failed to fetch communities' });
+  }
+};
+
+// Get user's communities
+const fetchUserCommunities = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const communities = await getCommunitiesByUser(userId);
+    res.json(communities || []);
+  } catch (err) {
+    console.error('Error fetching user communities:', err);
+    res.status(500).json({ error: 'Failed to fetch user communities' });
+  }
+};
+
 module.exports = {
   getCommunityDetails,
+  checkCommunityNameExists,
+  postCommunity,
+  fetchCommunitiesBySubstring,
+  fetchUserCommunities,
 };

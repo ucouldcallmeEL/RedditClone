@@ -139,8 +139,14 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
         <nav>
           {items.map(({ label, icon: Icon }) => {
             const isFilterItem = ['Home', 'Popular', 'All'].includes(label);
+            const isCreateCommunity = label === 'Start a community';
 
             const handleClick = () => {
+              if (isCreateCommunity) {
+                navigate('/communities/create');
+                return;
+              }
+
               if (!onSelectFilter || !isFilterItem) {
                 return;
               }
@@ -202,9 +208,12 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
               hidden={isCollapsed}
             >
               {sectionItems.map(({ label, icon: Icon, badge }) => {
+                // Extract community name from "r/communityname" format
                 const slug = label.replace(/^r\//i, '');
+                // Use /r/:communityName route format
+                const communityRoute = label.startsWith('r/') ? `/r/${slug}` : `#${label}`;
                 return (
-                  <Link key={label} className="sidebar__link" to={`/community/${slug}`}>
+                  <Link key={label} className="sidebar__link" to={communityRoute}>
                     <Icon size={18} />
                     <span>{label}</span>
                     {badge && <span className="sidebar__badge">{badge}</span>}

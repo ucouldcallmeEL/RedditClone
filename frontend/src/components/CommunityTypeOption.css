@@ -1,0 +1,63 @@
+.community-type-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1em;
+    margin: 0.25em;
+    gap: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.community-type-container.selected {
+    background-color: #333D42;
+}
+
+.community-type-icon {
+    color: #ffffff;
+}
+
+.community-type-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    justify-content: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+
+.community-type-name {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: start;
+    margin: 0;
+    padding: 0;
+}
+
+.community-type-description {
+    color: #748791;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: start;
+    margin: 0;
+    padding: 0;
+}
+
+.community-type-radio-button-selected {
+    color: #DBE4E9;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.community-type-radio-button-unselected {
+    color: #8BA2AD;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+}

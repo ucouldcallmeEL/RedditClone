@@ -164,8 +164,8 @@ function CommunityPage() {
       case 'hot':
         // Reddit-style hot algorithm: considers engagement and recency
         return [...posts].sort((a, b) => {
-          const aScore = a.upvotes - a.downvotes + a.comments;
-          const bScore = b.upvotes - b.downvotes + b.comments;
+          const aScore = a.upvotes - (a.downvotes || 0) + a.comments;
+          const bScore = b.upvotes - (b.downvotes || 0) + b.comments;
           const aDate = new Date(a.createdAt).getTime();
           const bDate = new Date(b.createdAt).getTime();
           const now = Date.now();
@@ -188,7 +188,7 @@ function CommunityPage() {
         });
       case 'top':
         // Sort by net upvotes (upvotes - downvotes), highest first
-        return [...posts].sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
+        return [...posts].sort((a, b) => (b.upvotes - (b.downvotes || 0)) - (a.upvotes - (a.downvotes || 0)));
       case 'rising':
         // Sort by comment velocity (most discussed posts that are relatively new)
         return [...posts].sort((a, b) => {

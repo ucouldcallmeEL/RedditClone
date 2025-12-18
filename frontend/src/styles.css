@@ -58,9 +58,7 @@
 }
 
 /* Global scale: make the UI feel ~75% zoomed */
-html {
-  font-size: 75%;
-}
+
 
 *,
 *::before,
