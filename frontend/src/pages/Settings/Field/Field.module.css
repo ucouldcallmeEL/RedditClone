@@ -1,0 +1,37 @@
+.fieldContainer {
+  /* font-family: Arial, Helvetica, sans-serif; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  /* border-bottom: 1px solid #eee; */
+}
+
+.titleContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.fieldContainer .title {
+  margin: 0;
+  font-size: 14px;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.fieldChildren {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.description {
+  font-size: 12px;
+  margin: 0;
+  color: #576f76;
+}
+

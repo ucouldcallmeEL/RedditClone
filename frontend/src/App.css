@@ -1,0 +1,271 @@
+.App {
+  text-align: center;
+}
+
+.homepage {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #61dafb;
+  position: relative;
+}
+
+.homepage h1 {
+  color: #1a1a1b;
+  margin-bottom: 2rem;
+}
+
+/* Make CreatePost page break out of homepage container */
+.homepage .create-post-page {
+  position: absolute;
+  top: -2rem;
+  left: -2rem;
+  right: -2rem;
+  bottom: -2rem;
+  margin: 0;
+  padding: 0;
+  width: calc(100% + 4rem);
+  min-height: calc(100vh + 4rem);
+  background-color: #0e1113;
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.create-community-btn {
+  background-color: #0079d3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-community-btn:hover {
+  background-color: #005ba1;
+}
+
+.homepage-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.homepage-buttons button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #0079d3;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.homepage-buttons button:hover {
+  background-color: #005ba1;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content-wrapper {
+  max-width: 1200px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #0e1113;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+auth-flow-modal {
+  justify-self: center;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 700px;
+  padding: 2rem;
+}
+
+.quit-login-button {
+  background-color: #555;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  border: none;
+  width: 23px;
+  height: 23px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: inline-flex;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.quit-login-button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+
+.log-in-modal {
+  background-color: #181C1F;
+  box-sizing: border-box;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: fit-content;
+  overflow: visible;
+  border-radius: 1rem;
+  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+  margin: 50px, 100px;
+  position: relative; /* Add this for absolute positioning of close button */
+}
+
+.log-in-modal-text {
+  color: #cdcdcd;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+  margin: 1em 0 .5em;
+}
+
+.log-in-modal .log-in-modal-title {
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin: 1em 0 .5em;
+}
+
+.LogIn-button {
+  background-color: white;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin: 10px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 350;
+  color: #181C1F;
+  border: none;
+  /* position: relative; */
+}
+
+.LogIn-button img,
+.LogIn-button svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.LogIn-button span {
+  flex: 1;
+  text-align: center;
+}
+
+.logos{
+  width: 2px;
+  height: 2px;
+}
+
+.log-in-modal-content {
+  width: 55%;
+}
+
+.or-divider {
+  position: relative;
+  width: 55%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.or-divider-line {
+  width: 100%;
+  border: none;
+  border-top: 1px solid #555;
+  margin: 0;
+}
+
+.or-divider-text {
+  position: absolute;
+  background-color: #181C1F;
+  color: #FFFFFF;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.text-field {
+  background-color: #555;
+  width: 55%;
+  margin: 10px 0;
+  display: block;
+}
+
+.or-divider-text{
+  color:#555
+}
+
+.text-fields-wrapper {
+  width: 55%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

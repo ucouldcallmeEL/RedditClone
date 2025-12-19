@@ -1,0 +1,43 @@
+.toggle {
+  width: 55px;
+  height: 30px;
+  background: #d9e1e7;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  display: flex;
+  align-items: center;
+  padding: 2px;       
+  box-sizing: border-box;
+  margin: 2px 0px;
+}
+
+.on {
+  background: #003c96;
+}
+
+.thumb {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  color: #003c96;
+  border: 2px solid transparent;
+  margin: 2px 0;
+  transition: transform 0.25s ease, border 0.25s ease;
+}
+
+.on .thumb {
+  transform: translateX(25px);
+  border-color: #003c96;
+}
+
+.check {
+  font-size: 14px;
+  font-weight: bold;
+}

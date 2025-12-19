@@ -1,0 +1,25 @@
+.close-button {
+    background-color: #2a3236;
+    color: #FFFFFF;
+    align-items: center;
+    justify-content: center;
+    display: inline-flex;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+    border-radius: 999px;
+    border: none;
+    height: 2rem;
+    width: 2rem;
+    cursor: pointer;
+}
+
+.close-icon {
+    font-family: 'Segeo UI', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.close-button:hover {
+    background-color: #333D42;
+}

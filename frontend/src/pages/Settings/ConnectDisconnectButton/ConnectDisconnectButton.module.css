@@ -1,0 +1,31 @@
+.btn {
+  /* min-width: 120px; */
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Disconnect Button */
+.disconnect {
+  background-color: #ffffff;
+  border: 1.5px solid #c4c7cc;
+  color: #000;
+}
+
+.disconnect:hover {
+  border: 1.5px solid #404141;
+}
+
+/* Connect Button */
+.connect {
+  background-color: #e7edf1;
+  border: none;
+  color: #000;
+}
+
+.connect:hover {
+  background-color: #dce2e6;
+}

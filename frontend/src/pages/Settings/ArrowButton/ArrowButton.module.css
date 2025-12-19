@@ -1,0 +1,21 @@
+.arrowBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  padding: 0;
+}
+
+.arrowBtn:hover {
+  background-color: #d8dde3;
+}
+
+.arrowBtn:active {
+  background-color: #c9ced4;
+}
