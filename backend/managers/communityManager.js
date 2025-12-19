@@ -252,6 +252,7 @@ module.exports = {
     getCommunitiesByUser,
     deleteCommunity,
     getCommunityByName,
+    getCommunityWithFilteredPosts,
     getPostsByCommunityName,
     getCommunitiesByNameSubstring,
     addMemberToCommunity,
