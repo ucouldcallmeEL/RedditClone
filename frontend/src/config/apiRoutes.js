@@ -39,16 +39,22 @@ export const postRoutes = {
   getById: (id) => `${API_BASE_URL}/posts/${id}`,
   
   // Get all posts
-  getAll: `${API_BASE_URL}/posts`,
+  getAll: `${API_BASE_URL}/api/posts`,
   
   // Get posts by user
-  getByUser: (userId) => `${API_BASE_URL}/posts/user/${userId}`,
+  getByUser: (userId) => `${API_BASE_URL}/api/posts/user/${userId}`,
   
   // Get home feed posts
-  getHomeFeed: (userId) => `${API_BASE_URL}/posts/home/${userId}`,
+  getHomeFeed: (userId) => `${API_BASE_URL}/api/posts/home/${userId}`,
   
   // Get popular posts
-  getPopular: (timeFilter = 'all') => `${API_BASE_URL}/posts/popular?filter=${timeFilter}`,
+  getPopular: (timeFilter = 'all') => `${API_BASE_URL}/api/posts/popular?filter=${timeFilter}`,
+  
+  // Get upvoted posts by user
+  getUpvoted: (userId) => `${API_BASE_URL}/api/posts/upvoted/${userId}`,
+  
+  // Get downvoted posts by user
+  getDownvoted: (userId) => `${API_BASE_URL}/api/posts/downvoted/${userId}`,
 };
 
 /**
@@ -64,11 +70,25 @@ export const userRoutes = {
   phoneSignup: `${API_BASE_URL}/api/users/phone/signup`,
   generateUsername: `${API_BASE_URL}/api/users/generate-username`,
   
-  // Get user profile
+  // Get current authenticated user
+  getCurrentUser: `${API_BASE_URL}/api/users/me`,
+  
+  // Get user profile by ID
   getProfile: (userId) => `${API_BASE_URL}/api/users/${userId}`,
+  
+  // Get user profile by username
+  getProfileByUsername: (username) => `${API_BASE_URL}/api/users/username/${encodeURIComponent(username)}`,
   
   // Update user profile
   updateProfile: (userId) => `${API_BASE_URL}/users/${userId}`,
+};
+
+/**
+ * Comment API Routes
+ */
+export const commentRoutes = {
+  // Get comments by user
+  getByUser: (userId) => `${API_BASE_URL}/api/comments/user/${userId}`,
 };
 
 /**

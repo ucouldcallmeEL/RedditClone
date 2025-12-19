@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import type { Post } from '../types';
 
+import "./PostCard.css"
+
 type Props = {
   post: Post;
   onClick?: () => void;

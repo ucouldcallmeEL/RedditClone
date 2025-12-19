@@ -8,15 +8,6 @@ import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
 import { communityRoutes, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
 
-// Placeholder components for external components
-const HeaderBar = () => {
-  return <div className="header-bar-placeholder"></div>;
-};
-
-const Sidebar = () => {
-  return <div className="sidebar-placeholder"></div>;
-};
-
 const CreatePost = () => {
   const navigate = useNavigate();
   const [selectedPostType, setSelectedPostType] = useState("text");

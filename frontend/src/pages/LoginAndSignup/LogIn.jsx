@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Buttons from "./Buttons";
 import Button from "./Button";
 import TextField from "./TextField";
 import { userRoutes, apiPost } from "../../config/apiRoutes";

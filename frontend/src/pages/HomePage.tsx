@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PostCard from '../components/PostCard';
-import PostComposer from '../components/PostComposer';
 import type { Post } from '../types';
 
 type FeedFilter = 'home' | 'popular' | 'all';

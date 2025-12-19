@@ -1,10 +1,9 @@
-import React from "react";
 import { useState } from "react";
 import TextField from "./TextField";
 import { userRoutes, apiPost } from "../../config/apiRoutes";
 import "./Login.css";
 import "./TextField.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SigninPhone = ({ onClose }) => {
   const navigate = useNavigate();

@@ -107,7 +107,6 @@ function PostDetail({ postId, onBack }: Props) {
       <div className="post-detail">
         <button className="btn btn--ghost" onClick={onBack}>
           <ArrowLeft size={20} />
-          Back
         </button>
         <div className="error">{error || 'Post not found'}</div>
       </div>
@@ -120,7 +119,6 @@ function PostDetail({ postId, onBack }: Props) {
     <div className="post-detail">
       <button className="btn btn--ghost back-btn" onClick={onBack}>
         <ArrowLeft size={20} />
-        Back
       </button>
 
       <article className="post-detail__post card">
