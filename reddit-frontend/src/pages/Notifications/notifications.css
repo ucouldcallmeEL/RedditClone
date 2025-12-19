@@ -238,3 +238,13 @@
 .popup-item:hover {
     background: #f3f3f3;
 }
+.notif-actions-icons {
+  pointer-events: none;
+}
+
+.notif-actions-icons .icon-btn,
+.notif-actions-icons .dots-wrapper,
+.notif-actions-icons .popup-menu,
+.notif-actions-icons .popup-item {
+  pointer-events: auto;
+}

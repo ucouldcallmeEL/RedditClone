@@ -78,6 +78,41 @@ function NotificationPage() {
             console.error("Failed to delete notification" , err)
         }
     }
+    const handleOpenNotification = async (n) => {
+        try {
+            if (!n.isRead) {
+            await markOneRead(n._id);
+            setNotifications((prev) =>
+                prev.map((x) => (x._id === n._id ? { ...x, isRead: true } : x))
+            );
+            }
+        } catch (e) {
+            console.error("Failed to mark notification read", e);
+        }
+
+        const postId = (n.post && n.post._id) ? n.post._id : n.post;
+        const commentId = (n.comment && n.comment._id) ? n.comment._id : n.comment;
+        const senderId = (n.sender && n.sender._id) ? n.sender._id : n.sender;
+
+        switch (n.type) {
+            case "comment":
+            case "reply":
+            if (postId) return navigate(`/posts/${postId}`, { state: { focus: "comments", commentId } });
+            return navigate("/notifications");
+
+            case "upvote":
+            if (postId) return navigate(`/posts/${postId}`);
+            return navigate("/notifications");
+
+            case "follow":
+            if (senderId) return navigate(`/u/${senderId}`);
+            return navigate("/notifications");
+
+            default:
+            return navigate("/notifications");
+        }
+        };
+
 
     if (!USER_ID) return null;
 
@@ -122,6 +157,7 @@ function NotificationPage() {
                             read={n.isRead}
                             onDelete={() => handleDeleteNotification(n._id)}
                             onManage={goToNotificationSettings}
+                            onOpen={() => handleOpenNotification(n)}
                             />
                         );
                         })}

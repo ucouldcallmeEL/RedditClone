@@ -1,59 +1,112 @@
 import { Eye, Plus, SlidersHorizontal } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 import PostCard from "../../../components/PostCard";
 import Comment from "../../../components/Comment";
 import EmptyState from "../../../components/EmptyState";
-import { mockPosts , mockCommentsByPost } from "../mock";
 
 import "./OverviewTab.css";
 
-function parseTimeAgo(str) {
-  const match = str.match(/(\d+)([smhd])/);
-  if (!match) return Infinity;
-  const num = parseInt(match[1]);
-  const unit = match[2];
-  switch(unit) {
-    case 's': return num / 60;
-    case 'm': return num;
-    case 'h': return num * 60;
-    case 'd': return num * 60 * 24;
-    default: return Infinity;
-  }
-}
+const API_URL = import.meta.env.VITE_API_URL; // Vite
 
 function OverviewTab() {
-  // Combine posts and comments
-  const items = [];
+  const navigate = useNavigate();
 
-  mockPosts.forEach(post => {
-    items.push({ type: 'post', data: post, sortValue: parseTimeAgo(post.createdAt) });
-  });
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  Object.values(mockCommentsByPost).forEach(comments => {
-    comments.forEach(comment => {
-      items.push({ type: 'comment', data: comment, sortValue: parseTimeAgo(comment.createdAt) });
+  const storedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+  const userId = storedUser?._id || storedUser?.id;
+
+  useEffect(() => {
+    if (!userId) navigate("/login");
+  }, [userId, navigate]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        // CHANGE endpoints to match your backend:
+        const [postsRes, commentsRes] = await Promise.all([
+          fetch(`${API_URL}/posts/user/${userId}`),
+          fetch(`${API_URL}/comments/user/${userId}`),
+        ]);
+
+        const postsData = postsRes.ok ? await postsRes.json() : [];
+        const commentsData = commentsRes.ok ? await commentsRes.json() : [];
+
+        setPosts(Array.isArray(postsData) ? postsData : postsData.data || []);
+        setComments(Array.isArray(commentsData) ? commentsData : commentsData.data || []);
+      } catch (e) {
+        console.error("Failed to fetch overview data", e);
+        setPosts([]);
+        setComments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, [userId]);
+
+  const items = useMemo(() => {
+    const merged = [];
+
+    posts.forEach((p) => {
+      merged.push({
+        type: "post",
+        data: p,
+        sortValue: new Date(p.createdAt || 0).getTime(),
+      });
     });
-  });
 
-  // Sort by sortValue ascending (newest first)
-  items.sort((a, b) => a.sortValue - b.sortValue);
+    comments.forEach((c) => {
+      merged.push({
+        type: "comment",
+        data: c,
+        sortValue: new Date(c.createdAt || 0).getTime(),
+      });
+    });
+
+    merged.sort((a, b) => b.sortValue - a.sortValue);
+    return merged;
+  }, [posts, comments]);
+
+  const handleOpenPost = (post) => {
+    const postId = post._id || post.id;
+    if (postId) navigate(`/posts/${postId}`);
+  };
+
+  if (!userId) return null;
 
   return (
     <div className="overview">
-      {items.length > 0 ? (
+      {loading ? (
+        <EmptyState message="Loading..." />
+      ) : items.length > 0 ? (
         <>
-          <Link className="no-underline" to="/settings?tab=profile"><div className="overview__filter">
-            <div className="filter-left">
-              <Eye size={18} />
-              <span>Showing all content</span>
+          <Link className="no-underline" to="/settings?tab=profile">
+            <div className="overview__filter">
+              <div className="filter-left">
+                <Eye size={18} />
+                <span>Showing all content</span>
+              </div>
+              <span className="arrow">›</span>
             </div>
-            <span className="arrow">›</span>
-          </div>
           </Link>
 
           <div className="overview__create">
-            <button className="create-btn">
+            <button className="create-btn" onClick={() => navigate("/create")}>
               <Plus size={18} />
               Create Post
             </button>
@@ -63,23 +116,20 @@ function OverviewTab() {
           </div>
 
           <div className="overview__posts">
-            {items.map((item, index) => (
-              <div
-                key={`${item.type}-${item.type === "post" ? item.data.id : item.data._id}`}
-                className="overview-item"
-              >
-                {item.type === "post" ? (
-                  <PostCard
-                    post={item.data}
-                    onClick={() => console.log("Post clicked", item.data.id)}
-                  />
-                ) : (
-                  <div className="comment-preview">
-                    <Comment comment={item.data} />
-                  </div>
-                )}
-              </div>
-            ))}
+            {items.map((item) => {
+              const keyId = item.data._id || item.data.id;
+              return (
+                <div key={`${item.type}-${keyId}`} className="overview-item">
+                  {item.type === "post" ? (
+                    <PostCard post={item.data} onClick={() => handleOpenPost(item.data)} />
+                  ) : (
+                    <div className="comment-preview">
+                      <Comment comment={item.data} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </>
       ) : (

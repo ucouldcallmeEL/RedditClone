@@ -1,18 +1,62 @@
 import { SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import PostCard from "../../../components/PostCard";
 import EmptyState from "../../../components/EmptyState";
-import { mockPosts } from "../mock";
 
 import "./OverviewTab.css";
 
+const API_URL = import.meta.env.VITE_API_URL; // Vite
+
 function UpvotesTab() {
-  // Get upvoted posts
-  const upvotedPosts = mockPosts.filter(post => post.userUpvoted);
+  const navigate = useNavigate();
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const storedUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const userId = storedUser?._id || storedUser?.id;
+
+  useEffect(() => {
+    if (!userId) navigate("/login");
+  }, [userId, navigate]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUpvotedPosts = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_URL}/posts/upvoted/${userId}`);
+        const data = res.ok ? await res.json() : [];
+
+        setPosts(Array.isArray(data) ? data : data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch upvoted posts", err);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUpvotedPosts();
+  }, [userId]);
+
+  if (!userId) return null;
 
   return (
     <div className="overview">
-      {upvotedPosts.length > 0 ? (
+      {loading ? (
+        <EmptyState message="Loading upvotes..." />
+      ) : posts.length > 0 ? (
         <>
           <div className="overview__create">
             <button className="icon-btn">
@@ -21,14 +65,16 @@ function UpvotesTab() {
           </div>
 
           <div className="overview__posts">
-            {upvotedPosts.map((post) => (
+            {posts.map((post) => (
               <div
-                key={post.id}
+                key={post._id || post.id}
                 className="overview-item"
               >
                 <PostCard
                   post={post}
-                  onClick={() => console.log("Post clicked", post.id)}
+                  onClick={() =>
+                    navigate(`/posts/${post._id || post.id}`)
+                  }
                 />
               </div>
             ))}
