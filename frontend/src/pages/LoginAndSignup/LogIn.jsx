@@ -11,43 +11,62 @@ const LogIn = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formIsValid) return;
+
+    // reset errors
+    setEmailError("");
+    setPasswordError("");
+
+    let valid = true;
+
+    // 1️⃣ Empty field validation
+    if (!email) {
+      setEmailError("Fill out this field.");
+      valid = false;
+    }
+
+    if (!password) {
+      setPasswordError("Fill out this field.");
+      valid = false;
+    }
+
+    if (!valid) return;
 
     try {
       const response = await apiPost(userRoutes.login, {
         identifier: email,
-        password: password,
+        password,
       });
 
       const data = await response.json();
 
+      // 2️⃣ Invalid username or password → password field ONLY
       if (!response.ok) {
-        console.error("Login error:", data.error);
-        // TODO: Show error message to user
+        if (response.status === 401) {
+          setPasswordError("Invalid username or password");
+        } else {
+          setPasswordError(data.error || "Something went wrong");
+        }
         return;
       }
 
-      // Store token and user data
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
+      // success
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Close modal and navigate
-      if (onClose) {
-        onClose();
-      }
+      onClose?.();
       navigate("/");
-    } catch (error) {
-      console.error("Login error:", error);
-      // TODO: Show error message to user
+    } catch (err) {
+      setPasswordError("Server error. Please try again.");
     }
   };
+
+
 
   const handleClose = () => {
     if (onClose) {
@@ -72,8 +91,8 @@ const LogIn = ({ onClose }) => {
         >
           <path
             d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"
-            fill="white"
-            stroke="white"
+            fill="currentColor"
+            stroke="currentColor"
             strokeWidth="0.25"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -124,21 +143,27 @@ const LogIn = ({ onClose }) => {
       <div className="email">
         <TextField
           label="Email or username"
-          type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setEmailError(""); // clear only email error
+          }}
           validator={isEmailValid}
+          required
+          error={emailError}
           errorMessage="Fill out this field."
         />
-
         <TextField
           label="Password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setPasswordError(""); // clears invalid credentials when typing
+          }}
           validator={isPasswordValid}
+          required
+          error={passwordError}
           errorMessage="Fill out this field."
         />
       </div>

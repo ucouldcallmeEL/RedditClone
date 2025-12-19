@@ -10,8 +10,8 @@
 }
 
 .quit-login-button {
-  background-color: #2a3236;
-  color: #ffffff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   align-items: center;
   justify-content: center;
   display: inline-flex;
@@ -35,11 +35,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2a3236;
-  color: #fff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   cursor: pointer;
   /* background-color: #2a3236;
-  color: #ffffff;
+  color: var(--text-primary);
   align-items: center;
   justify-content: center;
   display: inline-flex;
@@ -58,7 +58,8 @@
   font-family: "Segeo UI", sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
+  fill: var(--text-primary);
   position: relative;
   top: 0.15rem;
   right: -0.05rem;
@@ -67,7 +68,7 @@
   display: block; */
 }
 .quit-reset-button:hover {
-  background-color: #333d42;
+  background-color: var(--bg-hover);
   cursor: pointer;
 }
 
@@ -75,7 +76,8 @@
   font-family: "Segeo UI", sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
+  fill: var(--text-primary);
   position: relative;
   top: 0.15rem;
   right: -0.05rem;
@@ -85,12 +87,12 @@
 }
 
 .quit-login-button:hover {
-  background-color: #333d42;
+  background-color: var(--bg-hover);
   cursor: pointer;
 }
 
 .log-in-modal {
-  background-color: #181c1f;
+  background-color: var(--bg-secondary);
   box-sizing: border-box;
   padding: 1rem;
   display: flex;
@@ -99,13 +101,13 @@
   min-height: fit-content;
   overflow: visible;
   border-radius: 1rem;
-  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   margin: 50px, 100px;
   position: relative; /* Add this for absolute positioning of close button */
 }
 
 .log-in-modal-text {
-  color: #b7cad4;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 400;
   text-align: center;
@@ -113,7 +115,7 @@
 }
 
 .log-in-modal .log-in-modal-title {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 700;
   text-align: center;
@@ -121,7 +123,7 @@
 }
 
 .LogIn-button {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 20px;
   padding: 10px 20px;
   margin: 10px 0;
@@ -133,10 +135,17 @@
   font-weight: 400;
   font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-  color: #181c1f;
-  border: none;
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
   width: 89%;
   /* position: relative; */
+}
+
+/* Light mode: LogIn buttons should have white background */
+[data-theme="light"] .LogIn-button {
+  background-color: #fff;
+  color: #111827;
+  border: 1px solid var(--border-primary);
 }
 
 .LogIn-button img,
@@ -175,28 +184,24 @@
 .or-divider-line {
   width: 100%;
   border: none;
-  border-top: 1px solid #323131;
+  border-top: 1px solid var(--border-primary);
   margin: 0;
 }
 
 .or-divider-text {
   position: absolute;
-  /* background-color: #181C1F; */
-  color: #b7cad4;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
 }
 
 .text-field {
-  background-color: #b7cad4;
+  background-color: var(--bg-tertiary);
   width: 100%;
   margin: 10px 0;
   display: block;
-}
-
-.or-divider-text {
-  color: #b7cad4;
 }
 
 .text-fields-wrapper {
@@ -218,13 +223,13 @@
   text-align: left;
   width: 100%;
   margin-bottom: 16px;
-  color: #b7cad4;
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: left;
 }
 
 .signup-prompt {
-  color: #b7cad4;
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: left;
 }
@@ -242,32 +247,32 @@ a:hover {
 }
 
 .LogIn-button.disabled {
-  background-color: #24282b;
+  background-color: var(--bg-tertiary);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .LogIn-button.disabled:hover {
-  background-color: #24282b;
+  background-color: var(--bg-tertiary);
 }
 .login-action-button {
-  color: White;
-  background-color: #d93900;
+  color: var(--text-primary);
+  background-color: var(--accent-orange);
 }
 .login-action-button .log-in-button-text {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 .login-action-button:hover {
   background-color: #ae2c00;
 }
 .log-in-button-text {
-  color: #020101;
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
 }
 
 .log-in-button-text.disabled {
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 16px;
   font-weight: 600;
 }
@@ -320,7 +325,7 @@ a:hover {
   align-self: left;
   text-align: left;
   width: 100%;
-  color: #b7cad4;
+  color: var(--text-secondary);
   font-size: 10.5px;
   font-weight: 400;
   text-align: left;
@@ -332,7 +337,7 @@ a:hover {
   align-self: left;
   text-align: left;
   width: 100%;
-  color: white;
+  color: var(--text-primary);
   font-size: 11px;
   text-align: left;
   font-weight: 600;
