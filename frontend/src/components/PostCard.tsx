@@ -14,6 +14,7 @@ type Props = {
 function PostCard({ post, onClick, onVote }: Props) {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [summaryVisible, setSummaryVisible] = useState(false);
   const [visible, setVisible] = useState(false);
   const [userVote, setUserVote] = useState<1 | -1 | 0>(0); // 1 up, -1 down, 0 none
   const [upvotes, setUpvotes] = useState(post.upvotes);
@@ -87,7 +88,8 @@ function PostCard({ post, onClick, onVote }: Props) {
     if (summary || loading) return;
     setLoading(true);
     try {
-      const res = await apiClient.post(`/api/ai/summarize/${post.id}`);
+      // apiClient.baseURL already includes `/api`, so call the AI route without repeating `/api`
+      const res = await apiClient.post(`/ai/summarize/${post.id}`);
       setSummary(res?.data?.summary || 'No summary available');
     } catch (err) {
       console.error('Summary fetch error', err);
@@ -98,7 +100,7 @@ function PostCard({ post, onClick, onVote }: Props) {
   };
 
   return (
-    <article className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+    <article ref={containerRef} className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default', position: 'relative' }}>
       <header className="post__meta">
         <img
           src={post.communityIcon}
@@ -116,6 +118,45 @@ function PostCard({ post, onClick, onVote }: Props) {
           </p>
         </div>
       </header>
+
+      {/* AI summary button - top-right */}
+      <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 70 }}>
+        <button
+          aria-label="AI summary"
+          onClick={(e) => { e.stopPropagation(); }}
+          onMouseEnter={async () => {
+            setSummaryVisible(true);
+            if (!summary && !loading) await fetchSummary();
+          }}
+          onMouseLeave={() => setSummaryVisible(false)}
+          onFocus={async () => {
+            setSummaryVisible(true);
+            if (!summary && !loading) await fetchSummary();
+          }}
+          onBlur={() => setSummaryVisible(false)}
+          style={{
+            background: 'linear-gradient(135deg,#7c3aed,#06b6d4)',
+            border: 'none',
+            color: '#fff',
+            padding: '6px 10px',
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: 12,
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
+          }}
+        >
+          AI
+        </button>
+
+        {summaryVisible ? (
+          <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 340, zIndex: 80 }}>
+            <div className="card" style={{ padding: '.6rem', maxHeight: 220, overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
+              {loading ? <div>Loading summary…</div> : <div>{summary || 'No summary available'}</div>}
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       <div className="post__content">
         <h2>{post.title}</h2>
@@ -181,6 +222,7 @@ function PostCard({ post, onClick, onVote }: Props) {
           <Share2 size={16} />
           Share
         </button>
+        
       </footer>
     </article>
   );

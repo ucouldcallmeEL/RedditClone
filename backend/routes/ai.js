@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Post = require("../schemas/post");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); //add ur own key here 
+const genAI = new GoogleGenerativeAI("AIzaSyCayaSWhxKUTUJq1GJR-Jz11sASpxexxkE"); //add ur own key here 
 
 
 router.post("/summarize/:postId", async (req, res) => {
