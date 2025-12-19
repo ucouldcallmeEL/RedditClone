@@ -320,7 +320,12 @@ function CommunityPage() {
                   onClick={() => navigate(`/post/${post.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <PostCard post={post} />
+                  <PostCard 
+                    post={post} 
+                    onVote={(postId, upvotes, downvotes) => {
+                      setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes, downvotes } : p));
+                    }}
+                  />
                 </article>
               ))
             ) : (

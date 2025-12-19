@@ -145,6 +145,9 @@ function HomePage({ feedFilter = 'home' }: Props) {
             key={post.id} 
             post={post} 
             onClick={() => handlePostClick(post.id)}
+            onVote={(postId, upvotes, downvotes) => {
+              setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes, downvotes } : p));
+            }}
           />
         ))
       )}
