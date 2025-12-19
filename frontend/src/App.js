@@ -124,23 +124,9 @@ function AppContent() {
   const isResetPage = location.pathname === '/reset';
   const isCreateUserPage = location.pathname === '/create-user';
   const isInterestsPage = location.pathname === '/interests';
-  const isCreatePostPage = location.pathname.startsWith('/posts/create');
   const isCreateCommunityPage = location.pathname.startsWith('/communities/create');
   
   const isAnyAuthPage = isLoginPage || isSignupPage || isSigninPhonePage || isResetPage || isCreateUserPage || isInterestsPage;
-
-  // For create post page, show as full page
-  if (isCreatePostPage) {
-    return (
-      <div className="App">
-        <div className="homepage">
-          <Routes>
-            <Route path="/posts/create" element={<CreatePost />} />
-          </Routes>
-        </div>
-      </div>
-    );
-  }
 
   // For auth pages, show as modal overlay on top of main layout
   if (isAnyAuthPage) {
@@ -157,6 +143,7 @@ function AppContent() {
                 <Route path="/r/:communityName" element={<CommunityPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notifications" element={<NotificationPage />} />
+                <Route path="/posts/create" element={<CreatePost />} />
               </Routes>
             </main>
             {onMainFeed && <RightRail />}
@@ -223,6 +210,7 @@ function AppContent() {
             {/* Settings and Notifications */}
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/posts/create" element={<CreatePost />} />
           </Routes>
         </main>
 

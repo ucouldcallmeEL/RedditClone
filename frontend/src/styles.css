@@ -139,6 +139,13 @@ button {
   transition: width 0.2s ease;
 }
 
+/* Allow CreatePost to take full width of the grid column */
+.app-body:has(.create-post-page) {
+  grid-template-columns: 1fr 300px;
+  width: 100%;
+  max-width: none;
+}
+
 /* Community page specific styles moved to `src/styles/community.css` for modularity */
 
 .card {
@@ -619,6 +626,12 @@ button {
   flex-direction: column;
   gap: 1rem;
   max-width: 640px;
+}
+
+/* Allow CreatePost to take full width */
+.feed:has(.create-post-page) {
+  max-width: none;
+  width: 100%;
 }
 
 /* Feed scrollbar styling */

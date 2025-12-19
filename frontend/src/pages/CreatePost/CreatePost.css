@@ -1,18 +1,10 @@
 /* Create Post Page Layout */
 .create-post-page {
+  width: 100%;
   min-height: 100vh;
   background-color: #0e1113;
   display: flex;
   flex-direction: column;
-}
-
-/* Header Bar Placeholder */
-.header-bar-placeholder {
-  width: 100%;
-  height: 60px;
-  background-color: #1a1a1b;
-  border-bottom: 1px solid #343536;
-  /* Placeholder for external header component */
 }
 
 /* Main Layout */
@@ -24,15 +16,6 @@
   width: 100%;
 }
 
-/* Sidebar Placeholder */
-.sidebar-placeholder {
-  width: 240px;
-  min-height: calc(100vh - 60px);
-  background-color: #1a1a1b;
-  border-right: 1px solid #343536;
-  flex-shrink: 0;
-  /* Placeholder for external sidebar component */
-}
 
 /* Main Content Area */
 .create-post-main-content {
@@ -41,7 +24,7 @@
   place-content: space-between;
   flex: 1 1 0%;
   width: 100%;
-  grid-template-columns: minmax(0, 756px) minmax(0, 316px);
+  grid-template-columns: 1fr;
   justify-content: center;
   padding: 1rem;
   background-color: #0e1113;

@@ -372,9 +372,9 @@ const CreatePost = () => {
 
   return (
     <div className="create-post-page">
-      <HeaderBar />
+      {/* <HeaderBar /> */}
       <div className="create-post-layout">
-        <Sidebar />
+        {/* <Sidebar /> */}
         <div className="create-post-main-content">
           <div className="create-post-container">
             <div className="create-post-header">
