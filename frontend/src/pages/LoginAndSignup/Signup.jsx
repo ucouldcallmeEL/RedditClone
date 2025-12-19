@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
@@ -32,6 +31,17 @@ const Signup = ({ onClose }) => {
 
   const formIsValid = isEmailValid(email); // && isPasswordValid(password);
 
+  // Get error message for email field
+  const getEmailErrorMessage = () => {
+    if (!email || email.length === 0) {
+      return "Fill out this field";
+    }
+    if (!isEmailValid(email)) {
+      return "Invalid email";
+    }
+    return null;
+  };
+
   return (
     <div className="log-in-modal auth-flow-modal reset-pass-modal">
       <div>
@@ -46,8 +56,8 @@ const Signup = ({ onClose }) => {
             >
               <path
                 d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"
-                fill="white"
-                stroke="white"
+                fill="currentColor"
+                stroke="currentColor"
                 strokeWidth="0.25"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -95,14 +105,14 @@ const Signup = ({ onClose }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               validator={isEmailValid}
-              errorMessage="Fill out this field."
+              errorMessage={getEmailErrorMessage()}
             />
           </div>
           <div className="log-in-modal-other-links">
             <div>
               <p className="signup-prompt">
                 Already a Redditor?{" "}
-                <Link className="Reset-and-signup" to="/">
+                <Link className="Reset-and-signup" to="/login">
                   Log In
                 </Link>
               </p>

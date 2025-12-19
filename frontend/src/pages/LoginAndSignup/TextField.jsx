@@ -20,7 +20,8 @@ const TextField = ({
   onChange,
   required = false,
   validator,
-  errorMessage,
+  errorMessage, // fallback message
+  error, // 🔴 NEW: external error
   rightButton,
   onRightButtonClick,
 }) => {
@@ -31,7 +32,13 @@ const TextField = ({
   const isFloating = isFocused || hasValue;
 
   const isValid = validator ? validator(value) : true;
-  const showError = isTouched && !isValid && !isFocused;
+
+  // 🔴 NEW: error priority
+  const showError =
+    (!!error && !isFocused) ||
+    (isTouched && !isValid && !isFocused);
+
+  const displayedError = error || errorMessage;
 
   return (
     <div
@@ -57,21 +64,17 @@ const TextField = ({
 
         {/* Status Icon */}
         {isTouched && !isFocused && (
-          <span className={`status-icon ${isValid ? "success" : "error"}`}>
-            {isValid ? <SuccessIcon /> : <ErrorIcon />}
+          <span className={`status-icon ${showError ? "error" : "success"}`}>
+            {showError ? <ErrorIcon /> : <SuccessIcon />}
           </span>
         )}
 
-        {/* Optional right-side button (e.g., regenerate username) */}
         {rightButton && (
           <button
             type="button"
             className="text-field-right-button"
             onClick={() => {
-              if (onRightButtonClick) {
-                onRightButtonClick();
-              }
-              // Mark as touched so validation icon appears after first click
+              onRightButtonClick?.();
               if (!isTouched) setIsTouched(true);
             }}
           >
@@ -84,7 +87,11 @@ const TextField = ({
           {required && <span className="required-asterisk">*</span>}
         </label>
 
-        {showError && <p className="text-field-error">{errorMessage}</p>}
+        {showError && (
+          <p className="text-field-error">
+            {displayedError}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -229,4 +229,3 @@ function PostCard({ post, onClick, onVote }: Props) {
 }
 
 export default PostCard;
-

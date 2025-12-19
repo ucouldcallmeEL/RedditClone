@@ -1,6 +1,6 @@
 .custom-button {
-    background-color: #2a3236;
-    color: #FFFFFF;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     align-items: center;
     justify-content: center;
     display: inline-flex;
@@ -17,14 +17,14 @@
 }
 
 .custom-button:disabled {
-    background-color: #FFFFFF0C;
-    color: #FFFFFF3F;
+    background-color: var(--disabled-bg);
+    color: var(--disabled-text);
     cursor: not-allowed;
     opacity: 0.6;
   }
   
 .custom-button:disabled:hover {
-    background-color: #FFFFFF0C;
+    background-color: var(--disabled-bg);
 }
 
 .custom-button.small {
@@ -52,7 +52,7 @@
 }
 
 .custom-button:hover {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .blue-button:hover {
@@ -60,12 +60,12 @@
 }
 
 .blue-button:disabled {
-    background-color: #FFFFFF0C;
-    color: #FFFFFF3F;
+    background-color: var(--disabled-bg);
+    color: var(--disabled-text);
     cursor: not-allowed;
     opacity: 0.6;
 }
 
 .blue-button:disabled:hover {
-    background-color: #1a1e20;
+    background-color: var(--disabled-bg);
 }

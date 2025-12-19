@@ -11,11 +11,11 @@
 }
 
 .community-type-container.selected {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .community-type-icon {
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .community-type-details {
@@ -29,7 +29,7 @@
 }
 
 .community-type-name {
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 500;
     text-align: start;
@@ -38,7 +38,7 @@
 }
 
 .community-type-description {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 400;
     text-align: start;
@@ -47,7 +47,7 @@
 }
 
 .community-type-radio-button-selected {
-    color: #DBE4E9;
+    color: var(--text-quaternary);
     display: flex;
     align-items: center;
     margin-left: auto;
@@ -55,7 +55,7 @@
 }
 
 .community-type-radio-button-unselected {
-    color: #8BA2AD;
+    color: var(--text-tertiary);
     display: flex;
     align-items: center;
     margin-left: auto;

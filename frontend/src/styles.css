@@ -10,12 +10,18 @@
   --bg-secondary: #fff;
   --bg-tertiary: #f8fafc;
   --bg-hover: #f1f5f9;
+  --bg-active: #e2e8f0;
   --text-primary: #111827;
   --text-secondary: #475569;
   --text-tertiary: #94a3b8;
   --text-quaternary: #64748b;
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e1;
+  --border-light: rgba(0, 0, 0, 0.1);
+  --border-lighter: rgba(0, 0, 0, 0.2);
+  --border-lightest: rgba(0, 0, 0, 0.05);
+  --disabled-bg: rgba(0, 0, 0, 0.05);
+  --disabled-text: rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 10px 30px rgb(15 23 42 / 6%);
   --shadow-md: 0 20px 45px rgb(15 23 42 / 5%);
   --shadow-lg: 0 20px 50px rgb(15 23 42 / 15%);
@@ -28,12 +34,18 @@
   --bg-secondary: #181C1F;
   --bg-tertiary: #2a3236;
   --bg-hover: #333D42;
+  --bg-active: #3D494E;
   --text-primary: #eef1f3;
   --text-secondary: #acacac;
   --text-tertiary: #748791;
-  --text-quaternary: #8BA2AD;
+  --text-quaternary: #b7cad4;
   --border-primary: #2a3236;
   --border-secondary: #303030;
+  --border-light: rgba(255, 255, 255, 0.2);
+  --border-lighter: rgba(255, 255, 255, 0.5);
+  --border-lightest: rgba(255, 255, 255, 0.1);
+  --disabled-bg: rgba(255, 255, 255, 0.05);
+  --disabled-text: rgba(255, 255, 255, 0.25);
   --shadow-sm: 0 0.0625rem 0.25rem 0 #00000054;
   --shadow-md: 0px 2px 15px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0px 2px 15px rgba(0, 0, 0, 0.5);
@@ -247,6 +259,36 @@ button {
   color: var(--text-tertiary);
 }
 
+.header__get_app-btn {
+  background-color: var(--bg-hover);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: var(--text-primary);
+}
+
+.header__get_app-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.header__login-btn {
+  background-color: var(--accent-orange);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.header__login-btn:hover {
+  background-color: #ae2c00;
+}
+
 .header__actions {
   display: flex;
   align-items: center;
@@ -260,11 +302,19 @@ button {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--border-primary);
+  /* border: 1px solid var(--border-primary); */
   border-radius: 999px;
-  padding: 0.35rem 0.75rem;
+  /* padding: 0.35rem 0.75rem; */
   background: var(--bg-secondary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.profile img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .profile__name {
@@ -325,6 +375,14 @@ button {
   display: grid;
   place-items: center;
   font-weight: 700;
+  overflow: hidden;
+}
+
+.profile-menu__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .profile-menu__username {
@@ -450,6 +508,7 @@ button {
 .ghost-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   font-size: 0.68rem;
   color: var(--text-secondary);
@@ -1248,7 +1307,7 @@ button {
 }
 
 .btn--ghost:hover {
-  background: #f8fafc;
+  background: var(--bg-hover);
 }
 
 /* === Notifications (migrated from reddit-frontend) === */
@@ -1303,7 +1362,7 @@ button {
 }
 
 .notif-icon-btn:hover {
-  background: #ededed;
+  background: var(--bg-hover);
 }
 
 .notification-card {
@@ -1443,7 +1502,12 @@ button {
 }
 
 .icon-btn:hover {
-  background: #f0f0f0;
+  background: var(--bg-hover);
+}
+
+.icon-btn.messages, .icon-btn.ads {
+  width: 30px;
+  height: 30px;
 }
 
 .dots-wrapper {

@@ -1,14 +1,15 @@
 .input-field-container {
     position: relative;
-    height: 2.5rem;
+    height: 4rem;
+    min-height: 3.5rem;
     padding-inline-start: 1rem;
     padding-inline-end: 1rem;
     padding-block-start: 0.5rem;
     padding-block-end: 0.5rem;
     border-radius: 1.25rem;
-    border: 1px solid #2a3236;
-    background-color: #2a3236;
-    color: #ffffff;
+    border: 1px solid var(--border-primary);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 400;
     display: flex;
@@ -17,17 +18,17 @@
 }
 
 .input-field-container.transparent-bg {
-    border: 1px solid #FFFFFF33;
+    border: 1px solid var(--border-primary);
     background-color: transparent;
-    color: #DBE4E9;
+    color: var(--text-quaternary);
 }
 
 .input-field-container:hover {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .input-field-container.focused {
-        border-color: #B7CAD4;
+        border-color: var(--text-quaternary);
         border-width: 2px;
 }
 
@@ -40,7 +41,7 @@
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 16px;
     font-weight: 400;
     pointer-events: none;
@@ -51,7 +52,7 @@
 .input-field-label.floating {
     top: 0.5rem;
     font-size: 12px;
-    color: #b7cad4;
+    color: var(--text-quaternary);
     transform: translateY(0);
 }
 
@@ -69,7 +70,7 @@
 }
 
 .input-field-prefix {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 16px;
     font-weight: 400;
     pointer-events: none;
@@ -78,7 +79,7 @@
 }
 
 .input-field-prefix.floating {
-    color: #b7cad4;
+    color: var(--text-quaternary);
     font-size: 16px;
 }
 
@@ -90,7 +91,7 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 16px;
     margin-top: 0;
 }
@@ -145,7 +146,7 @@
 }
 
 .input-field-counter {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 400;
     padding-right: 1rem;
@@ -168,9 +169,9 @@
 } */
 
 .input-field-error.white-error {
-    color: #dbe4e9;
+    color: var(--text-quaternary);
 }
 
 .input-field-counter.white-counter {
-    color: #dbe4e9;
+    color: var(--text-quaternary);
 }

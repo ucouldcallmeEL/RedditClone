@@ -2,6 +2,7 @@
   position: relative;
   width: 100%;
   margin: 10px 0 20px 0;
+  padding: 0;
 }
 
 /* Extra space ONLY when error text is visible */
@@ -13,17 +14,17 @@
 }
 
 .text-field-input:hover {
-  background-color: #333d42;
+  background-color: var(--bg-hover);
 }
 
 .text-field-input {
   width: 100%;
-  background-color: #2a3236;
+  background-color: var(--bg-tertiary);
   border: none;
   border-radius: 16px;
   padding: 24px 20px 8px 20px;
   font-size: 16px;
-  color: #ffffff;
+  color: var(--text-primary);
   outline: none;
   box-sizing: border-box;
   transition: background-color 0.2s ease;
@@ -37,7 +38,7 @@
 /* Blue outline when focused */
 .text-field-input.focused {
   outline: 2px solid #4a9eff;
-  background-color: #333d42;
+  background-color: var(--bg-hover);
 }
 
 /* Invalid */
@@ -59,7 +60,7 @@
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 16px;
   font-weight: 400;
   pointer-events: none;
@@ -70,7 +71,7 @@
   top: 10px;
   transform: translateY(0);
   font-size: 11px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
 }
 
 .required-asterisk {
