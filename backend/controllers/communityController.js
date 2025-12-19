@@ -1,5 +1,9 @@
 const { getPosts } = require('../managers/postManager');
-const { getCommunityWithFilteredPosts, getCommunities, getCommunitiesByUser, getTopCommunitiesForUser: managerGetTopCommunitiesForUser, addMemberToCommunity, removeMemberFromCommunity, ismod, getCommunityByName } = require('../managers/communityManager');
+const { getCommunityWithFilteredPosts, getCommunities, getCommunitiesByUser, getTopCommunitiesForUser: managerGetTopCommunitiesForUser, addMemberToCommunity, removeMemberFromCommunity,
+  getCommunityByName,
+  createCommunity,
+  getCommunitiesByNameSubstring
+} = require('../managers/communityManager');
 
 const getCommunityDetails = async (req, res) => {
   try {
@@ -27,20 +31,8 @@ const getCommunityDetails = async (req, res) => {
   }
 };
 
-// Return whether the provided user is a moderator of the community
-const isModerator = async (req, res) => {
-  try {
-    const communityName = req.params.communityName;
-    const user = req.query.userId || req.body?.userId || req.headers['x-user-id'] || null;
-    if (!communityName || !user) return res.status(400).send({ error: 'communityName and userId required' });
-
-    const isMod = await ismod(user, communityName);
-    return res.send({ isModerator: !!isMod });
-  } catch (err) {
-    console.error('Failed to check moderator status', err);
-    return res.status(500).send({ error: 'Failed to check moderator status' });
-  }
-};
+// NOTE: legacy `isModerator` controller removed. Moderator checks are handled
+// by inspecting the community's populated `moderators` list where needed.
 
 const getAllCommunities = async (req, res) => {
   try {
@@ -71,13 +63,17 @@ const getTopCommunitiesForUser = async (req, res) => {
 const joinCommunity = async (req, res) => {
   try {
     const paramName = req.params.communityName;
-    const { userId, communityName } = req.body || {};
-    const nameToUse = communityName || paramName;
-    const updated = await addMemberToCommunity(nameToUse, userId);
-    res.status(200).send({ success: true, community: updated });
+    const { userId, communityName, communityId } = req.body || {};
+    const idOrName = communityId || communityName || paramName;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    await addMemberToCommunity(idOrName, userId);
+    res.status(200).send({ success: true });
   } catch (err) {
     console.error('Failed to join community', err);
-    res.status(500).send({ error: 'Failed to join community' });
+    const msg = err?.message || 'Failed to join community';
+    const code = /not found/i.test(msg) ? 404 : 500;
+    res.status(code).send({ error: msg });
   }
 };
 
@@ -85,13 +81,26 @@ const joinCommunity = async (req, res) => {
 const leaveCommunity = async (req, res) => {
   try {
     const paramName = req.params.communityName;
-    const { userId, communityName } = req.body || {};
-    const nameToUse = communityName || paramName;
-    const updated = await removeMemberFromCommunity(nameToUse, userId);
-    res.status(200).send({ success: true, community: updated });
+    const { userId, communityName, communityId } = req.body || {};
+    console.log('[leaveCommunity] params:', { paramName });
+    console.log('[leaveCommunity] body:', { userId, communityName, communityId });
+    const idOrName = communityId || communityName || paramName;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    try {
+      await removeMemberFromCommunity(idOrName, userId);
+      res.status(200).send({ success: true });
+    } catch (innerErr) {
+      console.error('[leaveCommunity] removeMemberFromCommunity error', innerErr);
+      const msg = innerErr?.message || 'Failed to leave community';
+      const code = /not found/i.test(msg) ? 404 : 500;
+      return res.status(code).send({ error: msg });
+    }
   } catch (err) {
     console.error('Failed to leave community', err);
-    res.status(500).send({ error: 'Failed to leave community' });
+    const msg = err?.message || 'Failed to leave community';
+    const code = /not found/i.test(msg) ? 404 : 500;
+    res.status(code).send({ error: msg });
   }
 };
 
@@ -148,9 +157,27 @@ const uploadCommunityImage = async (req, res) => {
     if (!userId) return res.status(400).send({ error: 'userId required' });
     if (!file) return res.status(400).send({ error: 'No file uploaded' });
 
-    // check moderator
-    const mod = await ismod(userId, communityName);
-    if (!mod) return res.status(403).send({ error: 'User is not a moderator' });
+    // check moderator by inspecting populated moderators on the community
+    try {
+      const communityForCheck = await getCommunityByName(communityName);
+      if (!communityForCheck) return res.status(404).send({ error: 'Community not found' });
+
+      const moderators = communityForCheck.moderators || [];
+      const isMod = moderators.some((m) => {
+        if (!m) return false;
+        if (typeof m === 'string') {
+          return m === userId || m === `u/${userId}` || m === `u/${String(userId).replace(/^u\//, '')}`;
+        }
+        const mid = String(m._id || m.id || '');
+        const mname = m.username || m.name || '';
+        return mid === String(userId) || mname === userId || mname === `u/${userId}`;
+      });
+
+      if (!isMod) return res.status(403).send({ error: 'User is not a moderator' });
+    } catch (e) {
+      console.warn('[uploadCommunityImage] failed moderator check', e?.message || e);
+      return res.status(500).send({ error: 'Failed to validate moderator status' });
+    }
 
     const cloud = require('../managers/cloudinary');
 
@@ -180,13 +207,74 @@ const uploadCommunityImage = async (req, res) => {
   }
 };
 
+// Check if community name exists
+const checkCommunityNameExists = async (req, res) => {
+  try {
+    const communityName = req.params.communityName;
+    const community = await getCommunityByName(communityName);
+    res.json({ exists: !!community, isNameTaken: !!community });
+  } catch (err) {
+    console.error('Error checking community name:', err);
+    res.status(500).json({ error: 'Failed to check community name' });
+  }
+};
+
+// Create a new community
+const postCommunity = async (req, res) => {
+  try {
+    // Get authenticated user from token (set by authenticate middleware)
+    const userId = req.user._id;
+
+    // Build community data
+    const communityData = {
+      ...req.body,
+      owner: userId,
+      members: [userId],
+      moderators: [userId],
+    };
+
+    const community = await createCommunity(communityData);
+    res.status(201).json(community);
+  } catch (err) {
+    console.error('Error creating community:', err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Search communities by substring
+const fetchCommunitiesBySubstring = async (req, res) => {
+  try {
+    const substring = req.params.substring;
+    const communities = await getCommunitiesByNameSubstring(substring);
+    res.json(communities);
+  } catch (err) {
+    console.error('Error fetching communities by substring:', err);
+    res.status(500).json({ error: 'Failed to fetch communities' });
+  }
+};
+
+// Get user's communities
+const fetchUserCommunities = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const communities = await getCommunitiesByUser(userId);
+    res.json(communities || []);
+  } catch (err) {
+    console.error('Error fetching user communities:', err);
+    res.status(500).json({ error: 'Failed to fetch user communities' });
+  }
+};
+
 module.exports = {
   getCommunityDetails,
+  checkCommunityNameExists,
+  postCommunity,
+  fetchCommunitiesBySubstring,
+  fetchUserCommunities,
   getAllCommunities,
   getTopCommunitiesForUser,
   joinCommunity,
   leaveCommunity,
-  isModerator,
   getCommunityImages,
   uploadCommunityImage,
 };

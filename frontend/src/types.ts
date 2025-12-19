@@ -8,7 +8,7 @@ export type Post = {
   media?: string;
   isSpoiler?: boolean;
   upvotes: number;
-  downvotes: number;
+  downvotes?: number; // Optional for backward compatibility
   comments: number;
   shared: number;
   author: string;

@@ -1,11 +1,15 @@
 import { Image, Link2, Smile, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function PostComposer() {
   return (
     <section className="composer card">
       <div className="composer__input">
         <Sparkles size={18} />
-        <input placeholder="Create post" aria-label="Create post" />
+        <input 
+          placeholder="Create post" 
+          aria-label="Create post" 
+        />
       </div>
       <div className="composer__actions">
         <button className="icon-pill">

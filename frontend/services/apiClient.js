@@ -8,6 +8,15 @@ export const apiClient = axios.create({
   },
 });
 
+// Rewrite legacy frontend `/r/...` API calls to backend `/communities/...` paths
+apiClient.interceptors.request.use((config) => {
+  if (!config || !config.url) return config;
+  // only rewrite client-side shorthand paths starting with /r/
+  if (typeof config.url === 'string' && config.url.startsWith('/r/')) {
+    config.url = config.url.replace(/^\/r\//, '/communities/');
+  }
+  return config;
+});
 
 apiClient.interceptors.response.use(
   (response) => response,

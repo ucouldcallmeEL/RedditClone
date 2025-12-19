@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import type { Post } from '../types';
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../services/apiClient';
 
 type Props = {
   post: Post;

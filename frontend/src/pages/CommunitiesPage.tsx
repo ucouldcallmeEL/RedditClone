@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/community.css';
 import '../styles/communities.css';
 import CommunitiesGrid from '../components/CommunitiesGrid';
+import { API_BASE_URL } from '../services/config';
 
 interface Community {
   _id: string;
@@ -25,7 +26,8 @@ function CommunitiesPage() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3000/r/communities')
+    const apiRoot = API_BASE_URL.replace(/\/api$/, '');
+    fetch(`${apiRoot}/r/communities`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Failed to fetch: ${res.status}`);

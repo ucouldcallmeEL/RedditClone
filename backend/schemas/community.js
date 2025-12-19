@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const communitySchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     description: {
         type: String,
@@ -17,13 +18,26 @@ const communitySchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    topics: [{
+        type: String
+    }],
+    type: {
+        type: String,
+        enum: ['public', 'restricted', 'private'],
+        default: 'public'
+    },
+    isNSFW: {
+        type: Boolean,
+        default: false
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     members: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }],
-    posts: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post'
     }],
     moderators: [{
         type: mongoose.Schema.Types.ObjectId,

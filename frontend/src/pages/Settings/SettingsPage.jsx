@@ -1,6 +1,6 @@
 import {useState , useEffect} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { apiGet, apiPost, userRoutes } from "../../config/apiRoutes";
 
 import SettingsTab from "./SettingsTab";
 import SettingsAccountContent from "./SettingsTabsContent/SettingsAccountContent";
@@ -16,9 +16,10 @@ import openImagePopup from "./popups/openImagePopup";
 import openBannerPopup from "./popups/openBannerPopup";
 import openLanguagePopup from "./popups/openLanguagePopup";
 import openViewPopup from "./popups/openViewPopup";
-
-import defaultAvatar from "../../../../resources/Reddit_Avatar.webp";
 import "./Settings.css";
+
+// Using placeholder avatar - update path if image exists
+const defaultAvatar = "/avatar_default.png";
 
 function SettingsPage() {
 
@@ -52,12 +53,19 @@ function SettingsPage() {
 
     useEffect(() => {
         async function fetchUser(){
-            const res = await axios.get(`http://localhost:5000/users/${userId}`);
-            setAvatar(res.data.profilePicture || defaultAvatar);
-            setBanner(res.data.coverPicture || null);
+            try {
+                const res = await apiGet(userRoutes.getProfile(userId));
+                if (res.ok) {
+                    const data = await res.json();
+                    setAvatar(data.profilePicture || defaultAvatar);
+                    setBanner(data.coverPicture || null);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user:", error);
+            }
         }
         fetchUser();
-    }, []);
+    }, [userId]);
 
     // Handlers
     async function handleGenderChange() {
@@ -94,11 +102,24 @@ function SettingsPage() {
         const form = new FormData();
         form.append("file", result.file);
 
-        const upload = await axios.post(`http://localhost:5000/upload/profile/${userId}`, form, {
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-
-        setAvatar(upload.data.url);
+        try {
+            // TODO: Implement upload endpoint in backend
+            const upload = await fetch(`http://localhost:4000/api/upload/profile/${userId}`, {
+                method: 'POST',
+                body: form,
+                headers: {
+                    ...(localStorage.getItem('token') && {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    })
+                }
+            });
+            if (upload.ok) {
+                const data = await upload.json();
+                setAvatar(data.url);
+            }
+        } catch (error) {
+            console.error("Failed to upload avatar:", error);
+        }
     }
 
     async function handleBannerChange() {
@@ -108,11 +129,24 @@ function SettingsPage() {
         const form = new FormData();
         form.append("file", result.file);
 
-        const upload = await axios.post(`http://localhost:5000/upload/cover/${userId}`, form, {
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-
-        setBanner(upload.data.url);
+        try {
+            // TODO: Implement upload endpoint in backend
+            const upload = await fetch(`http://localhost:4000/api/upload/cover/${userId}`, {
+                method: 'POST',
+                body: form,
+                headers: {
+                    ...(localStorage.getItem('token') && {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    })
+                }
+            });
+            if (upload.ok) {
+                const data = await upload.json();
+                setBanner(data.url);
+            }
+        } catch (error) {
+            console.error("Failed to upload banner:", error);
+        }
     }
 
     async function handleLangChange() {

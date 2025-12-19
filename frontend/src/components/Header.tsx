@@ -18,7 +18,9 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
-import redditLogo from '../../../resources/Reddit_Lockup.svg';
+
+const redditLogo = '/Reddit_Lockup.svg';
+
 
 const profileActions = [
   { label: 'Edit Avatar', icon: Pencil },
@@ -67,7 +69,11 @@ function Header() {
       toggleTheme();
     } else if (label === 'Log Out') {
       // Handle logout
-      console.log('Logging out...');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login');
+    } else if (label === 'Settings') {
+      navigate('/settings');
     }
     // Add more handlers as needed
   };
@@ -91,13 +97,56 @@ function Header() {
       </div>
 
       <div className="header__actions">
+        {/* Create Post Button - only show when user is signed in */}
+        {localStorage.getItem('token') && (
+          <button 
+            className="header__create-post-btn" 
+            onClick={() => navigate('/posts/create')}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#0079d3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              marginRight: '0.5rem'
+            }}
+          >
+            Create Post
+          </button>
+        )}
+        
+        {/* Log In Button - show when user is not logged in */}
+        {!localStorage.getItem('token') && (
+          <button 
+            className="header__login-btn" 
+            onClick={() => navigate('/login')}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: 'transparent',
+              color: '#0079d3',
+              border: '1px solid #0079d3',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              marginRight: '0.5rem'
+            }}
+          >
+            Log In
+          </button>
+        )}
+        
         <button className="icon-btn" aria-label="Messages">
           <MessageCircle size={18} />
         </button>
         <Link className="icon-btn" aria-label="Notifications" to="/notifications">
           <Bell size={18} />
         </Link>
-        <div className="profile-menu__trigger" ref={triggerRef}>
+        {localStorage.getItem('token') && (
+          <div className="profile-menu__trigger" ref={triggerRef}>
           <button
             className="profile"
             aria-label="Account menu"
@@ -162,13 +211,17 @@ function Header() {
             </div>
 
             <div className="profile-menu__section">
-              <button className="profile-menu__item">
+              <button 
+                className="profile-menu__item"
+                onClick={() => handleMenuItemClick('Settings')}
+              >
                 <SettingsIcon size={18} />
                 <span className="profile-menu__item-text">Settings</span>
               </button>
             </div>
           </div>
         </div>
+        )}
       </div>
     </header>
   );

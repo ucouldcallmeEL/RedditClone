@@ -1,0 +1,73 @@
+
+.available-topics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.available-topics-title {
+    color: #b7cad4;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: start;
+    margin-inline-start: 0.25rem;
+}
+
+.available-topics-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.available-topic-name {
+    background-color: #2a3236;
+    color: #FFFFFF;
+    align-items: center;
+    justify-content: center;
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.6rem;
+    border-radius: 999px;
+    border: none;
+    height: auto;
+    min-height: 2.5rem;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.available-topic-name span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.available-topic-name .remove-topic-icon {
+    color: #b7cad4;
+    fill: #b7cad4;
+}
+
+.available-topic-name.selected {
+    background-color: #333D42;
+}
+
+.available-topic-name:hover {
+    background-color: #333D42;
+}
+
+.remove-topic-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-topic-icon {
+    color: #b7cad4;
+    font-size: 12px;
+    font-weight: 600;
+}

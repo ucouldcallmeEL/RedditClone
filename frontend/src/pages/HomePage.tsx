@@ -24,15 +24,37 @@ function HomePage({ feedFilter = 'home' }: Props) {
     try {
       setLoading(true);
 
-      let url = 'http://localhost:3000/';
+      // Use centralized API routes
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+      let url = '';
 
       if (filter === 'all') {
-        url = 'http://localhost:3000/all';
+        url = `${API_BASE_URL}/posts`;
       } else if (filter === 'popular') {
-        url = 'http://localhost:3000/popular?time=all';
+        url = `${API_BASE_URL}/posts/popular?filter=all`;
+      } else {
+        // Home feed - need userId from localStorage
+        const user = localStorage.getItem('user');
+        if (user) {
+          try {
+            const userData = JSON.parse(user);
+            url = `${API_BASE_URL}/posts/home/${userData._id || userData.id}`;
+          } catch {
+            url = `${API_BASE_URL}/posts`;
+          }
+        } else {
+          url = `${API_BASE_URL}/posts`;
+        }
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') && {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          })
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch posts');

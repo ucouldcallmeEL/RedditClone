@@ -1,4 +1,4 @@
-const { getPost } = require('../managers/postManager');
+const { getPost, createPost } = require('../managers/postManager');
 const { getCommentsByPost } = require('../managers/commentManager');
 
 const getPostDetails = async (req, res) => {
@@ -34,6 +34,27 @@ const getPostDetails = async (req, res) => {
   }
 };
 
+// Create a new post
+const addPost = async (req, res) => {
+  try {
+    // Get authenticated user from token (set by authenticate middleware)
+    const userId = req.user._id;
+
+    // Add author to post data
+    const postData = {
+      ...req.body,
+      author: userId,
+    };
+
+    const post = await createPost(postData);
+    res.status(201).json(post);
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getPostDetails,
+  addPost,
 };

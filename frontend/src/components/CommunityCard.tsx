@@ -25,7 +25,11 @@ const CommunityCard: FC<CommunityProps> = ({ community, rank }) => {
     >
       <div className="community-rank">{rank}</div>
       <div className="community-info">
-        <img src={community.profilePicture} alt={`${community.name} icon`} className="community-avatar" />
+        <img
+          src={community.profilePicture || `https://via.placeholder.com/80?text=${encodeURIComponent(community.name || 'r')}`}
+          alt={`${community.name} icon`}
+          className="community-avatar"
+        />
         <div className="community-meta">
           <div className="community-title">r/{community.name}</div>
           <div className="community-desc">{community.description}</div>

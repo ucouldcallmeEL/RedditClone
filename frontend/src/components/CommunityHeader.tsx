@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { CommunityDetails } from '../../types';
+import { useNavigate } from 'react-router-dom';
+import { UserPlus, Check, Plus, Edit3 } from 'lucide-react';
+import type { CommunityDetails } from '../types';
 import { CreatePostButton, ModToolsButton, JoinLeaveButton } from './CommunityButtons';
-import { Edit3 } from 'lucide-react';
-import { apiClient } from '../../../services/apiClient';
-
+import { apiClient } from '../services/apiClient';
 type Props = {
   community: CommunityDetails;
   onToggleJoin?: (joined: boolean) => void;
@@ -12,6 +12,7 @@ type Props = {
 };
 
 function CommunityHeader({ community, onToggleJoin, isModerator, onOpenModTools }: Props) {
+  const navigate = useNavigate();
   const [joined, setJoined] = useState<boolean>(!!community.joined);
 
   // keep internal joined state in sync when parent updates community.joined
@@ -95,7 +96,7 @@ function CommunityHeader({ community, onToggleJoin, isModerator, onOpenModTools 
         </div>
 
         <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
-          <CreatePostButton onClick={() => { /* placeholder: open composer */ }} />
+          <CreatePostButton onClick={() => navigate('/posts/create')} />
 
           {isModerator ? <ModToolsButton onClick={() => onOpenModTools?.()} /> : null}
 
