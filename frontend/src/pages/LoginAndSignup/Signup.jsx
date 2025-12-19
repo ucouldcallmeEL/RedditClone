@@ -8,32 +8,21 @@ import "./Login.css";
 const Signup = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-
+  //   const [password, setPassword] = useState("");
 
   const handleSubmit = () => {
-    setEmailError("");
-
-    if (!email) {
-      setEmailError("Fill out this field.");
-      return;
+    // Store email temporarily for the next step
+    if (email) {
+      localStorage.setItem("signupEmail", email);
     }
-
-    if (!isEmailValid(email)) {
-      setEmailError("Invalid email address.");
-      return;
-    }
-
-    localStorage.setItem("signupEmail", email);
     navigate("/create-user", { state: { email } });
   };
-
 
   const handleClose = () => {
     if (onClose) {
       onClose();
     } else {
-      navigate("/");
+      navigate(-1);
     }
   };
 
@@ -42,6 +31,17 @@ const Signup = ({ onClose }) => {
   //   const isPasswordValid = (val) => val.length > 0;
 
   const formIsValid = isEmailValid(email); // && isPasswordValid(password);
+
+  // Get error message for email field
+  const getEmailErrorMessage = () => {
+    if (!email || email.length === 0) {
+      return "Fill out this field";
+    }
+    if (!isEmailValid(email)) {
+      return "Invalid email";
+    }
+    return null;
+  };
 
   return (
     <div className="log-in-modal auth-flow-modal reset-pass-modal">
@@ -106,9 +106,8 @@ const Signup = ({ onClose }) => {
               onChange={(e) => setEmail(e.target.value)}
               required
               validator={isEmailValid}
-              error={emailError}
+              errorMessage={getEmailErrorMessage()}
             />
-
           </div>
           <div className="log-in-modal-other-links">
             <div>

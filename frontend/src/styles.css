@@ -259,6 +259,36 @@ button {
   color: var(--text-tertiary);
 }
 
+.header__get_app-btn {
+  background-color: var(--bg-hover);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: var(--text-primary);
+}
+
+.header__get_app-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.header__login-btn {
+  background-color: var(--accent-orange);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.header__login-btn:hover {
+  background-color: #ae2c00;
+}
+
 .header__actions {
   display: flex;
   align-items: center;
@@ -272,11 +302,19 @@ button {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid var(--border-primary);
+  /* border: 1px solid var(--border-primary); */
   border-radius: 999px;
-  padding: 0.35rem 0.75rem;
+  /* padding: 0.35rem 0.75rem; */
   background: var(--bg-secondary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.profile img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .profile__name {
@@ -337,6 +375,14 @@ button {
   display: grid;
   place-items: center;
   font-weight: 700;
+  overflow: hidden;
+}
+
+.profile-menu__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .profile-menu__username {
@@ -1406,6 +1452,11 @@ button {
 
 .icon-btn:hover {
   background: #f0f0f0;
+}
+
+.icon-btn.messages, .icon-btn.ads {
+  width: 30px;
+  height: 30px;
 }
 
 .dots-wrapper {

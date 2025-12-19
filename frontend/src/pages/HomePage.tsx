@@ -125,7 +125,6 @@ function HomePage({ feedFilter = 'home' }: Props) {
 
   return (
     <>
-      <PostComposer />
       {loading ? (
         <div className="loading card">Loading posts...</div>
       ) : error ? (

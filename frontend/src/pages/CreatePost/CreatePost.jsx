@@ -55,6 +55,7 @@ const CreatePost = () => {
   const gridMediaInputRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [communityOptions, setCommunityOptions] = useState([]);
+  const [subscribedCommunities, setSubscribedCommunities] = useState([]); // Store original subscribed communities
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   const isCommunitySelected = Boolean(selectedCommunityOption);
 
@@ -83,12 +84,104 @@ const CreatePost = () => {
     }
   }, []);
 
+  // Search communities by substring when user types
+  useEffect(() => {
+    // Only search if the community search dropdown is open
+    if (!showCommunitySearch) {
+      return;
+    }
+
+    const searchQuery = communitySearch.trim();
+    
+    // If search is empty, restore subscribed communities
+    if (!searchQuery) {
+      // Get account option
+      const accountOption = {
+        id: "account",
+        label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+        members: "Your profile",
+        type: "account",
+        imageUrl: currentUser?.profilePicture || null,
+      };
+      
+      // Restore original subscribed communities
+      setCommunityOptions([accountOption, ...subscribedCommunities]);
+      return;
+    }
+
+    // Debounce the API call
+    const searchTimeout = setTimeout(async () => {
+      setIsLoadingCommunities(true);
+      try {
+        const response = await apiGet(communityRoutes.search(searchQuery));
+        if (response.ok) {
+          const communities = await response.json();
+          
+          // Format communities to match expected structure
+          const formattedCommunities = communities.map((community) => ({
+            id: community.name,
+            label: `r/${community.name}`,
+            members: `${community.members?.length || 0} members`,
+            subscribed: community.subscribed || false,
+            type: "community",
+            imageUrl: community.profilePicture || null,
+            communityId: community._id,
+          }));
+
+          // Get account option (preserve it)
+          const accountOption = {
+            id: "account",
+            label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+            members: "Your profile",
+            type: "account",
+            imageUrl: currentUser?.profilePicture || null,
+          };
+
+          // Update community options with search results
+          // Include account option if search matches "u/" or user's username
+          const searchLower = searchQuery.toLowerCase();
+          const shouldShowAccount = searchLower.startsWith("u/") || 
+            (currentUser && (
+              (currentUser.name && currentUser.name.toLowerCase().includes(searchLower)) ||
+              (currentUser.username && currentUser.username.toLowerCase().includes(searchLower))
+            ));
+          
+          const newOptions = shouldShowAccount 
+            ? [accountOption, ...formattedCommunities]
+            : formattedCommunities;
+          
+          setCommunityOptions(newOptions);
+        } else {
+          console.error("Failed to search communities:", response.status);
+        }
+      } catch (error) {
+        console.error("Error searching communities:", error);
+      } finally {
+        setIsLoadingCommunities(false);
+      }
+    }, 300); // 300ms debounce delay
+
+    // Cleanup timeout on unmount or when search changes
+    return () => clearTimeout(searchTimeout);
+  }, [communitySearch, showCommunitySearch, currentUser, subscribedCommunities]);
+
   // Fetch user's subscribed communities when dropdown opens
   const handleOpenCommunitySearch = async () => {
     setShowCommunitySearch(true);
     
-    // If we already have communities loaded, don't fetch again
-    if (communityOptions.length > 1) {
+    // If we already have subscribed communities loaded, don't fetch again
+    if (subscribedCommunities.length > 0) {
+      // Restore subscribed communities if search is empty
+      if (!communitySearch.trim()) {
+        const accountOption = {
+          id: "account",
+          label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+          members: "Your profile",
+          type: "account",
+          imageUrl: currentUser?.profilePicture || null,
+        };
+        setCommunityOptions([accountOption, ...subscribedCommunities]);
+      }
       return;
     }
 
@@ -109,8 +202,11 @@ const CreatePost = () => {
           communityId: community._id,
         }));
 
+        // Store subscribed communities for later restoration
+        setSubscribedCommunities(formattedCommunities);
+
         // Combine account option with communities
-        const accountOption = communityOptions.find(opt => opt.type === "account") || {
+        const accountOption = {
           id: "account",
           label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
           members: "Your profile",
@@ -372,9 +468,7 @@ const CreatePost = () => {
 
   return (
     <div className="create-post-page">
-      {/* <HeaderBar /> */}
       <div className="create-post-layout">
-        {/* <Sidebar /> */}
         <div className="create-post-main-content">
           <div className="create-post-container">
             <div className="create-post-header">

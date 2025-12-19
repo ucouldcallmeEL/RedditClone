@@ -11,62 +11,45 @@ const LogIn = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-
+  const [loginError, setLoginError] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // reset errors
-    setEmailError("");
-    setPasswordError("");
-
-    let valid = true;
-
-    // 1️⃣ Empty field validation
-    if (!email) {
-      setEmailError("Fill out this field.");
-      valid = false;
-    }
-
-    if (!password) {
-      setPasswordError("Fill out this field.");
-      valid = false;
-    }
-
-    if (!valid) return;
+    if (!formIsValid) return;
+    setLoginError(false); // Reset error on new submit
 
     try {
       const response = await apiPost(userRoutes.login, {
         identifier: email,
-        password,
+        password: password,
       });
 
       const data = await response.json();
 
-      // 2️⃣ Invalid username or password → password field ONLY
       if (!response.ok) {
-        if (response.status === 401) {
-          setPasswordError("Invalid username or password");
-        } else {
-          setPasswordError(data.error || "Something went wrong");
-        }
+        console.error("Login error:", data.error);
+        setLoginError(true);
         return;
       }
 
-      // success
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store token and user data
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
-      onClose?.();
+      // Close modal and navigate
+      if (onClose) {
+        onClose();
+      }
       navigate("/");
-    } catch (err) {
-      setPasswordError("Server error. Please try again.");
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginError(true);
     }
   };
-
-
 
   const handleClose = () => {
     if (onClose) {
@@ -76,11 +59,35 @@ const LogIn = ({ onClose }) => {
 
   const isEmailValid = (val) => /\S+@\S+\.\S+/.test(val) || val.length > 3;
   const isPasswordValid = (val) => val.length > 0;
+  // Email validator for display: invalid if format is wrong OR if there's a login error
+  const isEmailValidForDisplay = (val) => isEmailValid(val) && !loginError;
+  // Password validator for display: invalid if empty OR if there's a login error
+  const isPasswordValidForDisplay = (val) => val.length > 0 && !loginError;
 
   const formIsValid = isEmailValid(email) && isPasswordValid(password);
 
+  // Get error messages for each field
+  const getEmailErrorMessage = () => {
+    if (!email || email.length === 0) {
+      return "Fill out this field";
+    }
+    // Don't show error message for email field on login error (only show outline)
+    // The error message will be shown under password field instead
+    return null;
+  };
+
+  const getPasswordErrorMessage = () => {
+    if (!password || password.length === 0) {
+      return "Fill out this field";
+    }
+    if (loginError) {
+      return "Invalid username or password";
+    }
+    return null;
+  };
+
   return (
-    <div className="log-in-modal auth-flow-modal">
+    <div className="log-in-modal auth-flow-modal reset-pass-modal">
       <button className="quit-login-button" onClick={handleClose}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -143,28 +150,30 @@ const LogIn = ({ onClose }) => {
       <div className="email">
         <TextField
           label="Email or username"
+          type="email"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
-            setEmailError(""); // clear only email error
+            setLoginError(false); // Clear login error when user types
           }}
-          validator={isEmailValid}
           required
-          error={emailError}
-          errorMessage="Fill out this field."
+          validator={isEmailValidForDisplay}
+          errorMessage={getEmailErrorMessage()}
+          forceError={loginError}
         />
+
         <TextField
           label="Password"
           type="password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
-            setPasswordError(""); // clears invalid credentials when typing
+            setLoginError(false); // Clear login error when user types
           }}
-          validator={isPasswordValid}
           required
-          error={passwordError}
-          errorMessage="Fill out this field."
+          validator={isPasswordValidForDisplay}
+          errorMessage={getPasswordErrorMessage()}
+          forceError={loginError}
         />
       </div>
       <div className="log-in-modal-other-links">
