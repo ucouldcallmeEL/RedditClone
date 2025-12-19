@@ -1,6 +1,6 @@
-import { Link , useNavigate } from "react-router-dom";
+import { Link , useNavigate , useLocation} from "react-router-dom";
 
-import { useEffect , useState } from "react";
+import { useEffect , useState , useMemo } from "react";
 import {    getNotifications ,
             getUnreadNotifications , 
             markAllRead , 
@@ -8,6 +8,7 @@ import {    getNotifications ,
             deleteNotification , 
             clearAllNotifications 
 } from "../../services/notificationService";
+import defaultAvatar from "../../assets/Reddit_Avatar.webp";
 
 import NotificationCard from "./NotificationCard";
 import EmptyNotifications from "./EmptyNotifications";
@@ -18,23 +19,43 @@ function NotificationPage() {
 
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [notifications , setNotifications] = useState([]);
-    const USER_ID = "692764a74d46fe169b1cab3d";//Replace With Real Signed In User Later
+
+    const storedUser = useMemo(() => {
+        try {
+        return JSON.parse(localStorage.getItem("user") || "null");
+        } catch {
+        return null;
+        }
+    }, []);
+    const USER_ID = storedUser?._id || storedUser?.id;
+
+    useEffect(() => {
+        if (!USER_ID) {
+        navigate("/login", {
+            replace: true,
+            state: { from: location.pathname + location.search },
+        });
+        }
+    }, [USER_ID, navigate, location]);
     
     
     useEffect(() => {
-        const fetchNotifications = async() => {
-            try {
-                const res = await getNotifications(USER_ID);
-                setNotifications(res.data || []);
-                console.log("Hello From Fetch")
-            } catch (err) {
-                console.error("Failed To Fetch Notifications" , err);
-            }
+        if (!USER_ID) return;
+
+        const fetchNotifications = async () => {
+        try {
+            const res = await getNotifications(USER_ID);
+            setNotifications(res.data || []);
+        } catch (err) {
+            console.error("Failed To Fetch Notifications", err);
+        }
         };
+
         fetchNotifications();
-    }, []);
+    }, [USER_ID]);
 
     const handleMarkAllRead = async () => {
         try {
@@ -57,6 +78,8 @@ function NotificationPage() {
             console.error("Failed to delete notification" , err)
         }
     }
+
+    if (!USER_ID) return null;
 
 
     return (
@@ -83,18 +106,26 @@ function NotificationPage() {
                 <EmptyNotifications />
             ) : (
                 <div className="not-cont">
-                    {notifications.map((n) => (
-                        <NotificationCard
+                    {notifications.map((n) => {
+                        const senderAvatar =
+                            n.sender && typeof n.sender === "object"
+                            ? n.sender.profilePicture || defaultAvatar
+                            : defaultAvatar;
+
+                        return (
+                            <NotificationCard
                             key={n._id}
-                            icon={"🔔"}
+                            icon={senderAvatar}
                             title={n.type}
                             message={n.message}
                             time={new Date(n.createdAt).toLocaleString()}
                             read={n.isRead}
                             onDelete={() => handleDeleteNotification(n._id)}
                             onManage={goToNotificationSettings}
-                        />
-                    ))}
+                            />
+                        );
+                        })}
+
                 </div>
             )}
         </div>

@@ -1,4 +1,4 @@
-import {useState , useEffect} from "react";
+import {useState , useEffect , useMemo} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -22,7 +22,15 @@ import "./Settings.css";
 
 function SettingsPage() {
 
-    const userId = "69397ceee2ea8af09ca7899c" //Until we Implement storage for Id
+    const storedUser = useMemo(() => {
+        try {
+        return JSON.parse(localStorage.getItem("user") || "null");
+        } catch {
+        return null;
+        }
+    }, []);
+
+    const userId = storedUser?._id || storedUser?.id;
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -50,14 +58,28 @@ function SettingsPage() {
         0;
 
 
-    useEffect(() => {
-        async function fetchUser(){
+      useEffect(() => {
+        if (!userId) return;
+
+        async function fetchUser() {
+        try {
             const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
-            setAvatar(res.data.profilePicture || defaultAvatar);
-            setBanner(res.data.coverPicture || null);
+
+            const u = res.data;
+
+            setAvatar(u?.profilePicture || defaultAvatar);
+            setBanner(u?.coverPicture || null);
+
+            // optional if your API returns these:
+            setDisplayedName(u?.displayName || "");
+            setAbout(u?.bio || "");
+        } catch (err) {
+            console.error("Failed to fetch user:", err);
         }
+        }
+
         fetchUser();
-    }, []);
+    }, [userId]);
 
     // Handlers
     async function handleGenderChange() {
@@ -128,6 +150,8 @@ function SettingsPage() {
     // Tab navigation helper
     const go = (tabName) =>
         navigate(tabName ? `?tab=${tabName}` : "");
+
+     if (!userId) return null;
 
     return (
         <div className="settings-container">

@@ -28,7 +28,16 @@ function NotificationCard({
     return (
         <div className={`notification-card ${read ? "read" : "unread"}`}>
             
-            <div className="notif-icon">{icon}</div>
+            <div className="notif-icon">
+                <img
+                    src={icon}
+                    alt="sender avatar"
+                    className="notif-avatar"
+                    onError={(e) => {
+                        e.currentTarget.src = "/default-avatar.png";
+                    }}
+                />
+            </div>
 
             <div className="notif-content">
                 <p className="notif-title">{title}</p>
