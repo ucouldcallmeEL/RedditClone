@@ -22,13 +22,13 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     profilePicture: {
-        type: String,     
+        type: String,
     },
     coverPicture: {
-        type: String,  
+        type: String,
     },
     bio: {
-        type: String,    
+        type: String,
     },
     followers: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    isModerator: {
+        type: Boolean,
+        default: false
+    },
     posts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post'
@@ -49,7 +53,15 @@ const userSchema = new mongoose.Schema({
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
-    }]
+    }],
+    notificationSettings: {
+        email: {
+            adminNotifications: {
+                type: Boolean,
+                default: true // Default to receiving admin notifications
+            }
+        }
+    }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { useEffect , useState } from "react";
+import { useEffect, useState } from "react";
 import {
     getNotifications,
     getUnreadNotifications,
@@ -22,29 +22,24 @@ function NotificationPage() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [notifications , setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [error, setError] = useState(null);
 
-    // Allow testing via URL: /notifications?userId=<mongoUserId>
-    // Fallback is placeholder until auth/storage is implemented.
-    const params = new URLSearchParams(location.search);
-    const rawUserId = params.get("userId") || "6934495b29dbd06fab20e7e9";
+    // Get user ID from localStorage
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const USER_ID = user ? user._id : null;
 
-    // Accept formats like:
-    // - 69344c82629a24cf1dd72b0
-    // - ObjectId('69344c82629a24cf1dd72b0')
-    const USER_ID = (rawUserId.match(/[a-f0-9]{24}/i)?.[0]) || rawUserId;
-    
-    
+
     useEffect(() => {
-        const fetchNotifications = async() => {
+        const fetchNotifications = async () => {
             try {
                 setError(null);
                 const res = await getNotifications(USER_ID);
                 setNotifications(res.data || []);
                 console.log("Hello From Fetch")
             } catch (err) {
-                console.error("Failed To Fetch Notifications" , err);
+                console.error("Failed To Fetch Notifications", err);
                 const status = err?.response?.status;
                 const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
                 const msg = err?.message || "Unknown error";
@@ -77,10 +72,16 @@ function NotificationPage() {
             await deleteNotification(notifId)
             setNotifications(prev => prev.filter(n => n._id !== notifId));
         } catch (err) {
-            console.error("Failed to delete notification" , err)
+            console.error("Failed to delete notification", err)
         }
     }
 
+
+    const handleNotificationClick = (notification) => {
+        if (notification.type === 'modmail') {
+            navigate('/moderation/mail');
+        }
+    };
 
     return (
         <div className="notifications-container">
@@ -121,6 +122,7 @@ function NotificationPage() {
                             read={n.isRead}
                             onDelete={() => handleDeleteNotification(n._id)}
                             onManage={goToNotificationSettings}
+                            onClick={() => handleNotificationClick(n)}
                         />
                     ))}
                 </div>

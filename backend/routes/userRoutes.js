@@ -8,7 +8,8 @@ const {
     resetPassword,
     phoneSignin,
     phoneSignup,
-    generateUsername
+    generateUsername,
+    updateSettings
 } = require('../controllers/userController');
 const { getUser } = require('../managers/userManager');
 
@@ -21,6 +22,7 @@ router.post('/reset-password', resetPassword);
 router.post('/phone/signin', phoneSignin);
 router.post('/phone/signup', phoneSignup);
 router.get('/generate-username', generateUsername);
+router.put('/update-settings', updateSettings);
 
 // Get user by ID (must come after other routes to avoid conflicts)
 router.get('/:userId', async (req, res) => {

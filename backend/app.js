@@ -86,7 +86,7 @@ app.use('/r', communityRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/', homeRoutes);
 app.use("/api/upload", uploadRouter);
-app.use("/api/notifications" , notificationRouter);
+app.use("/api/notifications", notificationRouter);
 app.use("/api/users", userRouter);
 app.use('/topics', topicRoutes);
 // Reuse the same router for both:
@@ -94,8 +94,10 @@ app.use('/topics', topicRoutes);
 // - API create:      POST /api/posts/create
 // app.use("/api/posts", postRoutes);
 app.use("/api/ai", aiRouter);
+app.use("/api/modmail", require('./routes/modmailRoutes'));
 
-// app.use('/api/communities', communityRoutes);
+app.use('/api/communities', communityRoutes);
+app.use('/api/queue', require('./routes/queueRoutes'));
 
 
 // Explicit 404 handler to make it clear when a route isn't mounted

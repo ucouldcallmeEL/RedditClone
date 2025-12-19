@@ -1,10 +1,12 @@
 const { getPosts } = require('../managers/postManager');
-const { 
-  getCommunityByName, 
-  createCommunity, 
+const {
+  getCommunityByName,
+  createCommunity,
   getCommunitiesByNameSubstring,
-  getCommunitiesByUser 
+  getCommunitiesByUser,
+  getModeratedCommunities
 } = require('../managers/communityManager');
+const User = require('../schemas/user');
 
 const getCommunityDetails = async (req, res) => {
   try {
@@ -47,6 +49,10 @@ const postCommunity = async (req, res) => {
     };
 
     const community = await createCommunity(communityData);
+
+    // Update user to be false if not already
+    await User.findByIdAndUpdate(userId, { isModerator: true });
+
     res.status(201).json(community);
   } catch (err) {
     console.error('Error creating community:', err);
@@ -74,7 +80,20 @@ const fetchUserCommunities = async (req, res) => {
     res.json(communities || []);
   } catch (err) {
     console.error('Error fetching user communities:', err);
-    res.status(500).json({ error: 'Failed to fetch user communities' });
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get communities moderated by user
+const fetchModeratedCommunities = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    console.log("Fetching moderated communities for userId:", userId);
+    const communities = await getModeratedCommunities(userId);
+    res.json(communities || []);
+  } catch (err) {
+    console.error('Error fetching moderated communities:', err);
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -84,4 +103,5 @@ module.exports = {
   postCommunity,
   fetchCommunitiesBySubstring,
   fetchUserCommunities,
+  fetchModeratedCommunities
 };

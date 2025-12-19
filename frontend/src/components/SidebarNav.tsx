@@ -27,6 +27,8 @@ import {
   Star,
   Users,
   Info,
+  Mail,
+  Settings,
 } from 'lucide-react';
 
 const items = [
@@ -42,6 +44,7 @@ type SidebarLink = {
   label: string;
   icon: LucideIcon;
   badge?: string;
+  path?: string;
 };
 
 const communityPlaceholders: SidebarLink[] = [
@@ -76,6 +79,14 @@ const policyLinks: SidebarLink[] = [
   { label: 'Accessibility', icon: Accessibility },
 ];
 
+const moderationLinks: SidebarLink[] = [
+  { label: 'Mod Queue', icon: Shield, path: '/moderation/queue' },
+  { label: 'Mod Mail', icon: Mail, path: '/moderation/mail' },
+  { label: 'Mod Management', icon: Settings, path: '/moderation/management' },
+];
+
+const moderationSection = { id: 'moderation', title: 'Moderation', items: moderationLinks };
+
 const collapsibleSections = [
   { id: 'communities', title: 'Communities', items: communityPlaceholders },
   { id: 'resources', title: 'Resources', items: resourcesLinks },
@@ -93,15 +104,52 @@ type Props = {
 function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
-    collapsibleSections.reduce(
+  const [isModerator, setIsModerator] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      console.log("SidebarNav user from localStorage:", user);
+      return !!user.isModerator;
+    } catch {
+      return false;
+    }
+  });
+
+  const allSections = isModerator ? [moderationSection, ...collapsibleSections] : collapsibleSections;
+
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    const sections = collapsibleSections.reduce(
       (acc, section) => {
         acc[section.id] = false;
         return acc;
       },
       {} as Record<string, boolean>,
-    ),
-  );
+    );
+    // Initialize moderation section as well
+    sections['moderation'] = false;
+    return sections;
+  });
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setIsModerator(!!user.isModerator);
+        } catch {
+          setIsModerator(false);
+        }
+      } else {
+        setIsModerator(false);
+      }
+    };
+
+    window.addEventListener('user-updated', handleUserUpdate);
+    return () => window.removeEventListener('user-updated', handleUserUpdate);
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -181,15 +229,14 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
         </nav>
       </div>
 
-      {collapsibleSections.map(({ id, title, items: sectionItems }) => {
+      {allSections.map(({ id, title, items: sectionItems }) => {
         const isCollapsed = collapsedSections[id];
 
         return (
           <div
             key={id}
-            className={`sidebar__section sidebar__section--collapsible${
-              isCollapsed ? ' sidebar__section--collapsed' : ''
-            }`}
+            className={`sidebar__section sidebar__section--collapsible${isCollapsed ? ' sidebar__section--collapsed' : ''
+              }`}
           >
             <button
               type="button"
@@ -207,11 +254,11 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
               className="sidebar__section-body"
               hidden={isCollapsed}
             >
-              {sectionItems.map(({ label, icon: Icon, badge }) => {
+              {sectionItems.map(({ label, icon: Icon, badge, path }) => {
                 // Extract community name from "r/communityname" format
                 const slug = label.replace(/^r\//i, '');
                 // Use /r/:communityName route format
-                const communityRoute = label.startsWith('r/') ? `/r/${slug}` : `#${label}`;
+                const communityRoute = path || (label.startsWith('r/') ? `/r/${slug}` : `#${label}`);
                 return (
                   <Link key={label} className="sidebar__link" to={communityRoute}>
                     <Icon size={18} />
@@ -223,8 +270,9 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
             </div>
           </div>
         );
-      })}
-    </aside>
+      })
+      }
+    </aside >
   );
 }
 

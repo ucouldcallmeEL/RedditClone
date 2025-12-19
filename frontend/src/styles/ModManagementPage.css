@@ -1,0 +1,104 @@
+.mod-management-container {
+    padding: 24px 40px;
+    color: var(--text-primary);
+    width: 100%;
+}
+
+/* Header */
+.mod-page-header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    /* Reddit uses medium weight for page titles */
+    margin-bottom: 8px;
+}
+
+.mod-page-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.mod-page-subtitle a {
+    color: #4fbcff;
+    text-decoration: none;
+}
+
+.mod-page-subtitle a:hover {
+    text-decoration: underline;
+}
+
+/* List Item */
+.community-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-top: 1px solid var(--border-primary);
+    /* Subtle divider */
+}
+
+.community-info-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.community-avatar-large {
+    width: 40px;
+    height: 40px;
+    background-color: #FF4500;
+    /* Default Reddit Orange */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nsfw-badge-large {
+    background-color: #FF4500;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.community-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.community-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.community-stats {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Actions */
+.community-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-action-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}

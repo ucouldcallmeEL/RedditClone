@@ -10,7 +10,7 @@ const CreateUser = ({ onClose }) => {
   const location = useLocation();
   // Get email from location state or localStorage
   const [email] = useState(location.state?.email || localStorage.getItem("signupEmail") || "");
-  
+
   const handleClose = () => {
     if (onClose) {
       onClose();
@@ -23,7 +23,7 @@ const CreateUser = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const isUsernameValid = (val) => val.trim().length >= 3;
   const isPasswordValid = (val) => val.length > 0;
-  
+
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
     if (!formIsValid || !email) return;
@@ -49,6 +49,8 @@ const CreateUser = ({ onClose }) => {
       }
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        // Dispatch event to notify sidebar
+        window.dispatchEvent(new CustomEvent('user-updated'));
       }
 
       // Clear temporary email storage
@@ -60,7 +62,7 @@ const CreateUser = ({ onClose }) => {
       // TODO: Show error message to user
     }
   };
-  
+
   const formIsValid = isUsernameValid(username) && isPasswordValid(password);
 
   const fetchGeneratedUsername = async () => {
@@ -78,7 +80,7 @@ const CreateUser = ({ onClose }) => {
   useEffect(() => {
     // Generate an initial username when the page loads
     fetchGeneratedUsername();
-    
+
     // We intentionally only run this on mount
     // eslint-disable-next-line
   }, []);
@@ -176,9 +178,8 @@ const CreateUser = ({ onClose }) => {
       </div>
 
       <div
-        className={`LogIn-button login-action-button ${
-          !formIsValid ? "disabled" : ""
-        }`}
+        className={`LogIn-button login-action-button ${!formIsValid ? "disabled" : ""
+          }`}
         onClick={formIsValid ? handleSubmit : undefined}
       >
         <span

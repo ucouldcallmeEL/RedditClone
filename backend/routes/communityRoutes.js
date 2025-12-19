@@ -5,6 +5,7 @@ const {
   postCommunity,
   fetchCommunitiesBySubstring,
   fetchUserCommunities,
+  fetchModeratedCommunities,
 } = require('../controllers/communityController');
 const { authenticate } = require('../middleware/auth');
 
@@ -24,6 +25,12 @@ router.get('/user/me', authenticate, async (req, res) => {
   // Use req.user from authenticate middleware
   req.params = { userId: req.user._id.toString() };
   await fetchUserCommunities(req, res);
+});
+
+// Get communities moderated by current user
+router.get('/user/moderated', authenticate, async (req, res) => {
+  req.params = { userId: req.user._id.toString() };
+  await fetchModeratedCommunities(req, res);
 });
 
 // Get user's communities by userId (must come after /user/me)
