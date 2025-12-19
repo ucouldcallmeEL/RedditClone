@@ -1,5 +1,5 @@
 const express = require("express");
-const { getPostDetails, addPost } = require("../controllers/postController");
+const { getPostDetails, addPost, voteOnPost } = require("../controllers/postController");
 const { getAllPosts, getHomeFeed, getPopularPostsHandler } = require("../controllers/homeController");
 const { getPostsByUser } = require("../managers/postManager");
 const { authenticate } = require('../middleware/auth');
@@ -29,6 +29,12 @@ router.get("/user/:userId", async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user posts' });
   }
 });
+
+// Vote on a post (protected)
+router.post("/vote/:id", authenticate, voteOnPost);
+
+// Accept alternate vote path for compatibility (/posts/:id/vote)
+router.post("/:id/vote", authenticate, voteOnPost);
 
 // Get post details by ID (must come last to avoid matching other routes)
 router.get("/:id", getPostDetails);

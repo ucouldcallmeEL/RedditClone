@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  getCommunityDetails,
+  getCommunityDetails, getAllCommunities, getTopCommunitiesForUser,
   checkCommunityNameExists,
   postCommunity,
   fetchCommunitiesBySubstring,
@@ -30,11 +30,10 @@ router.get('/user/me', authenticate, async (req, res) => {
 router.get('/user/:userId', fetchUserCommunities);
 
 // Get community details by name (must come last to avoid matching other routes)
+router.get('/communities', getAllCommunities);
+router.get('/user/:userId/top3communities', getTopCommunitiesForUser);
 router.get('/:communityName', getCommunityDetails);
-router.get('/:communityName/is-mod', (req, res) => {
-  const { isModerator } = require('../controllers/communityController');
-  return isModerator(req, res);
-});
+// NOTE: Removed legacy `/is-mod` route; moderator checks are handled elsewhere.
 // fetch resolved image URLs (Cloudinary-backed)
 router.get('/:communityName/images', (req, res) => {
 	const { getCommunityImages } = require('../controllers/communityController');

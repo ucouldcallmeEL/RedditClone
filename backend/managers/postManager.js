@@ -1,5 +1,6 @@
 const Post = require('../schemas/post');
 const User = require('../schemas/user');
+const Vote = require('../schemas/vote');
 
 const createPost = async (post) => {
     const newPost = new Post(post);
@@ -96,6 +97,64 @@ const getPopularPosts = async (timeFilter = 'all') => {
     return postsWithScore;
 };
 
+const votePost = async (postId, userId, voteType) => {
+    // voteType: 1 for upvote, -1 for downvote, 0 to remove vote
+    const post = await Post.findById(postId);
+    if (!post) throw new Error('Post not found');
+
+    const existingVote = await Vote.findOne({ user: userId, post: postId });
+
+    if (voteType === 0) {
+        // Remove vote
+        if (existingVote) {
+            if (existingVote.vote === 1) {
+                post.upvotes -= 1;
+            } else if (existingVote.vote === -1) {
+                post.downvotes -= 1;
+            }
+            await Vote.findByIdAndDelete(existingVote._id);
+            await post.save();
+        }
+        return post;
+    }
+
+    if (existingVote) {
+        // Change vote
+        if (existingVote.vote === voteType) {
+            // Same vote, remove it
+            if (voteType === 1) {
+                post.upvotes -= 1;
+            } else {
+                post.downvotes -= 1;
+            }
+            await Vote.findByIdAndDelete(existingVote._id);
+        } else {
+            // Change vote
+            if (existingVote.vote === 1) {
+                post.upvotes -= 1;
+                post.downvotes += 1;
+            } else {
+                post.upvotes += 1;
+                post.downvotes -= 1;
+            }
+            existingVote.vote = voteType;
+            await existingVote.save();
+        }
+    } else {
+        // New vote
+        if (voteType === 1) {
+            post.upvotes += 1;
+        } else {
+            post.downvotes += 1;
+        }
+        const newVote = new Vote({ user: userId, post: postId, vote: voteType });
+        await newVote.save();
+    }
+
+    await post.save();
+    return post;
+};
+
 module.exports = {
     createPost,
     getPost,
@@ -104,5 +163,6 @@ module.exports = {
     getPopularPosts,
     getPostsByUser,
     updatePost,
-    deletePost
+    deletePost,
+    votePost
 };

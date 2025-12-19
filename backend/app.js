@@ -61,6 +61,13 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
+// CORS configuration - must specify exact origin (not wildcard) when using credentials
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // React dev server default port
+  credentials: true, // Allow cookies/credentials to be sent
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
+}));
 
 // Log all requests in dev so 404s are obvious
 app.use((req, res, next) => {
@@ -87,6 +94,7 @@ const topicRoutes = require('./routes/topicRoutes');
 // Use routes    
 
 app.use('/r', communityRoutes);
+app.use('/api/r', communityRoutes); // alias to support frontend api base path
 app.use('/api/posts', postRoutes);
 app.use('/', homeRoutes);
 app.use("/api/upload", uploadRouter);

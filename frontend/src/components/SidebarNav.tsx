@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../services/config';
-
+import { apiClient } from '../services/apiClient';
 const items = [
   { label: 'Home', icon: Home },
   { label: 'Popular', icon: Flame },
@@ -117,15 +117,48 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
 
   // load current user's communities (top 3) to show in the Communities section
   useEffect(() => {
+    
+  const getCurrentUserFromStorage = () => {
+    // Prefer JWT token (stored as `token`) and decode payload for userId
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      if (token) {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
+          const id = payload?.userId || payload?.sub || null;
+          // try to fill name/username from stored user object if available
+          if (storedUser) {
+            const u = JSON.parse(storedUser);
+            return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+          }
+          return { id, name: null, username: null };
+        }
+      }
+      if (storedUser) {
+        const u = JSON.parse(storedUser);
+        return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+      }
+    } catch (e) {
+      console.warn('Failed to read current user from storage', e);
+    }
+    return null;
+  };
   
     const load = async () => {
-      // Hard-coded user ID that needs to be replaced with actual logged-in user ID
-      const hardcodedUserId = '69397d04292782398b5f6821';
       try {
-        const res = await axios.get(`${API_BASE_URL}/r/user/${hardcodedUserId}/top3communities`);
-        const top: any[] = res.data || [];
-        const mapped = top.map((c) => ({ label: `r/${c.name}`, icon: Users }));
-        setUserCommunities(mapped);
+        const currentUser = getCurrentUserFromStorage();
+        if (currentUser && currentUser.id) {
+          // Use `/r/user/...` so apiClient rewrites to the communities route
+          const res = await apiClient.get(`/r/user/${currentUser.id}/top3communities`);
+          const top: any[] = res.data || [];
+          const mapped = top.map((c) => ({ label: `r/${c.name}`, icon: Users }));
+          setUserCommunities(mapped);
+          return;
+        }
+        // No current user — show no user-specific communities
+        setUserCommunities([]);
       } catch (e) {
         setUserCommunities([]);
       }
@@ -224,19 +257,30 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
               className="sidebar__section-body"
               hidden={isCollapsed}
             >
-              {sectionItems.map(({ label, icon: Icon, badge }) => {
+              {id === 'communities' && userCommunities && userCommunities.length > 0
+                ? userCommunities.map(({ label, icon: Icon }) => {
                 // Extract community name from "r/communityname" format
-                const slug = label.replace(/^r\//i, '');
+                    const slug = label.replace(/^r\//i, '');
                 // Use /r/:communityName route format
                 const communityRoute = label.startsWith('r/') ? `/r/${slug}` : `#${label}`;
-                return (
-                  <Link key={label} className="sidebar__link" to={communityRoute}>
-                    <Icon size={18} />
-                    <span>{label}</span>
-                    {badge && <span className="sidebar__badge">{badge}</span>}
-                  </Link>
-                );
-              })}
+                    return (
+                      <Link key={label} className="sidebar__link" to={communityRoute}>
+                        <Icon size={18} />
+                        <span>{label}</span>
+                      </Link>
+                    );
+                  })
+                : sectionItems.map(({ label, icon: Icon, badge }) => {
+                    const slug = label.replace(/^r\//i, '');
+                    const to = label === 'Communities' ? '/communities' : `/community/${slug}`;
+                    return (
+                      <Link key={label} className="sidebar__link" to={to}>
+                        <Icon size={18} />
+                        <span>{label}</span>
+                        {badge && <span className="sidebar__badge">{badge}</span>}
+                      </Link>
+                    );
+                  })}
             </div>
           </div>
         );

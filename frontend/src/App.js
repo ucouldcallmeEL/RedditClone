@@ -14,6 +14,7 @@ import Interests from './pages/LoginAndSignup/Interests';
 import CreatePost from './pages/CreatePost/CreatePost';
 import CreateCommunity from './pages/CreateCommunity/CreateCommunity';
 import CommunityPage from './pages/CommunityPage';
+import CommunitiesPage from './pages/CommunitiesPage';
 import PostDetailPage from './pages/PostDetailPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import NotificationPage from './pages/Notifications/NotificationPage';
@@ -141,6 +142,8 @@ function AppContent() {
                 <Route path="/" element={<HomePage feedFilter={feedFilter} />} />
                 <Route path="/post/:postId" element={<PostDetailPage />} />
                 <Route path="/r/:communityName" element={<CommunityPage />} />
+                <Route path="/community/:communityName" element={<CommunityPage />} />
+                <Route path="/communities" element={<CommunitiesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notifications" element={<NotificationPage />} />
                 <Route path="/posts/create" element={<CreatePost />} />
@@ -174,6 +177,8 @@ function AppContent() {
                 <Route path="/" element={<HomePage feedFilter={feedFilter} />} />
                 <Route path="/post/:postId" element={<PostDetailPage />} />
                 <Route path="/r/:communityName" element={<CommunityPage />} />
+                <Route path="/community/:communityName" element={<CommunityPage />} />
+                <Route path="/communities" element={<CommunitiesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notifications" element={<NotificationPage />} />
               </Routes>
@@ -206,6 +211,8 @@ function AppContent() {
             
             {/* Community routes */}
             <Route path="/r/:communityName" element={<CommunityPage />} />
+            <Route path="/community/:communityName" element={<CommunityPage />} />
+            <Route path="/communities" element={<CommunitiesPage />} />
             
             {/* Settings and Notifications */}
             <Route path="/settings" element={<SettingsPage />} />

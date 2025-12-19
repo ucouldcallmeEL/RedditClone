@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import '../styles/community.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, LayoutGrid, List } from 'lucide-react';
-import CommunityHeader from './CommunityPage/CommunityHeader';
+import CommunityHeader from '../components/CommunityHeader';
 import CommunitySidebar from './CommunitySidebar';
 import PostCard from '../components/PostCard';
 import type { CommunityDetails, Post } from '../types';
@@ -98,14 +98,33 @@ function CommunityPage() {
   const [compactView, setCompactView] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
 
-const getCurrentUserFromStorage = () => {
-  // fetchhhhhhhhhhhhhhhhhhhhhhhhhh current userrrrrrrrrrrrr dataaaaa from token or sessionnor wtvr
-  return { 
-    id: "69397d04292782398b5f6821", 
-    name: "yehia", 
-    username: "test_user" 
+  const getCurrentUserFromStorage = () => {
+    // Prefer JWT token (stored as `token`) and decode payload for userId
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      if (token) {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
+          const id = payload?.userId || payload?.sub || null;
+          // try to fill name/username from stored user object if available
+          if (storedUser) {
+            const u = JSON.parse(storedUser);
+            return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+          }
+          return { id, name: null, username: null };
+        }
+      }
+      if (storedUser) {
+        const u = JSON.parse(storedUser);
+        return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+      }
+    } catch (e) {
+      console.warn('Failed to read current user from storage', e);
+    }
+    return null;
   };
-};
 
   useEffect(() => {
     if (!communityName) return;
@@ -119,7 +138,6 @@ const getCurrentUserFromStorage = () => {
 
         const currentUser = getCurrentUserFromStorage();
 
-        // Determine whether the current user is a member
         let isJoined = false;
         if (currentUser && communityData.members?.length) {
           isJoined = communityData.members.some((m: any) => {
@@ -129,7 +147,6 @@ const getCurrentUserFromStorage = () => {
           });
         }
 
-        // Set community details from authoritative backend data (member count sourced from DB)
         const communityDetails: CommunityDetails = {
           name: `r/${communityData.name}`,
           id: communityData._id,
@@ -151,16 +168,33 @@ const getCurrentUserFromStorage = () => {
         };
         setCommunity(communityDetails);
 
-        // determine moderator status via backend endpoint
+        // Determine moderator status client-side from populated moderators list
         try {
-          const modResp = await apiClient.get(`/r/${communityName}/is-mod`, { params: { userId: currentUser?.id } });
-          setIsModerator(!!modResp?.data?.isModerator);
+          let isModLocal = false;
+          if (currentUser && communityData.moderators?.length) {
+            isModLocal = communityData.moderators.some((m: any) => {
+              if (!m) return false;
+              if (typeof m === 'string') {
+                // stored as a name string
+                return (
+                  m === currentUser.name ||
+                  m === currentUser.username ||
+                  m === currentUser.id ||
+                  m === `u/${currentUser.username}` ||
+                  m === `u/${currentUser.name}`
+                );
+              }
+              const mid = String(m._id || m.id || '');
+              const mname = m.name || m.username || '';
+              return mid === String(currentUser.id) || mname === currentUser.username || mname === currentUser.name;
+            });
+          }
+          setIsModerator(!!isModLocal);
         } catch (e) {
-          console.warn('Failed to determine moderator status', e);
+          console.warn('Failed to determine moderator status locally', e);
           setIsModerator(false);
         }
 
-        // Map posts
         const postsData = communityData.posts?.map((post: any) => ({
           id: post._id,
           title: post.title,
@@ -172,7 +206,6 @@ const getCurrentUserFromStorage = () => {
           subreddit: `r/${communityName}`,
           createdAt: post.createdAt,
           communityIcon: communityData.profilePicture || 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
-          // timeAgo: '2h ago',
         })) || [];
         setPosts(postsData);
       } catch (err: any) {
@@ -183,10 +216,7 @@ const getCurrentUserFromStorage = () => {
       }
     };
 
-    // initial load
     loadCommunity();
-
-    // expose loader for onToggleJoin
     (window as any).__loadCommunity = loadCommunity;
   }, [communityName, filter]);
 
@@ -197,7 +227,6 @@ const getCurrentUserFromStorage = () => {
       await apiClient.post(`/r/${communityName}/invite-mod`, { username, communityId });
     } catch (err) {
       console.warn('Failed to invite moderator', err);
-      // fallthrough
     }
 
     try {
@@ -209,26 +238,38 @@ const getCurrentUserFromStorage = () => {
     }
   };
 
-  // helper to toggle membership via backend and then reload authoritative data
   const handleToggleJoin = async (joined: boolean) => {
     if (!communityName) return;
+    // if the user is leaving, hide mod tools immediately for better UX
+    if (!joined) setIsModerator(false);
     try {
-      // attempt backend update; endpoints may be added later — fail gracefully
       const currentUser = getCurrentUserFromStorage();
-      const userId = currentUser?.id || currentUser?.name || null;
+      const userId = currentUser?.id || currentUser?.username || currentUser?.name || null;
       const communityId = community?.id || null;
+
+      if (!userId) {
+        console.warn('join/leave: no userId available, aborting');
+        return;
+      }
 
       if (joined) {
         await apiClient.post(`/r/${communityName}/join`, { userId, communityId });
       } else {
         await apiClient.post(`/r/${communityName}/leave`, { userId, communityId });
       }
-    } catch (err) {
-      // ignore errors — we'll refresh anyway to get authoritative count when available
-      console.warn('join/leave API call failed', err);
+    } catch (err: any) {
+      // Log detailed error information to help debug 500s
+      console.warn('join/leave API call failed', err?.message || err);
+      if (err?.response) {
+        console.warn('Response status:', err.response.status);
+        console.warn('Response data:', err.response.data);
+        console.warn('Response headers:', err.response.headers);
+      } else if (err?.request) {
+        console.warn('No response received, request:', err.request);
+      }
     }
-
-    // reload community details from backend (member count comes from DB)
+    // refresh moderator state immediately (ensure mod tools hide promptly)
+    // then reload community details (loadCommunity will recompute moderator state)
     try {
       if (typeof (window as any).__loadCommunity === 'function') {
         await (window as any).__loadCommunity();
@@ -238,8 +279,6 @@ const getCurrentUserFromStorage = () => {
     }
   };
 
-
-  // add a root class while this page is mounted so we can adjust layout widths
   useEffect(() => {
     const cls = 'community-active';
     document.documentElement.classList.add(cls);
@@ -309,24 +348,19 @@ const getCurrentUserFromStorage = () => {
           isModerator={isModerator}
           onOpenModTools={() => navigate(`/r/${communityName}/mod-tools`)}
           onToggleJoin={(joined) => {
-            // call backend then reload authoritative data
             void handleToggleJoin(joined);
           }}
         />
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1rem' }}>
-        {/* Sort & view toolbar */}
         <div style={{ gridColumn: '1 / span 2', marginTop: '.5rem' }}>
           <div className="filter-bar" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
             <SortDropdown active={filter} onChange={(f) => setFilter(f)} />
             <ViewDropdown compact={compactView} onChange={(c) => setCompactView(c)} />
-            {/* post count removed as requested */}
           </div>
         </div>
         <div>
           <section className="card">
-            {/* Posts heading removed per request */}
-
             {loading ? (
               <p>Loading…</p>
             ) : error ? (
@@ -338,7 +372,12 @@ const getCurrentUserFromStorage = () => {
                   onClick={() => navigate(`/post/${post.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <PostCard post={post} />
+                  <PostCard 
+                    post={post} 
+                    onVote={(postId, upvotes, downvotes) => {
+                      setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes, downvotes } : p));
+                    }}
+                  />
                 </article>
               ))
             ) : (
