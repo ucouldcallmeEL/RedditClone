@@ -9,6 +9,7 @@ import type { CommunityDetails, Post } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
 import { apiClient } from '../services/apiClient';
+import { API_BASE_URL } from '../services/config';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
 
@@ -97,6 +98,31 @@ function CommunityPage() {
   const [filter, setFilter] = useState<FilterKey>('hot');
   const [compactView, setCompactView] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+
+  const backendBase = useMemo(() => API_BASE_URL.replace(/\/api$/, ''), []);
+  const withBackendBase = (val?: string) => (val && val.startsWith('/') ? `${backendBase}${val}` : val || '');
+
+  const getTimeAgo = (dateString: string) => {
+    if (!dateString) return 'recently';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'recently';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return 'just now';
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+    if (diffSecs < 10) return 'just now';
+    if (diffSecs < 60) return `${diffSecs}s ago`;
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    if (diffMonths < 12) return `${diffMonths}mo ago`;
+    return `${diffYears}y ago`;
+  };
 
   const getCurrentUserFromStorage = () => {
     // Prefer JWT token (stored as `token`) and decode payload for userId
@@ -195,18 +221,28 @@ function CommunityPage() {
           setIsModerator(false);
         }
 
-        const postsData = communityData.posts?.map((post: any) => ({
-          id: post._id,
-          title: post.title,
-          content: post.content,
-          author: post.author?.name ? `u/${post.author.name}` : 'u/anonymous',
-          upvotes: post.upvotes,
-          downvotes: post.downvotes,
-          comments: post.comments?.length || 0,
-          subreddit: `r/${communityName}`,
-          createdAt: post.createdAt,
-          communityIcon: communityData.profilePicture || 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
-        })) || [];
+        const postsData: Post[] = (communityData.posts || []).map((post: any) => {
+          const authorName = post.author?.username ;
+          const mediaEntry = post.mediaUrls?.[0];
+          const mediaUrl = mediaEntry?.url || post.media;
+          const communityIcon = withBackendBase(post.author?.profilePicture) || '';
+
+          return {
+            id: post._id,
+            
+            communityIcon,
+            title: post.title,
+            body: post.content || '',
+            media: mediaUrl,
+            mediaUrls: post.mediaUrls || [],
+            upvotes: post.upvotes || 0,
+            downvotes: post.downvotes || 0,
+            comments: post.comments?.length || 0,
+            shared: 0,
+            author: `u/${authorName}`,
+            createdAt: getTimeAgo(post.createdAt),
+          };
+        });
         setPosts(postsData);
       } catch (err: any) {
         console.error('Failed to fetch community data', err?.response || err.message || err);

@@ -59,7 +59,7 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
 
     // 2. Fetch all posts belonging to this community and populate author name
     let posts = await Post.find({ community: community._id })
-        .populate('author', 'username name')
+        .populate('author', 'username name profilePicture coverPicture')
         .lean();
 
     if (!posts || posts.length === 0) {
