@@ -32,7 +32,7 @@ function ModalWrapper({ children, onClose }) {
 // Wrapper component for Login modal
 function LoginModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>
@@ -44,7 +44,7 @@ function LoginModal() {
 // Wrapper component for Signup modal
 function SignupModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>
@@ -56,7 +56,7 @@ function SignupModal() {
 // Wrapper component for SigninPhone modal
 function SigninPhoneModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>
@@ -68,7 +68,7 @@ function SigninPhoneModal() {
 // Wrapper component for ResetPass modal
 function ResetPassModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>
@@ -80,7 +80,7 @@ function ResetPassModal() {
 // Wrapper component for CreateUser modal
 function CreateUserModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>
@@ -92,7 +92,7 @@ function CreateUserModal() {
 // Wrapper component for Interests modal
 function InterestsModal() {
   const navigate = useNavigate();
-  const handleClose = () => navigate(-1);
+  const handleClose = () => navigate("/");
   
   return (
     <ModalWrapper onClose={handleClose}>

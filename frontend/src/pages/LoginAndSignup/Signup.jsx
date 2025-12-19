@@ -33,7 +33,7 @@ const Signup = ({ onClose }) => {
     if (onClose) {
       onClose();
     } else {
-      navigate(-1);
+      navigate("/");
     }
   };
 
@@ -114,7 +114,7 @@ const Signup = ({ onClose }) => {
             <div>
               <p className="signup-prompt">
                 Already a Redditor?{" "}
-                <Link className="Reset-and-signup" to="/">
+                <Link className="Reset-and-signup" to="/login">
                   Log In
                 </Link>
               </p>
