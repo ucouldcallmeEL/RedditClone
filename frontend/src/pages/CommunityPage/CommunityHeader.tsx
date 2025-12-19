@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { CommunityDetails } from '../../types';
 import { CreatePostButton, ModToolsButton, JoinLeaveButton } from './CommunityButtons';
 import { Edit3 } from 'lucide-react';
-import { apiClient } from '../../../services/apiClient';
+import { apiClient } from '../../services/apiClient';
 
 type Props = {
   community: CommunityDetails;

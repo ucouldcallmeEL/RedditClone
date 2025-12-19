@@ -1,15 +1,7 @@
-import {
-  ArrowBigDown,
-  ArrowBigUp,
-  EyeOff,
-  MessageCircle,
-  Share2,
-} from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import type { Post } from '../types';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - dompurify types may not be installed
+import React from 'react';
+import { ArrowBigDown, ArrowBigUp, EyeOff, MessageCircle, Share2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import type { Post } from '../types';
 
 type Props = {
   post: Post;
@@ -21,7 +13,7 @@ function PostCard({ post, onClick }: Props) {
   const mediaEntry = post.mediaUrls?.[0];
   const mediaUrl = mediaEntry?.url || post.media;
   return (
-    <article className="post card" ref={containerRef} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+    <article className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <header className="post__meta">
         <img
           src={post.communityIcon}
@@ -39,32 +31,6 @@ function PostCard({ post, onClick }: Props) {
           </p>
         </div>
       </header>
-
-      {/* AI summary button in the top-right of the card */}
-      <div
-        className="ai-summary-trigger"
-        onMouseEnter={() => {
-          setVisible(true);
-          fetchSummary();
-        }}
-        onMouseLeave={() => setVisible(false)}
-        onFocus={() => {
-          setVisible(true);
-          fetchSummary();
-        }}
-        onBlur={() => setVisible(false)}
-        role="button"
-        aria-label="Show AI summary"
-        tabIndex={0}
-      >
-        <span className="ai-gradient-text">AI</span>
-        {visible && (
-          <div className="ai-summary-popup" onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}>
-            {loading && <div>Loading summary…</div>}
-            {!loading && <div>{summary ?? 'Hover to generate summary'}</div>}
-          </div>
-        )}
-      </div>
 
       <div className="post__content">
         <h2>{post.title}</h2>

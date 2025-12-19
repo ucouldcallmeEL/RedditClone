@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import '../styles/community.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, LayoutGrid, List } from 'lucide-react';
@@ -8,7 +8,7 @@ import PostCard from '../components/PostCard';
 import type { CommunityDetails, Post } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../services/apiClient';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
 
@@ -246,9 +246,6 @@ const getCurrentUserFromStorage = () => {
     return () => document.documentElement.classList.remove(cls);
   }, []);
 
-  const [filter, setFilter] = useState<FilterKey>('hot');
-  const [compactView, setCompactView] = useState(false);
-
   const displayedPosts = useMemo(() => {
     if (!posts || posts.length === 0) return [] as Post[];
 
@@ -334,8 +331,8 @@ const getCurrentUserFromStorage = () => {
               <p>Loading…</p>
             ) : error ? (
               <p>Error: {error}</p>
-            ) : posts.length ? (
-              posts.map((post) => (
+            ) : displayedPosts.length ? (
+              displayedPosts.map((post) => (
                 <article
                   key={post.id}
                   onClick={() => navigate(`/post/${post.id}`)}

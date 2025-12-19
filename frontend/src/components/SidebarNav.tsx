@@ -29,7 +29,7 @@ import {
   Info,
 } from 'lucide-react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../services/config';
+import { API_BASE_URL } from '../services/config';
 
 const items = [
   { label: 'Home', icon: Home },
