@@ -1,0 +1,54 @@
+.interests-topics-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.interests-topics-title {
+  color: #b7cad4;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: start;
+  margin-inline-start: 0.25rem;
+}
+
+.interests-topics-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.interests-topic-name {
+  background-color: #2a3236;
+  color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  min-height: 2.5rem;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.interests-topic-name span {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Selected state: orange outline + tint using existing orange auth colors */
+.interests-topic-name.selected {
+  background-color: #ae2c00; /* same as .login-action-button:hover */
+  border-color: #d93900; /* same as .login-action-button */
+}
+
+.interests-topic-name:hover {
+  background-color: #333d42;
+}
+
+
