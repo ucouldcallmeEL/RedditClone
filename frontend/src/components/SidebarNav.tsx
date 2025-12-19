@@ -28,6 +28,8 @@ import {
   Users,
   Info,
 } from 'lucide-react';
+import axios from 'axios';
+import { API_BASE_URL } from '../../services/config';
 
 const items = [
   { label: 'Home', icon: Home },
@@ -44,12 +46,7 @@ type SidebarLink = {
   badge?: string;
 };
 
-const communityPlaceholders: SidebarLink[] = [
-  { label: 'r/webdev', icon: Code2 },
-  { label: 'r/reactjs', icon: Layers },
-  { label: 'r/frontend', icon: Flame },
-  { label: 'r/learnprogramming', icon: ListIcon },
-];
+// removed hardcoded placeholders — communities will be loaded from backend per-user
 
 const resourcesLinks: SidebarLink[] = [
   { label: 'About Reddit', icon: Info },
@@ -77,7 +74,7 @@ const policyLinks: SidebarLink[] = [
 ];
 
 const collapsibleSections = [
-  { id: 'communities', title: 'Communities', items: communityPlaceholders },
+  { id: 'communities', title: 'Communities', items: [] },
   { id: 'resources', title: 'Resources', items: resourcesLinks },
   { id: 'discover', title: 'More from Reddit', items: discoverLinks },
   { id: 'policies', title: 'Policies', items: policyLinks },
@@ -93,6 +90,7 @@ type Props = {
 function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [userCommunities, setUserCommunities] = useState<SidebarLink[] | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
     collapsibleSections.reduce(
       (acc, section) => {
@@ -116,6 +114,25 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
       root.style.setProperty('--sidebar-width', '260px');
     };
   }, [collapsed]);
+
+  // load current user's communities (top 3) to show in the Communities section
+  useEffect(() => {
+  
+    const load = async () => {
+      // Hard-coded user ID that needs to be replaced with actual logged-in user ID
+      const hardcodedUserId = '69397d04292782398b5f6821';
+      try {
+        const res = await axios.get(`${API_BASE_URL}/r/user/${hardcodedUserId}/top3communities`);
+        const top: any[] = res.data || [];
+        const mapped = top.map((c) => ({ label: `r/${c.name}`, icon: Users }));
+        setUserCommunities(mapped);
+      } catch (e) {
+        setUserCommunities([]);
+      }
+    };
+
+    void load();
+  }, []);
 
   const toggleSection = (sectionId: string) => {
     setCollapsedSections((prev) => ({

@@ -43,6 +43,7 @@ export type Community = {
   members: string;
   description: string;
   avatar: string;
+  id?: string;
 };
 
 export type CommunityDetails = Community & {

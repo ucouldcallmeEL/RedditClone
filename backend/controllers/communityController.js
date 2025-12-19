@@ -9,11 +9,23 @@ const {
 const getCommunityDetails = async (req, res) => {
   try {
     const communityName = req.params.communityName;
-    const community = await getCommunityByName(communityName);
+    const filter = req.query.filter || 'hot'; // default to 'hot'
+    const community = await getCommunityWithFilteredPosts(communityName, filter);
     if (!community) {
       return res.status(404).send({ error: 'Community not found' });
     }
-    res.send(community);
+    // Ensure we return plain JSON and include profile/cover pictures explicitly
+    let payload = community;
+    try {
+      payload = community.toObject ? community.toObject() : JSON.parse(JSON.stringify(community));
+    } catch (e) {
+      payload = community;
+    }
+
+    payload.profilePicture = payload.profilePicture || null;
+    payload.coverPicture = payload.coverPicture || null;
+
+    return res.send(payload);
   } catch (err) {
     console.error('Failed to fetch community details', err);
     res.status(500).send({ error: 'Failed to fetch community details' });

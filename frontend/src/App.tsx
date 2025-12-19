@@ -5,7 +5,8 @@ import RightRail from './components/RightRail';
 import SidebarNav from './components/SidebarNav';
 import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
-import CommunityPage from './pages/CommunityPage';
+import CommunityPage from './pages/CommunityPage/CommunityPage';
+import CommunitiesPage from './pages/CommunitiesPage';
 import NotificationPage from './pages/Notifications/NotificationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 
@@ -27,6 +28,7 @@ function AppContent() {
         <main className="feed">
           <Routes>
             <Route path="/" element={<HomePage feedFilter={feedFilter} />} />
+            <Route path="/communities" element={<CommunitiesPage />} />
             <Route path="/community/:communityName/*" element={<CommunityPage />} />
             <Route path="/post/:postId" element={<PostDetailPage />} />
             <Route path="/notifications" element={<NotificationPage />} />

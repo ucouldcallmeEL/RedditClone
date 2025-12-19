@@ -1,0 +1,185 @@
+/* Styles for Top Communities page */
+.communities-page {
+  padding: 1.5rem 1rem;
+  /* center the page content and constrain width */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* When this page is shown, expand the feed container and center its children */
+.feed.communities-page {
+  max-width: none; /* override default feed max-width (640px) */
+  width: 100%;
+  align-items: center; /* center the communities block horizontally */
+}
+
+.communities-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.25rem;
+  margin-left: 0;
+  margin-right: 0;
+  text-align: left;
+}
+.communities-header .muted {
+  color: rgba(255,255,255,0.65);
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
+/* centered small page title at very top */
+.page-top-center {
+  text-align: center;
+  margin-bottom: 8px;
+  /* center this flex item inside the .feed (which uses column flex) */
+  align-self: center;
+}
+.page-top-center h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* make the local header (Top Communities) align left above the grid */
+.communities-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: left;
+  /* place the header at the left of the feed area so it aligns with the grid */
+  align-self: flex-start;
+  margin-bottom: 6px;
+  /* match the grid total width (4 cols) so its left edge lines up with the grid's first column */
+  width: min(calc(220px * 4 + 10px * 3), 100%);
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+  /* nudge header left to align with the first community column */
+  padding-left: 0px;
+  transform: translateX(-135px);
+}
+
+.communities-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* increased vertical spacing between rows */
+  margin-top: 1rem;
+  /* constrain grid container to match header/grid width and left-align it */
+  width: min(calc(220px * 4 + 10px * 3), 100%);
+  margin-left: 0; /* left-align grid so header can sit to its left */
+  margin-right: auto;
+}
+
+.communities-row {
+  display: grid;
+  /* fixed column width so empty slots keep space */
+  grid-template-columns: repeat(4, 220px);
+  gap: 10px;
+  justify-content: center; /* center items within the grid container */
+  align-items: center;
+  /* make the row visually blend with the page by removing background/shadow */
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: background 160ms ease;
+}
+.communities-row:hover {
+  background: transparent;
+}
+.communities-row > .community-card:hover {
+  transform: translateY(-3px);
+}
+
+.community-rank {
+  font-weight: 600;
+  color: var(--text-tertiary);
+  opacity: 0.95;
+  width: 22px;
+  text-align: right;
+  margin-right: 10px;
+  font-size: 0.85rem;
+}
+
+.communities-page .community-card,
+.community-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  width: 100%;
+  min-height: 72px; /* compact row items */
+  box-sizing: border-box;
+  background: transparent; /* row provides the band */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.community-card:hover {
+  transform: translateY(-3px);
+}
+.community-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* allow ellipsis inside flex children */
+}
+.community-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.community-desc {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  /* compact single-line clamp to keep rows tidy */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin-bottom: 2px;
+}
+.community-members {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure grid children don't expand past their column width */
+.communities-row > * {
+  min-width: 0;
+}
+
+/* Responsive: 2 columns on narrow screens */
+@media (max-width: 900px) {
+  .communities-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .communities-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* When Communities page is open, hide sidebar and expand feed */
+.communities-open .sidebar {
+  display: none !important;
+}
+.communities-open .app-body main.feed {
+  grid-column: 1 / -1;
+}
+
+.community-placeholder {
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  width: 100%;
+  height: 100px;
+}
