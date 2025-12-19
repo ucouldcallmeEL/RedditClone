@@ -3,6 +3,10 @@ import PostsTab from "./Tabs/PostsTab";
 import CommentsTab from "./Tabs/CommentsTab";
 import UpvotesTab from "./Tabs/UpvotesTab";
 import DownvotesTab from "./Tabs/DownvotesTab";
+import SavedTab from "./Tabs/SavedTab";
+import HistoryTab  from "./Tabs/HistoryTab";
+import HiddenTab  from "./Tabs/HiddenTab";
+
 
 function ProfileMain({ activeTab }) {
     return (
@@ -10,9 +14,9 @@ function ProfileMain({ activeTab }) {
             {activeTab === "Overview" && <OverviewTab/>}
             {activeTab === "Posts" && <PostsTab/>}
             {activeTab === "Comments" && <CommentsTab/>}
-            {activeTab === "Saved" && <div>Saved Content</div>}
-            {activeTab === "History" && <div>History Content</div>}
-            {activeTab === "Hidden" && <div>Hidden Content</div>}
+            {activeTab === "Saved" && <SavedTab/>}
+            {activeTab === "History" && <HistoryTab/>}
+            {activeTab === "Hidden" && <HiddenTab/>}
             {activeTab === "Upvoted" && <UpvotesTab/>}
             {activeTab === "Downvoted" && <DownvotesTab/>}
         </div>

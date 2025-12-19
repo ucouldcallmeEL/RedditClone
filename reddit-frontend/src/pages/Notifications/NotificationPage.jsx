@@ -32,6 +32,10 @@ function NotificationPage() {
     }, []);
     const USER_ID = storedUser?._id || storedUser?.id;
 
+    console.log("storedUserRaw:", localStorage.getItem("user"));
+    console.log("storedUser:", storedUser);
+    console.log("USER_ID:", USER_ID);
+
     useEffect(() => {
         if (!USER_ID) {
         navigate("/login", {
@@ -111,7 +115,8 @@ function NotificationPage() {
             default:
             return navigate("/notifications");
         }
-        };
+
+    };
 
 
     if (!USER_ID) return null;
