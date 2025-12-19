@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - dompurify types may not be installed
+import DOMPurify from 'dompurify';
 import {
   ArrowBigDown,
   ArrowBigUp,
@@ -16,12 +19,20 @@ type PostDetailData = {
   content: string;
   author: {
     _id: string;
+    username: string;
+  };
+  community?: {
+    _id: string;
     name: string;
   };
   upvotes: number;
   downvotes: number;
   createdAt: string;
   media?: string;
+  mediaUrls?: {
+    url: string;
+    mediaType?: string;
+  }[];
   isSpoiler?: boolean;
 };
 
@@ -46,7 +57,8 @@ function PostDetail({ postId, onBack }: Props) {
   const fetchPostDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/post/${postId}`);
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+      const response = await fetch(`${API_BASE}/posts/${postId}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch post');
@@ -115,6 +127,8 @@ function PostDetail({ postId, onBack }: Props) {
   }
 
   const score = post.upvotes - post.downvotes;
+  const safeContent = post.content ? DOMPurify.sanitize(post.content) : '';
+  const mediaItems = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : post.media ? [{ url: post.media }] : [];
 
   return (
     <div className="post-detail">
@@ -137,15 +151,23 @@ function PostDetail({ postId, onBack }: Props) {
         <div className="post-detail__content">
           <header className="post__meta">
             <div>
+              {post.community?.name && (
+                <p className="post__community">r/{post.community.name}</p>
+              )}
               <p className="post__author">
-                Posted by u/{post.author.name} · {getTimeAgo(post.createdAt)}
+                Posted by u/{post.author.username || 'anonymous'} · {getTimeAgo(post.createdAt)}
               </p>
             </div>
           </header>
 
           <h1 className="post-detail__title">{post.title}</h1>
           
-          {post.content && <p className="post-detail__body">{post.content}</p>}
+          {post.content && (
+            <div
+              className="post-detail__body"
+              dangerouslySetInnerHTML={{ __html: safeContent }}
+            />
+          )}
 
           {post.isSpoiler && (
             <div className="post__spoiler">
@@ -154,9 +176,15 @@ function PostDetail({ postId, onBack }: Props) {
             </div>
           )}
 
-          {post.media && (
-            <div className="post__media">
-              <img src={post.media} alt={post.title} loading="lazy" />
+          {mediaItems.length > 0 && (
+            <div className="post__media-list">
+              {mediaItems.map((m, idx) =>
+                m.mediaType === 'video' ? (
+                  <video key={idx} src={m.url} controls className="post__media-item" />
+                ) : (
+                  <img key={idx} src={m.url} alt={post.title} loading="lazy" className="post__media-item" />
+                )
+              )}
             </div>
           )}
 

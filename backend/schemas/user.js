@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     profilePicture: {
-        type: String,     
+        type: String,
+        default: '/resources/6yyqvx1f5bu71.webp'
     },
     coverPicture: {
         type: String,  
@@ -37,6 +38,10 @@ const userSchema = new mongoose.Schema({
     following: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    }],
+    communities: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Community'
     }],
     karma: {
         type: Number,

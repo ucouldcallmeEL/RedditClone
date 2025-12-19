@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { databaseConnection } = require('./managers/databaseConnection');
 require("dotenv").config();
 const cors = require("cors");
@@ -69,6 +70,9 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static resources (e.g., default avatars)
+app.use('/resources', express.static(path.join(__dirname, '../resources')));
 
 // Import routes
 const communityRoutes = require('./routes/communityRoutes');

@@ -6,6 +6,9 @@ import {
   Share2,
 } from 'lucide-react';
 import type { Post } from '../types';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - dompurify types may not be installed
+import DOMPurify from 'dompurify';
 
 type Props = {
   post: Post;
@@ -13,6 +16,9 @@ type Props = {
 };
 
 function PostCard({ post, onClick }: Props) {
+  const safeBody = post.body ? DOMPurify.sanitize(post.body) : '';
+  const mediaEntry = post.mediaUrls?.[0];
+  const mediaUrl = mediaEntry?.url || post.media;
   return (
     <article className="post card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <header className="post__meta">
@@ -35,7 +41,12 @@ function PostCard({ post, onClick }: Props) {
 
       <div className="post__content">
         <h2>{post.title}</h2>
-        {post.body && <p>{post.body}</p>}
+        {post.body && (
+          <div
+            className="post__body"
+            dangerouslySetInnerHTML={{ __html: safeBody }}
+          />
+        )}
 
         {post.isSpoiler && (
           <div className="post__spoiler">
@@ -44,9 +55,13 @@ function PostCard({ post, onClick }: Props) {
           </div>
         )}
 
-        {post.media && (
+        {mediaUrl && (
           <div className="post__media">
-            <img src={post.media} alt={post.title} loading="lazy" />
+            {mediaEntry?.mediaType === 'video' ? (
+              <video src={mediaUrl} className="post__media-item" controls />
+            ) : (
+              <img src={mediaUrl} alt={post.title} loading="lazy" className="post__media-item" />
+            )}
           </div>
         )}
 

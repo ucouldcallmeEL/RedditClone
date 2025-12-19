@@ -6,7 +6,7 @@ import ToggleButton from "../../components/ToggleButton";
 import CustomButton from "../../components/CustomButton";
 import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
-import { communityRoutes, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
+import { communityRoutes, apiGet, apiPost, postRoutes, uploadRoutes } from "../../config/apiRoutes";
 
 // Placeholder components for external components
 const HeaderBar = () => {
@@ -287,6 +287,8 @@ const CreatePost = () => {
     if (!isFormValid()) return;
 
     try {
+      const token = localStorage.getItem("token");
+
       // Build post data based on post type
       const postData = {
         title: postTitle,
@@ -303,17 +305,6 @@ const CreatePost = () => {
         postData.link = postLink;
       }
 
-      // Add media URLs array if there are uploaded media files
-      if (uploadedMedia.length > 0) {
-        // TODO: Upload to Cloudinary and get real URLs
-        // For now, using blob URLs as placeholders
-        postData.mediaUrls = uploadedMedia.map((file) => ({
-          url: URL.createObjectURL(file),
-          mediaType: file.type.startsWith("image/") ? "image" : "video",
-          // mediaId will be set after Cloudinary upload
-        }));
-      }
-
       // Add tags if any are selected
       if (selectedTags.nsfw || selectedTags.spoiler || selectedTags.brand) {
         postData.tags = {
@@ -328,6 +319,26 @@ const CreatePost = () => {
       if (response.ok) {
         const createdPost = await response.json();
         console.log("Post created successfully:", createdPost);
+
+        // Upload media files to backend (Cloudinary) if present
+        const postId = createdPost._id || createdPost.id;
+        if (postId && uploadedMedia.length > 0) {
+          const uploadFile = async (file) => {
+            const form = new FormData();
+            form.append("file", file);
+            const res = await fetch(uploadRoutes.postMedia(postId), {
+              method: "POST",
+              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+              body: form,
+            });
+            if (!res.ok) {
+              console.error("Post media upload failed:", await res.text());
+            }
+          };
+          for (const file of uploadedMedia) {
+            await uploadFile(file);
+          }
+        }
         
         // Navigate to home page after successful post creation
         navigate("/");

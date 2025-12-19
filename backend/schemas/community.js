@@ -12,11 +12,11 @@ const communitySchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        required: true
+        default: '/resources/communityIcon_9cgdstjtz58g1.png'
     },
     coverPicture: {
         type: String,
-        required: true
+        default: '/resources/bannerBackgroundImage_6p2dptjtz58g1.png'
     },
     topics: [{
         type: String

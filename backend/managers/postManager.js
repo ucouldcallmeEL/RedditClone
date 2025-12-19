@@ -8,12 +8,16 @@ const createPost = async (post) => {
 };
 
 const getPost = async (id) => {
-    const post = await Post.findById(id).populate('author', 'name');
+    const post = await Post.findById(id)
+        .populate('author', 'username profilePicture')
+        .populate('community', 'name profilePicture');
     return post;
 };
 
 const getPosts = async () => {
-    const posts = await Post.find().populate('author', 'name');
+    const posts = await Post.find()
+        .populate('author', 'username profilePicture')
+        .populate('community', 'name profilePicture');
     return posts;
 };
 
@@ -34,9 +38,19 @@ const deletePost = async (id) => {
 
 const getHomePosts = async (userId) => {
     const user = await User.findById(userId);
-    const following = user.following;
-    const posts = await Post.find({ author: { $in: following } }).populate('author', 'name');
-    return posts;
+    if (!user) return [];
+
+    const authors = [...user.following, userId];
+    const communities = user.communities || [];
+
+    return Post.find({
+        $or: [
+            { author: { $in: authors } },
+            { community: { $in: communities } }
+        ]
+    })
+    .populate('author', 'username profilePicture')
+    .populate('community', 'name profilePicture');
 };
 
 const getPopularPosts = async (timeFilter = 'all') => {
@@ -68,7 +82,9 @@ const getPopularPosts = async (timeFilter = 'all') => {
     }
 
     // Fetch posts and calculate score
-    const posts = await Post.find(dateFilter);
+    const posts = await Post.find(dateFilter)
+        .populate('author', 'username profilePicture')
+        .populate('community', 'name profilePicture');
 
     // Calculate net score and sort by popularity
     const postsWithScore = posts.map(post => ({

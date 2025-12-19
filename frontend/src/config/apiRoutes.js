@@ -29,6 +29,17 @@ export const communityRoutes = {
 };
 
 /**
+ * Upload API Routes (multipart/form-data)
+ */
+export const uploadRoutes = {
+  postMedia: (postId) => `${API_BASE_URL}/api/upload/post/${postId}`,
+  userAvatar: (userId) => `${API_BASE_URL}/api/upload/profile/${userId}`,
+  userCover: (userId) => `${API_BASE_URL}/api/upload/cover/${userId}`,
+  communityIcon: (communityId) => `${API_BASE_URL}/api/upload/community/${communityId}/icon`,
+  communityBanner: (communityId) => `${API_BASE_URL}/api/upload/community/${communityId}/banner`,
+};
+
+/**
  * Post API Routes
  */
 export const postRoutes = {
