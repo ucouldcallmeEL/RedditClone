@@ -143,7 +143,7 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
 
             const handleClick = () => {
               if (isCreateCommunity) {
-                navigate('/communities/create');
+                navigate('/r/create');
                 return;
               }
 

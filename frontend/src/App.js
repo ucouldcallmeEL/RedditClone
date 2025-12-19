@@ -124,7 +124,7 @@ function AppContent() {
   const isResetPage = location.pathname === '/reset';
   const isCreateUserPage = location.pathname === '/create-user';
   const isInterestsPage = location.pathname === '/interests';
-  const isCreateCommunityPage = location.pathname.startsWith('/communities/create');
+  const isCreateCommunityPage = location.pathname.startsWith('/r/create');
   
   const isAnyAuthPage = isLoginPage || isSignupPage || isSigninPhonePage || isResetPage || isCreateUserPage || isInterestsPage;
 
@@ -182,7 +182,7 @@ function AppContent() {
           </div>
         </div>
         <Routes>
-          <Route path="/communities/create" element={<CreateCommunityModal />} />
+          <Route path="/r/create" element={<CreateCommunityModal />} />
         </Routes>
       </>
     );
