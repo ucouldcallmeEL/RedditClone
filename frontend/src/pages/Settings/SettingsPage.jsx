@@ -1,6 +1,7 @@
 import {useState , useEffect} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiGet, apiPost, userRoutes } from "../../config/apiRoutes";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 import SettingsTab from "./SettingsTab";
 import SettingsAccountContent from "./SettingsTabsContent/SettingsAccountContent";
@@ -104,7 +105,7 @@ function SettingsPage() {
 
         try {
             // TODO: Implement upload endpoint in backend
-            const upload = await fetch(`http://localhost:4000/api/upload/profile/${userId}`, {
+            const upload = await fetch(`${API_BASE_URL}/api/upload/profile/${userId}`, {
                 method: 'POST',
                 body: form,
                 headers: {
@@ -131,7 +132,7 @@ function SettingsPage() {
 
         try {
             // TODO: Implement upload endpoint in backend
-            const upload = await fetch(`http://localhost:4000/api/upload/cover/${userId}`, {
+            const upload = await fetch(`${API_BASE_URL}/api/upload/cover/${userId}`, {
                 method: 'POST',
                 body: form,
                 headers: {

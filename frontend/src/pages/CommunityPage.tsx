@@ -5,6 +5,7 @@ import { ChevronDown, LayoutGrid, List } from 'lucide-react';
 import CommunityHeader from '../components/CommunityHeader';
 import CommunitySidebar from '../components/CommunitySidebar';
 import PostCard from '../components/PostCard';
+import { API_BASE_URL } from '../config/apiConfig';
 import type { CommunityDetails, Post } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -96,7 +97,7 @@ function CommunityPage() {
     if (!communityName) return;
 
     setLoading(true);
-    fetch(`http://localhost:3000/r/${communityName}`)
+    fetch(`${API_BASE_URL}/r/${communityName}`)
       .then((res) => res.json())
       .then((communityData: any) => {
         // Set community details

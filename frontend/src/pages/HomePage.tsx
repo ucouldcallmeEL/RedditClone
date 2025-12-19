@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import PostComposer from '../components/PostComposer';
+import { API_BASE_URL } from '../config/apiConfig';
 import type { Post } from '../types';
 
 type FeedFilter = 'home' | 'popular' | 'all';
@@ -25,25 +26,24 @@ function HomePage({ feedFilter = 'home' }: Props) {
       setLoading(true);
 
       // Use centralized API routes
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
       let url = '';
 
       if (filter === 'all') {
-        url = `${API_BASE_URL}/posts`;
+        url = `${API_BASE_URL}/api/posts`;
       } else if (filter === 'popular') {
-        url = `${API_BASE_URL}/posts/popular?filter=all`;
+        url = `${API_BASE_URL}/api/posts/popular?filter=all`;
       } else {
         // Home feed - need userId from localStorage
         const user = localStorage.getItem('user');
         if (user) {
           try {
             const userData = JSON.parse(user);
-            url = `${API_BASE_URL}/posts/home/${userData._id || userData.id}`;
+            url = `${API_BASE_URL}/api/posts/home/${userData._id || userData.id}`;
           } catch {
-            url = `${API_BASE_URL}/posts`;
+            url = `${API_BASE_URL}/api/posts`;
           }
         } else {
-          url = `${API_BASE_URL}/posts`;
+          url = `${API_BASE_URL}/api/posts`;
         }
       }
 

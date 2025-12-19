@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // Fetch-based API client to replace axios
 const getAuthToken = () => {

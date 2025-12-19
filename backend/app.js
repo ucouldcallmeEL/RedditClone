@@ -1,5 +1,5 @@
 const express = require('express');
-const { databaseConnection } = require('./managers/databaseConnection');
+const databaseConnection = require('./managers/databaseConnection');
 require("dotenv").config();
 const cors = require("cors");
 
@@ -54,8 +54,28 @@ app.get("/api/_debug/routes", (req, res) => {
 });
 
 // CORS configuration - must specify exact origin (not wildcard) when using credentials
+// Supports multiple origins: set FRONTEND_URL as comma-separated list or use default
+const frontendUrls = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : ['http://localhost:3000', 'https://reddit-frontend-27293595826.us-central1.run.app'];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // React dev server default port
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (frontendUrls.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // Allow localhost in development
+      if (origin.includes('localhost')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true, // Allow cookies/credentials to be sent
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']

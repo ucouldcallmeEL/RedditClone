@@ -8,6 +8,7 @@ import {
   Share2,
 } from 'lucide-react';
 import Comment from './Comment';
+import { API_BASE_URL } from '../config/apiConfig';
 import type { Comment as CommentType } from '../types';
 
 type PostDetailData = {
@@ -46,7 +47,7 @@ function PostDetail({ postId, onBack }: Props) {
   const fetchPostDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/post/${postId}`);
+      const response = await fetch(`${API_BASE_URL}/post/${postId}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch post');

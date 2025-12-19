@@ -1,16 +1,19 @@
-const mongoose = require('mongoose');
-
-const uri="mongodb+srv://yehiasalman48_db_user:Y0114487332y@redditclone.tqtlvsk.mongodb.net/?appName=redditClone"
+const mongoose = require("mongoose");
 
 const databaseConnection = async () => {
-    try {
-        await mongoose.connect(uri);
-        console.log("Connected to MongoDB");
-    } catch (error) {
-        console.log(error);
-    }
+  const MONGO_URI = process.env.MONGODB_URI;
+
+  if (!MONGO_URI) {
+    throw new Error("MONGODB_URI is not defined");
+  }
+
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB connection failed", err);
+    process.exit(1);
+  }
 };
 
-module.exports = {
-    databaseConnection
-};
+module.exports = databaseConnection;

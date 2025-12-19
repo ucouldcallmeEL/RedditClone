@@ -9,7 +9,7 @@ import {
     deleteNotification,
     clearAllNotifications,
 } from "../../services/notificationService";
-import { API_BASE_URL } from "../../services/config";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 import NotificationCard from "./NotificationCard";
 import EmptyNotifications from "./EmptyNotifications";

@@ -5,9 +5,7 @@
  * Update backend routes here to keep frontend and backend in sync.
  */
 
-// API base URL - defaults to localhost:4000/api if REACT_APP_API_URL is not set
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-
+import { API_BASE_URL } from './apiConfig';
 /**
  * Community API Routes
  */
