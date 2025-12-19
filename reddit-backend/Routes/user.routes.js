@@ -32,5 +32,45 @@ router.get("/:userId", async (req, res) => {
     }
 });
 
+// LOGIN (find user by email)
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // ⚠️ simple password check (OK for now)
+        if (user.password !== password) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+        // return only what frontend needs
+        res.json({
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                profilePicture: user.profilePicture,
+                coverPicture: user.coverPicture,
+                bio: user.bio,
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Login failed" });
+    }
+});
+
+
 
 module.exports = router;
