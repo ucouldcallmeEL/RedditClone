@@ -1,8 +1,19 @@
 const { getPosts, getHomePosts, getPopularPosts } = require('../managers/postManager');
+const Vote = require('../schemas/vote');
 
 const getAllPosts = async (req, res) => {
   try {
     const posts = await getPosts();
+
+    // attach current user's vote if authenticated
+    if (req.user && req.user._id) {
+      const ids = posts.map(p => p._id || p.id).filter(Boolean);
+      const votes = await Vote.find({ user: req.user._id, post: { $in: ids } }).lean();
+      const map = {};
+      votes.forEach(v => { map[String(v.post)] = v.vote; });
+      posts.forEach(p => { p.userVote = map[String(p._id || p.id)] || 0; });
+    }
+
     res.send(posts);
   } catch (err) {
     console.error('Failed to fetch all posts', err);
@@ -28,6 +39,15 @@ const getHomeFeed = async (req, res) => {
   }
   try {
     const posts = await getHomePosts(userId);
+    // attach viewer's vote if available
+    if (req.user && req.user._id) {
+      const ids = posts.map(p => p._id || p.id).filter(Boolean);
+      const votes = await Vote.find({ user: req.user._id, post: { $in: ids } }).lean();
+      const map = {};
+      votes.forEach(v => { map[String(v.post)] = v.vote; });
+      posts.forEach(p => { p.userVote = map[String(p._id || p.id)] || 0; });
+    }
+
     res.send({
       posts: posts,
       isPersonalized: true
@@ -49,6 +69,15 @@ const getPopularPostsHandler = async (req, res) => {
       });
     }
     const posts = await getPopularPosts(timeFilter);
+    // attach viewer's vote if available
+    if (req.user && req.user._id) {
+      const ids = posts.map(p => p._id || p.id).filter(Boolean);
+      const votes = await Vote.find({ user: req.user._id, post: { $in: ids } }).lean();
+      const map = {};
+      votes.forEach(v => { map[String(v.post)] = v.vote; });
+      posts.forEach(p => { p.userVote = map[String(p._id || p.id)] || 0; });
+    }
+
     res.send({
       posts: posts,
       timeFilter: timeFilter,

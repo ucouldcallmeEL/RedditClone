@@ -1,3 +1,4 @@
+// ...existing code...
 const Community = require('../schemas/community');
 const Post = require('../schemas/post');
 
@@ -47,7 +48,21 @@ const getCommunityByName = async (name) => {
     return community;
 };
 
-
+// helper to compute upvotes/downvotes/score from populated post.vote refs
+const computeCounts = (post) => {
+    const votes = (post.vote && post.vote.length) ? post.vote : [];
+    let upvotes = 0, downvotes = 0;
+    for (const v of votes) {
+        if (!v) continue;
+        // v may be a populated Vote object or a raw id; handle both
+        const val = (typeof v === 'object' && v.vote !== undefined) ? v.vote : null;
+        if (typeof val === 'number') {
+            if (val === 1) upvotes++;
+            else if (val === -1) downvotes++;
+        }
+    }
+    return { upvotes, downvotes, score: upvotes - downvotes };
+};
 
 async function getCommunityWithFilteredPosts(name, filter = 'hot') {
     // 1. Find the community by name and populate moderator/member display names
@@ -67,9 +82,10 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
     community.moderators = (community.moderators || []).map(normalizeUser);
     community.members = (community.members || []).map(normalizeUser);
 
-    // 2. Fetch all posts belonging to this community and populate author name
+    // 2. Fetch all posts belonging to this community and populate author name and votes
     let posts = await Post.find({ community: community._id })
         .populate('author', 'username name profilePicture coverPicture')
+        .populate('vote')
         .lean();
 
     if (!posts || posts.length === 0) {
@@ -78,7 +94,8 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
 
     posts = posts.map((p) => {
         const author = p.author ? { ...p.author, name: p.author.name || p.author.username } : null;
-        return { ...p, author };
+        const counts = computeCounts(p);
+        return { ...p, author, ...counts };
     });
 
     // 3. Sort posts based on filter logic
@@ -87,7 +104,7 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
 
         switch (filter) {
             case 'hot':
-                // Reddit-style hot algorithm
+                // Reddit-style hot algorithm using computed counts
                 const aScore = (a.upvotes - a.downvotes) + (a.comments?.length || 0);
                 const bScore = (b.upvotes - b.downvotes) + (b.comments?.length || 0);
 
@@ -129,9 +146,14 @@ const getPostsByCommunityName = async (communityName) => {
     const community = await Community.findOne({ name: communityName });
     if (!community) return [];
     const Post = require('../schemas/post');
-    // Query posts by community ID (posts now have a community field instead of communities having posts array)
-    const posts = await Post.find({ community: community._id }).populate('author', 'name');
-    return posts;
+    // Query posts by community ID and populate author & votes
+    const posts = await Post.find({ community: community._id })
+        .populate('author', 'name')
+        .populate('vote')
+        .lean();
+
+    // attach computed counts
+    return posts.map(p => ({ ...p, ...computeCounts(p) }));
 };
 
 // Get communities by name substring (for search)
@@ -151,7 +173,7 @@ const getTopCommunitiesForUser = async (userId, limit = 3) => {
 
     // ensure populated fields (getCommunitiesByUser returns raw models so populate if needed)
     const populated = await Community.populate(communities, [
-        { path: 'posts', populate: { path: 'author', select: 'username name' } },
+        { path: 'posts', populate: [{ path: 'author', select: 'username name' }, { path: 'vote' }] },
         { path: 'moderators', select: 'username name' },
         { path: 'members', select: 'username name' },
     ]);
@@ -160,7 +182,11 @@ const getTopCommunitiesForUser = async (userId, limit = 3) => {
     populated.forEach((c) => {
         c.moderators = (c.moderators || []).map(normalizeUser);
         c.members = (c.members || []).map(normalizeUser);
-        c.posts = (c.posts || []).map((p) => ({ ...p.toObject?.() || p, author: normalizeUser(p.author) }));
+        c.posts = (c.posts || []).map((p) => {
+            const pp = { ...p.toObject?.() || p, author: normalizeUser(p.author) };
+            const counts = computeCounts(pp);
+            return { ...pp, ...counts };
+        });
     });
 
     // sort by member count descending and limit

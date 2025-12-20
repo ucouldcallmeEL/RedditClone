@@ -1,11 +1,9 @@
 import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postRoutes, apiGet } from "../../../config/apiRoutes";
-
 import PostCard from "../../../components/PostCard";
 import EmptyState from "../../../components/EmptyState";
-
 import "./OverviewTab.css";
 
 function DownvotesTab({ userId }) {
@@ -13,38 +11,54 @@ function DownvotesTab({ userId }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch downvoted posts using userId
+  const backendBase = useMemo(() => {
+    const apiBase = (process.env.REACT_APP_API_URL || "http://localhost:4000").replace(/\/api$/, "");
+    return apiBase;
+  }, []);
+
+  const withBackendBase = (val) =>
+    val && val.startsWith("/") ? `${backendBase}${val}` : val || "";
+
   useEffect(() => {
     if (!userId) return;
-
     const fetchDownvotedPosts = async () => {
       setLoading(true);
       try {
-        const response = await apiGet(postRoutes.getDownvoted(userId));
+        const url = postRoutes.getDownvoted(userId).replace(/\/api\/api\//, "/api/");
+        const response = await apiGet(url);
         const data = response.ok ? await response.json() : [];
         const rawPosts = Array.isArray(data) ? data : data.data || [];
-        
-        // Transform backend posts to frontend format
-        const transformedPosts = rawPosts.map((post) => ({
-          _id: post._id,
-          id: post._id,
-          title: post.title,
-          body: post.content || '',
-          content: post.content || '',
-          upvotes: post.upvotes || 0,
-          downvotes: post.downvotes || 0,
-          comments: post.comments?.length || 0,
-          author: post.author?.username || post.author?.name || 'anonymous',
-          createdAt: post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'recently',
-          subreddit: post.community?.name ? `r/${post.community.name}` : 'r/general',
-          communityIcon: post.community?.profilePicture || 'https://styles.redditmedia.com/t5_2qh4c/styles/communityIcon_ddkrl1wbp3t91.png',
-          media: post.mediaUrls?.[0]?.url || null,
-          isSpoiler: post.tags?.spoiler || false,
-          tags: post.tags ? Object.entries(post.tags)
-            .filter(([_, value]) => value === true)
-            .map(([key]) => key.toUpperCase()) : [],
-        }));
-        
+
+        const transformedPosts = rawPosts.map((post) => {
+          const authorName = post.author?.username || "anonymous";
+          const communityName = post.community?.name;
+          const label = communityName ? `r/${communityName}` : `u/${authorName}`;
+          const communityIcon =
+            withBackendBase(post.community?.profilePicture) ||
+            withBackendBase(post.author?.profilePicture) ||
+            "";
+          const mediaEntry = post.mediaUrls?.[0];
+          const mediaUrl = mediaEntry?.url || post.media;
+          return {
+            id: String(post._id || post.id || ""),
+            subreddit: label,
+            communityIcon,
+            title: post.title || "",
+            body: post.content || "",
+            media: mediaUrl,
+            mediaUrls:
+              post.mediaUrls?.map((m) => ({
+                url: m?.url || "",
+                mediaType: m?.mediaType,
+              })) || [],
+            upvotes: post.upvotes || 0,
+            downvotes: post.downvotes || 0,
+            comments: Array.isArray(post.comments) ? post.comments.length : 0,
+            author: `u/${authorName}`,
+            createdAt: post.createdAt || "",
+          };
+        });
+
         setPosts(transformedPosts);
       } catch (err) {
         console.error("Failed to fetch downvoted posts", err);
@@ -55,7 +69,7 @@ function DownvotesTab({ userId }) {
     };
 
     fetchDownvotedPosts();
-  }, [userId]);
+  }, [userId, backendBase]);
 
   if (!userId) return null;
 
@@ -73,15 +87,10 @@ function DownvotesTab({ userId }) {
 
           <div className="overview__posts">
             {posts.map((post) => (
-              <div
-                key={post._id || post.id}
-                className="overview-item"
-              >
+              <div key={post.id} className="overview-item">
                 <PostCard
                   post={post}
-                  onClick={() =>
-                    navigate(`/post/${post._id || post.id}`)
-                  }
+                  onClick={() => navigate(`/post/${post.id}`)}
                 />
               </div>
             ))}

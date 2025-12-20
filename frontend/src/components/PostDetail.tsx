@@ -11,6 +11,7 @@ import {
   Share2,
 } from 'lucide-react';
 import Comment from './Comment';
+import { apiClient } from '../services/apiClient';
 import type { Comment as CommentType } from '../types';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
@@ -47,13 +48,13 @@ function PostDetail({ postId, onBack }: Props) {
   const [post, setPost] = useState<PostDetailData | null>(null);
   const [comments, setComments] = useState<CommentType[]>([]);
   const [commentCount, setCommentCount] = useState(0);
+  const [userVote, setUserVote] = useState<1 | -1 | 0>(0);
+  const [upvotes, setUpvotes] = useState<number>(0);
+  const [downvotes, setDownvotes] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [sortBy, setSortBy] = useState<'best' | 'top' | 'new'>('best');
-  const [userVote, setUserVote] = useState<1 | -1 | 0>(0);
-  const [upvotes, setUpvotes] = useState(0);
-  const [downvotes, setDownvotes] = useState(0);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
 
@@ -64,18 +65,17 @@ function PostDetail({ postId, onBack }: Props) {
   const fetchPostDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/posts/${postId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch post');
+      const res = await apiClient.get(`/posts/${postId}`);
+      const data = res?.data || {};
+      setPost(data.post || data);
+      setComments(data.comments || []);
+      setCommentCount(data.commentCount || 0);
+      setUserVote(typeof data.userVote === 'number' ? data.userVote : 0);
+      const refreshed = data.post || data;
+      if (refreshed) {
+        setUpvotes(refreshed.upvotes || 0);
+        setDownvotes(refreshed.downvotes || 0);
       }
-      
-      const data = await response.json();
-      setPost(data.post);
-      setComments(data.comments);
-      setCommentCount(data.commentCount);
-      setUpvotes(data.post?.upvotes || 0);
-      setDownvotes(data.post?.downvotes || 0);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load post');
@@ -84,63 +84,25 @@ function PostDetail({ postId, onBack }: Props) {
     }
   };
 
-  const getCurrentUserFromStorage = () => {
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      if (token) {
-        const parts = token.split('.');
-        if (parts.length >= 2) {
-          const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
-          const id = payload?.userId || payload?.sub || null;
-          if (storedUser) {
-            const u = JSON.parse(storedUser);
-            return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
-          }
-          return { id, name: null, username: null };
-        }
-      }
-      if (storedUser) {
-        const u = JSON.parse(storedUser);
-        return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
-      }
-    } catch (e) {
-      console.warn('Failed to read current user from storage', e);
-    }
-    return null;
-  };
-
   const handleVote = async (vote: 1 | -1) => {
-    if (!post) return;
-    const currentUser = getCurrentUserFromStorage();
-    if (!currentUser || !currentUser.id) {
-      alert('Please log in to vote');
-      return;
-    }
-
-    const newVote = userVote === vote ? 0 : vote;
-
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/posts/vote/${post._id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ vote: newVote })
-      });
-
-      if (!res.ok) throw new Error('Vote failed');
-      const updatedPost = await res.json();
-      setUpvotes(updatedPost.upvotes);
-      setDownvotes(updatedPost.downvotes);
-      setUserVote(newVote);
-    } catch (err) {
-      console.error('Vote failed', err);
-      alert('Failed to vote');
+      // toggle
+      const newVote = userVote === vote ? 0 : vote;
+      const res = await apiClient.post(`/posts/vote/${postId}`, { vote: newVote });
+      const payload = res?.data || {};
+      const updated = payload.post || payload;
+      const returnedUserVote = typeof payload.userVote === 'number' ? payload.userVote : newVote;
+      if (updated) {
+        setUpvotes(updated.upvotes || 0);
+        setDownvotes(updated.downvotes || 0);
+      }
+      setUserVote(returnedUserVote as 1 | -1 | 0);
+    } catch (e) {
+      console.error('Vote failed', e);
     }
   };
+
+ 
 
   const handleSubmitComment = async () => {
     const trimmed = newComment.trim();
@@ -261,7 +223,7 @@ function PostDetail({ postId, onBack }: Props) {
     );
   }
 
-  const score = post.upvotes - post.downvotes;
+  const score = (upvotes || (post?.upvotes || 0)) - (downvotes || (post?.downvotes || 0));
   const safeContent = post.content ? DOMPurify.sanitize(post.content) : '';
   const mediaItems = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : post.media ? [{ url: post.media }] : [];
   const communityIcon = (post as any)?.community?.profilePicture;
@@ -276,7 +238,6 @@ function PostDetail({ postId, onBack }: Props) {
       </button>
 
       <article className="post-detail__post card">
-
         <div className="post-detail__content">
           <header className="post__meta">
             <img
@@ -333,16 +294,16 @@ function PostDetail({ postId, onBack }: Props) {
             <div className="vote">
               <button
                 aria-label="Upvote"
-                onClick={(e) => { e.stopPropagation(); handleVote(1); }}
+                onClick={() => handleVote(1)}
                 style={{ color: userVote === 1 ? 'orange' : 'inherit' }}
               >
                 <ArrowBigUp size={18} />
               </button>
-              <span>{upvotes.toLocaleString()}</span>
+              <span>{score.toLocaleString()}</span>
               <button
                 aria-label="Downvote"
-                onClick={(e) => { e.stopPropagation(); handleVote(-1); }}
-                style={{ color: userVote === -1 ? 'blue' : 'inherit' }}
+                onClick={() => handleVote(-1)}
+                style={{ color: userVote === -1 ? 'orange' : 'inherit' }}
               >
                 <ArrowBigDown size={18} />
               </button>

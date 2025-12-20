@@ -25,7 +25,8 @@ const postSchema = new mongoose.Schema({
     },
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment'
+        ref: 'Comment',
+        default: [] // Ensures consistency
     }],
 
     mediaUrls: [{
@@ -57,18 +58,16 @@ const postSchema = new mongoose.Schema({
             default: false
         }
     },
-    
-    upvotes: {
-        type: Number,
-        default: 0
-    },
-    downvotes: {
-        type: Number,
-        default: 0
-    }
+    // FIXED: Explicitly added default array and cleaned syntax
+    vote: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vote',
+        default: [] 
+    }]
 }, {
-    timestamps: true  // Adds createdAt and updatedAt fields automatically
+    timestamps: true,
+    
 });
 
-const Post = mongoose.model('Post', postSchema);
+const Post = mongoose.models.Post || mongoose.model('Post', postSchema);
 module.exports = Post;

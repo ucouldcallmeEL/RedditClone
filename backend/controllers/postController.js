@@ -1,5 +1,8 @@
+// ...existing code...
 const { getPost, createPost, votePost } = require('../managers/postManager');
 const { getCommentsByPost } = require('../managers/commentManager');
+const Vote = require('../schemas/vote');
+const CommentVote = require('../schemas/commentVote');
 
 const getPostDetails = async (req, res) => {
   try {
@@ -8,11 +11,23 @@ const getPostDetails = async (req, res) => {
     if (!post) {
       return res.status(404).send({ error: 'Post not found' });
     }
+
     const comments = await getCommentsByPost(postId);
+    const commentIds = comments.map((c) => c._id);
+
+    // map of commentId -> userVote for current user (if authenticated)
+    let commentUserVotes = {};
+    if (req.user && commentIds.length > 0) {
+      const votes = await CommentVote.find({ user: req.user._id, comment: { $in: commentIds } }).lean();
+      votes.forEach((v) => { commentUserVotes[v.comment.toString()] = v.vote; });
+    }
+
     const commentMap = {};
     const topLevelComments = [];
     comments.forEach(comment => {
-      commentMap[comment._id] = { ...comment.toObject(), replies: [] };
+      const base = typeof comment.toObject === 'function' ? comment.toObject() : comment;
+      const userVote = commentUserVotes[comment._id.toString()] || 0;
+      commentMap[comment._id] = { ...base, userVote, replies: [] };
     });
     comments.forEach(comment => {
       if (comment.parentComment) {
@@ -23,10 +38,24 @@ const getPostDetails = async (req, res) => {
         topLevelComments.push(commentMap[comment._id]);
       }
     });
+
+    // include current user's vote (if authenticated)
+    let userVote = 0;
+    try {
+      const userId = req.user && req.user._id;
+      if (userId) {
+        const voteDoc = await Vote.findOne({ user: userId, post: postId }).lean();
+        userVote = voteDoc ? voteDoc.vote : 0;
+      }
+    } catch (e) {
+      userVote = 0;
+    }
+
     res.send({
-      post: post,
+      post,
       comments: topLevelComments,
-      commentCount: comments.length
+      commentCount: comments.length,
+      userVote
     });
   } catch (err) {
     console.error('Failed to fetch post details', err);
@@ -46,8 +75,10 @@ const addPost = async (req, res) => {
       author: userId,
     };
 
-    const post = await createPost(postData);
-    res.status(201).json(post);
+    const newPost = await createPost(postData);
+    // return populated/augmented post (with vote counts)
+    const fullPost = await getPost(newPost._id);
+    res.status(201).json(fullPost);
   } catch (err) {
     console.error('Error creating post:', err);
     res.status(400).json({ error: err.message });
@@ -67,7 +98,12 @@ const voteOnPost = async (req, res) => {
     }
 
     const updatedPost = await votePost(id, userId, vote);
-    res.send(updatedPost);
+
+    // reflect current user's vote after the change
+    const voteDoc = await Vote.findOne({ user: userId, post: id }).lean();
+    const userVote = voteDoc ? voteDoc.vote : 0;
+
+    res.send({ post: updatedPost, userVote });
   } catch (err) {
     console.error('Failed to vote on post', err);
     res.status(500).send({ error: err.message || 'Failed to vote on post' });
@@ -79,3 +115,4 @@ module.exports = {
   addPost,
   voteOnPost,
 };
+// ...existing code...

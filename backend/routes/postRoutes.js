@@ -1,11 +1,13 @@
 const express = require("express");
 const { getPostDetails, addPost, voteOnPost } = require("../controllers/postController");
+const { getUpvotedPosts, getDownvotedPosts } = require("../managers/postManager");
 const { getAllPosts, getHomeFeed, getPopularPostsHandler } = require("../controllers/homeController");
 const { getPostsByUser } = require("../managers/postManager");
 const { createComment } = require("../managers/commentManager");
 const Post = require("../schemas/post");
 const User = require("../schemas/user");
 const { authenticate } = require('../middleware/auth');
+const { attachUserIfPresent } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -13,16 +15,16 @@ const router = express.Router();
 router.post("/create", authenticate, addPost);
 
 // Get all posts
-router.get("/", getAllPosts);
+router.get("/", attachUserIfPresent, getAllPosts);
 
 // Get popular posts
-router.get("/popular", getPopularPostsHandler);
+router.get("/popular", attachUserIfPresent, getPopularPostsHandler);
 
 // Get home feed posts (requires userId in query or authenticated user)
-router.get("/home/:userId", getHomeFeed);
+router.get("/home/:userId", attachUserIfPresent, getHomeFeed);
 
 // Get posts by user
-router.get("/user/:userId", async (req, res) => {
+router.get("/user/:userId", attachUserIfPresent, async (req, res) => {
   try {
     const userId = req.params.userId;
     const posts = await getPostsByUser(userId);
@@ -30,6 +32,34 @@ router.get("/user/:userId", async (req, res) => {
   } catch (err) {
     console.error('Error fetching user posts:', err);
     res.status(500).json({ error: 'Failed to fetch user posts' });
+  }
+});
+
+// Get upvoted posts for current user
+router.get("/upvoted/:userId", authenticate, async (req, res) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const posts = await getUpvotedPosts(req.params.userId);
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching upvoted posts:', err);
+    res.status(500).json({ error: 'Failed to fetch upvoted posts' });
+  }
+});
+
+// Get downvoted posts for current user
+router.get("/downvoted/:userId", authenticate, async (req, res) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const posts = await getDownvotedPosts(req.params.userId);
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching downvoted posts:', err);
+    res.status(500).json({ error: 'Failed to fetch downvoted posts' });
   }
 });
 
@@ -76,6 +106,7 @@ router.post("/:id/comments", authenticate, async (req, res) => {
 });
 
 // Get post details by ID (must come last to avoid matching other routes)
-router.get("/:id", getPostDetails);
+// Attach user if token provided so responses can include `userVote` for authenticated callers
+router.get("/:id", attachUserIfPresent, getPostDetails);
 
 module.exports = router;

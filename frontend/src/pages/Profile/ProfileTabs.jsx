@@ -3,11 +3,11 @@ function ProfileTabs({ activeTab, setActiveTab }) {
         "Overview",
         "Posts",
         "Comments",
+        "Upvoted",
+        "Downvoted",
         "Saved",
         "History",
-        "Hidden",
-        "Upvoted",
-        "Downvoted"
+        "Hidden"  
     ];
 
     return (
