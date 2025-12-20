@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import type { Post } from '../types';
+import { API_BASE_URL } from '../services/config';
 
 type FeedFilter = 'home' | 'popular' | 'all';
 
@@ -24,7 +25,6 @@ function HomePage({ feedFilter = 'home' }: Props) {
       setLoading(true);
 
       // Use centralized API routes
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
       const BACKEND_BASE = API_BASE_URL.replace(/\/api$/, '');
       const withBackendBase = (val?: string) =>
         val && val.startsWith('/') ? `${BACKEND_BASE}${val}` : val || '';

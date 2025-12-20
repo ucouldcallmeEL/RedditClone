@@ -2,6 +2,7 @@ import { Eye, Plus, SlidersHorizontal } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { postRoutes, commentRoutes, apiGet } from "../../../config/apiRoutes";
+import { API_BASE_URL } from "../../../services/config";
 
 
 import PostCard from "../../../components/PostCard";
@@ -18,8 +19,7 @@ function OverviewTab({ userId }) {
 
   // Backend base for resolving relative media/icon URLs
   const backendBase = useMemo(() => {
-    const apiBase = (process.env.REACT_APP_API_URL || "http://localhost:4000").replace(/\/api$/, "");
-    return apiBase;
+    return API_BASE_URL.replace(/\/api$/, "");
   }, []);
 
   const withBackendBase = (val) =>

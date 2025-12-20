@@ -30,8 +30,6 @@ import {
   Mail,
   Settings,
 } from 'lucide-react';
-import axios from 'axios';
-import { API_BASE_URL } from '../services/config';
 import { apiClient } from '../services/apiClient';
 const items = [
   { label: 'Home', icon: Home },

@@ -54,18 +54,26 @@ app.get("/api/_debug/routes", (req, res) => {
   }
 });
 
-// CORS configuration - must specify exact origin (not wildcard) when using credentials
+// CORS configuration - supports multiple origins for production (Cloud Run)
+// FRONTEND_URL can be a single URL or comma-separated list of URLs
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : ['http://localhost:3000']; // Default to local dev server
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // React dev server default port
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies/credentials to be sent
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
-}));
-// CORS configuration - must specify exact origin (not wildcard) when using credentials
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // React dev server default port
-  credentials: true, // Allow cookies/credentials to be sent
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
 

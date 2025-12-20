@@ -5,8 +5,10 @@
  * Update backend routes here to keep frontend and backend in sync.
  */
 
-// API base URL - defaults to localhost:4000/api if REACT_APP_API_URL is not set
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+import { API_BASE_URL as CONFIG_API_BASE_URL } from '../services/config';
+
+// Use API_BASE_URL from config, but remove /api suffix if present since we'll add it per route
+const API_BASE_URL = CONFIG_API_BASE_URL.replace(/\/api$/, '');
 
 /**
  * Community API Routes
@@ -68,6 +70,7 @@ export const userRoutes = {
   signup: `${API_BASE_URL}/api/users/signup`,
   phoneSignin: `${API_BASE_URL}/api/users/phone/signin`,
   phoneSignup: `${API_BASE_URL}/api/users/phone/signup`,
+  checkEmail: `${API_BASE_URL}/api/users/signup/check-email`,
   generateUsername: `${API_BASE_URL}/api/users/generate-username`,
 
   // Get user profile

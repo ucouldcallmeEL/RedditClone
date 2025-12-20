@@ -6,6 +6,7 @@ import ToggleButton from "../../components/ToggleButton";
 import CustomButton from "../../components/CustomButton";
 import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
+import { API_BASE_URL } from "../../services/config";
 import { communityRoutes, apiGet, apiPost, postRoutes, uploadRoutes } from "../../config/apiRoutes";
 
 const CreatePost = () => {
@@ -50,6 +51,10 @@ const CreatePost = () => {
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   const isCommunitySelected = Boolean(selectedCommunityOption);
 
+  // Helper function to prepend backend base URL for relative paths
+  const backendBase = API_BASE_URL.replace(/\/api$/, '');
+  const withBackendBase = (val) => (val && val.startsWith('/') ? `${backendBase}${val}` : val || '');
+
   // Get current user from localStorage on component mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -64,7 +69,7 @@ const CreatePost = () => {
           label: `u/${user.name || user.username || "user"}`,
           members: "Your profile",
           type: "account",
-          imageUrl: user.profilePicture || null,
+          imageUrl: withBackendBase(user.profilePicture) || null,
         };
         
         // Set initial community options with just the account
@@ -92,7 +97,7 @@ const CreatePost = () => {
         label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
         members: "Your profile",
         type: "account",
-        imageUrl: currentUser?.profilePicture || null,
+        imageUrl: withBackendBase(currentUser?.profilePicture) || null,
       };
       
       // Restore original subscribed communities
@@ -115,7 +120,7 @@ const CreatePost = () => {
             members: `${community.members?.length || 0} members`,
             subscribed: community.subscribed || false,
             type: "community",
-            imageUrl: community.profilePicture || null,
+            imageUrl: withBackendBase(community.profilePicture) || null,
             communityId: community._id,
           }));
 
@@ -125,7 +130,7 @@ const CreatePost = () => {
             label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
             members: "Your profile",
             type: "account",
-            imageUrl: currentUser?.profilePicture || null,
+            imageUrl: withBackendBase(currentUser?.profilePicture) || null,
           };
 
           // Update community options with search results
@@ -169,7 +174,7 @@ const CreatePost = () => {
           label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
           members: "Your profile",
           type: "account",
-          imageUrl: currentUser?.profilePicture || null,
+          imageUrl: withBackendBase(currentUser?.profilePicture) || null,
         };
         setCommunityOptions([accountOption, ...subscribedCommunities]);
       }
@@ -189,7 +194,7 @@ const CreatePost = () => {
           members: `${community.members?.length || 0} members`,
           subscribed: "Subscribed",
           type: "community",
-          imageUrl: community.profilePicture || null,
+          imageUrl: withBackendBase(community.profilePicture) || null,
           communityId: community._id,
         }));
 
@@ -202,7 +207,7 @@ const CreatePost = () => {
           label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
           members: "Your profile",
           type: "account",
-          imageUrl: currentUser?.profilePicture || null,
+          imageUrl: withBackendBase(currentUser?.profilePicture) || null,
         };
 
         setCommunityOptions([accountOption, ...formattedCommunities]);

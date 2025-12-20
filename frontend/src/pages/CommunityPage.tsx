@@ -178,9 +178,9 @@ function CommunityPage() {
           id: communityData._id,
           members: `${communityData.members?.length || 0} members`,
           description: communityData.description,
-          avatar: communityData.profilePicture,
+          avatar: withBackendBase(communityData.profilePicture),
           bannerColor: communityData.bannerColor || '#f97316',
-          bannerImage: communityData.coverPicture,
+          bannerImage: withBackendBase(communityData.coverPicture),
           createdAt: communityData.createdAt
             ? new Date(communityData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
             : '',

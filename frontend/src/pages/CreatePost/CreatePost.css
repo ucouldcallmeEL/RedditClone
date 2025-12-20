@@ -536,7 +536,7 @@
 .tags-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -544,12 +544,12 @@
 }
 
 .tags-modal {
-  background: #181c1f;
+  background: var(--bg-primary);
   border-radius: 1rem;
   width: min(500px, 95vw);
   padding: 1.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
-  color: var(--text-quaternary);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -565,7 +565,7 @@
   font-size: 28px;
   font-weight: 700;
   margin: 0;
-  color: var(--text-quaternary);
+  color: var(--text-primary);
 }
 
 .tags-modal-body {
@@ -578,6 +578,7 @@
   font-size: 20px;
   width: 20px;
   text-align: center;
+  color: var(--text-primary);
 }
 
 .tag-text {
@@ -591,7 +592,7 @@
 .tag-title {
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-quaternary);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -613,6 +614,10 @@
   cursor: default;
 }
 
+.tag-row:hover {
+  background-color: var(--bg-hover);
+}
+
 .tags-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -632,13 +637,21 @@
 }
 
 .tags-modal-cancel {
-  background: #1c1f22;
-  color: var(--text-quaternary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.tags-modal-cancel:hover {
+  background: var(--bg-hover);
 }
 
 .tags-modal-add {
   background: #286cff;
   color: white;
+}
+
+.tags-modal-add:hover {
+  background: #1e5ce6;
 }
 
 .post-tags-container {
@@ -662,7 +675,7 @@
 }
 
 .Spoiler {
-  color: #f2f2f2;
+  color: var(--text-primary);
 }
 
 .Brand {

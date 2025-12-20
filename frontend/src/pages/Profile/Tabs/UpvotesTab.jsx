@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { postRoutes, apiGet } from "../../../config/apiRoutes";
 import PostCard from "../../../components/PostCard";
 import EmptyState from "../../../components/EmptyState";
+import { API_BASE_URL } from "../../../services/config";
 import "./OverviewTab.css";
 
 function UpvotesTab({ userId }) {
@@ -12,8 +13,7 @@ function UpvotesTab({ userId }) {
   const [loading, setLoading] = useState(true);
 
   const backendBase = useMemo(() => {
-    const apiBase = (process.env.REACT_APP_API_URL || "http://localhost:4000").replace(/\/api$/, "");
-    return apiBase;
+    return API_BASE_URL.replace(/\/api$/, "");
   }, []);
 
   const withBackendBase = (val) =>

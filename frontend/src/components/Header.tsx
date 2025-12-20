@@ -15,6 +15,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { communityRoutes, apiGet } from "../config/apiRoutes";
+import { API_BASE_URL } from "../services/config";
 const redditLogo = "/Reddit_Lockup.svg";
 const avatarFallback = "/resources/6yyqvx1f5bu71.webp";
 
@@ -104,6 +105,10 @@ function Header() {
 
   const isLoggedIn = localStorage.getItem("token");
 
+  // Helper function to prepend backend base URL for relative paths
+  const backendBase = API_BASE_URL.replace(/\/api$/, '');
+  const withBackendBase = (val?: string) => (val && val.startsWith('/') ? `${backendBase}${val}` : val || '');
+
   return (
     <header className="header">
       <div className="header__brand">
@@ -141,7 +146,7 @@ function Header() {
               >
                 <div className="search-dropdown__icon">
                   {community.profilePicture ? (
-                    <img src={community.profilePicture} alt={community.name} />
+                    <img src={withBackendBase(community.profilePicture)} alt={community.name} />
                   ) : (
                     <div className="search-dropdown__placeholder">r/</div>
                   )}

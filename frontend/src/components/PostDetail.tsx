@@ -13,8 +13,9 @@ import {
 import Comment from './Comment';
 import { apiClient } from '../services/apiClient';
 import type { Comment as CommentType } from '../types';
+import { API_BASE_URL } from '../services/config';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+const API_BASE = API_BASE_URL;
 
 type PostDetailData = {
   _id: string;
@@ -23,11 +24,11 @@ type PostDetailData = {
   author: {
     _id: string;
     username: string;
-  };
+  } | null;
   community?: {
     _id: string;
     name: string;
-  };
+  } | null;
   upvotes: number;
   downvotes: number;
   createdAt: string;
@@ -242,16 +243,16 @@ function PostDetail({ postId, onBack }: Props) {
           <header className="post__meta">
             <img
               src={avatarSrc}
-              alt={`${post.community?.name ? `r/${post.community.name}` : `u/${post.author.username || 'anonymous'}`} icon`}
+              alt={`${post.community?.name ? `r/${post.community.name}` : `u/${post.author?.username || 'anonymous'}`} icon`}
               className="post__avatar"
               loading="lazy"
             />
             <div>
               <div className="post__subreddit">
-                <span>{post.community?.name ? `r/${post.community.name}` : `u/${post.author.username || 'anonymous'}`}</span>
+                <span>{post.community?.name ? `r/${post.community.name}` : `u/${post.author?.username || 'anonymous'}`}</span>
               </div>
               <p className="post__author">
-                Posted by u/{post.author.username || 'anonymous'} · {getTimeAgo(post.createdAt)}
+                Posted by u/{post.author?.username || 'anonymous'} · {getTimeAgo(post.createdAt)}
               </p>
             </div>
           </header>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { postRoutes, apiGet } from "../../../config/apiRoutes";
 import type { Post } from "../../../types";
+import { API_BASE_URL } from "../../../services/config";
 
 import PostCard from "../../../components/PostCard";
 import EmptyState from "../../../components/EmptyState";
@@ -59,8 +60,7 @@ function PostsTab({ userId }: PostsTabProps) {
 
   // Backend base for resolving relative media/icon URLs
   const backendBase = useMemo(() => {
-    const apiBase = (process.env.REACT_APP_API_URL || "http://localhost:4000").replace(/\/api$/, "");
-    return apiBase;
+    return API_BASE_URL.replace(/\/api$/, "");
   }, []);
 
   const withBackendBase = (val: string | null | undefined): string =>
