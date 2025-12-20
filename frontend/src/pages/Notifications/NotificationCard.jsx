@@ -9,6 +9,7 @@ function NotificationCard({
     read,
     onDelete,
     onManage,
+    onClick,
 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
@@ -27,10 +28,10 @@ function NotificationCard({
 
     return (
         <div className={`notification-card ${read ? "read" : "unread"}`}>
-            
+
             <div className="notif-icon">{icon}</div>
 
-            <div className="notif-content">
+            <div className="notif-content" onClick={onClick} role="button" tabIndex={0} style={{ cursor: "pointer", flex: 1 }}>
                 <p className="notif-title">{title}</p>
                 <p className="notif-message">{message}</p>
                 <p className="notif-time">{time}</p>
@@ -46,7 +47,7 @@ function NotificationCard({
 
                 {/* THREE DOTS BUTTON */}
                 <div className="dots-wrapper" ref={menuRef}>
-                    <button 
+                    <button
                         className="icon-btn dots-btn"
                         onClick={() => setMenuOpen(!menuOpen)}
                     >
@@ -55,7 +56,7 @@ function NotificationCard({
 
                     {menuOpen && (
                         <div className="popup-menu">
-                            <button 
+                            <button
                                 className="popup-item"
                                 onClick={() => {
                                     setMenuOpen(false);

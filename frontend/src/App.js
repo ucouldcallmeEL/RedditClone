@@ -18,6 +18,9 @@ import CommunitiesPage from './pages/CommunitiesPage';
 import PostDetailPage from './pages/PostDetailPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import NotificationPage from './pages/Notifications/NotificationPage';
+import ModQueuePage from './pages/Moderation/ModQueuePage';
+import ModMailPage from './pages/Moderation/ModMailPage';
+import ModManagementPage from './pages/Moderation/ModManagementPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import ProfileSidebar from './pages/Profile/ProfileSidebar';
 
@@ -36,7 +39,7 @@ function ModalWrapper({ children, onClose }) {
 function LoginModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <LogIn onClose={handleClose} />
@@ -48,7 +51,7 @@ function LoginModal() {
 function SignupModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <Signup onClose={handleClose} />
@@ -60,7 +63,7 @@ function SignupModal() {
 function SigninPhoneModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <SigninPhone onClose={handleClose} />
@@ -72,7 +75,7 @@ function SigninPhoneModal() {
 function ResetPassModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <ResetPass onClose={handleClose} />
@@ -84,7 +87,7 @@ function ResetPassModal() {
 function CreateUserModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <CreateUser onClose={handleClose} />
@@ -96,7 +99,7 @@ function CreateUserModal() {
 function InterestsModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate("/");
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <Interests onClose={handleClose} />
@@ -108,7 +111,7 @@ function InterestsModal() {
 function CreateCommunityModal() {
   const navigate = useNavigate();
   const handleClose = () => navigate(-1);
-  
+
   return (
     <ModalWrapper onClose={handleClose}>
       <CreateCommunity onClose={handleClose} />
@@ -129,7 +132,7 @@ function AppContent() {
   const isCreateUserPage = location.pathname === '/create-user';
   const isInterestsPage = location.pathname === '/interests';
   const isCreateCommunityPage = location.pathname.startsWith('/r/create');
-  
+
   const isAnyAuthPage = isLoginPage || isSignupPage || isSigninPhonePage || isResetPage || isCreateUserPage || isInterestsPage;
 
   // Get current user from localStorage for ProfileSidebar
@@ -209,27 +212,33 @@ function AppContent() {
     );
   }
 
+  const isModMailPage = location.pathname === '/moderation/mail';
+
   // For main app pages, show the layout with Header, Sidebar, etc.
   return (
     <div className="app-shell">
       <Header />
 
-      <div className="app-body">
+      <div className="app-body" style={isModMailPage ? {
+        gridTemplateColumns: '1fr',
+        width: '95%',
+        maxWidth: '1400px'
+      } : {}}>
         <SidebarNav activeFilter={feedFilter} onSelectFilter={setFeedFilter} />
 
-        <main className="feed">
+        <main className="feed" style={isModMailPage ? { maxWidth: '1200px', width: '100%' } : {}}>
           <Routes>
             {/* Homepage */}
             <Route path="/" element={<HomePage feedFilter={feedFilter} />} />
-            
+
             {/* Post routes */}
             <Route path="/post/:postId" element={<PostDetailPage />} />
-            
+
             {/* Community routes */}
             <Route path="/r/:communityName" element={<CommunityPage />} />
             <Route path="/community/:communityName" element={<CommunityPage />} />
             <Route path="/communities" element={<CommunitiesPage />} />
-            
+
             {/* Settings and Notifications */}
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationPage />} />
@@ -237,6 +246,11 @@ function AppContent() {
 
             {/* Profile routes */}
             <Route path="/user/:username" element={<ProfilePage />} />
+
+            {/* Moderation routes */}
+            <Route path="/moderation/queue" element={<ModQueuePage />} />
+            <Route path="/moderation/mail" element={<ModMailPage />} />
+            <Route path="/moderation/management" element={<ModManagementPage />} />
           </Routes>
         </main>
 

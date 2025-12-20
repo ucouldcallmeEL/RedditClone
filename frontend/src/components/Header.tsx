@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
-
+import { communityRoutes, apiGet } from "../config/apiRoutes";
 const redditLogo = "/Reddit_Lockup.svg";
 const avatarFallback = "/resources/6yyqvx1f5bu71.webp";
 
@@ -33,12 +33,40 @@ const promoActions = [
   { label: "Try Reddit Pro", icon: LayoutGrid, badge: "BETA" },
 ];
 
+
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      try {
+        const response = await apiGet(communityRoutes.search(searchQuery));
+        if (response.ok) {
+          const results = await response.json();
+          setSearchResults(Array.isArray(results) ? results : []);
+          setShowResults(true);
+        } else {
+          console.error("Search response not OK");
+        }
+      } catch (error) {
+        console.error("Search failed:", error);
+      }
+    };
+
+    const timeoutId = setTimeout(performSearch, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -91,7 +119,43 @@ function Header() {
 
       <div className="header__search">
         <Search size={16} strokeWidth={2} />
-        <input placeholder="Search Reddit" aria-label="Search Reddit" />
+        <input
+          placeholder="Search Reddit"
+          aria-label="Search Reddit"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setShowResults(true)}
+          onBlur={() => setTimeout(() => setShowResults(false), 200)} // Delay to allow click
+        />
+        {showResults && searchResults.length > 0 && (
+          <div className="search-dropdown">
+            {searchResults.map((community) => (
+              <div
+                key={community._id}
+                className="search-dropdown__item"
+                onClick={() => {
+                  navigate(`/r/${community.name}`);
+                  setSearchQuery("");
+                  setShowResults(false);
+                }}
+              >
+                <div className="search-dropdown__icon">
+                  {community.profilePicture ? (
+                    <img src={community.profilePicture} alt={community.name} />
+                  ) : (
+                    <div className="search-dropdown__placeholder">r/</div>
+                  )}
+                </div>
+                <div className="search-dropdown__info">
+                  <span className="search-dropdown__name">r/{community.name}</span>
+                  <span className="search-dropdown__members">
+                    {community.members?.length || 0} members
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="header__actions">
@@ -271,11 +335,10 @@ function Header() {
                     </div>
                     {control === "toggle" ? (
                       <span
-                        className={`profile-menu__toggle${
-                          theme === "dark"
-                            ? " profile-menu__toggle--active"
-                            : ""
-                        }`}
+                        className={`profile-menu__toggle${theme === "dark"
+                          ? " profile-menu__toggle--active"
+                          : ""
+                          }`}
                         aria-hidden="true"
                       >
                         <span />

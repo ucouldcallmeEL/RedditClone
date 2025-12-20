@@ -26,10 +26,10 @@ const userSchema = new mongoose.Schema({
         default: '/resources/6yyqvx1f5bu71.webp'
     },
     coverPicture: {
-        type: String,  
+        type: String,
     },
     bio: {
-        type: String,    
+        type: String,
     },
     followers: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -47,6 +47,26 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    isModerator: {
+        type: Boolean,
+        default: false
+    },
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }],
+    notificationSettings: {
+        email: {
+            adminNotifications: {
+                type: Boolean,
+                default: true // Default to receiving admin notifications
+            }
+        }
+    }
 });
 
 const User = mongoose.model('User', userSchema);

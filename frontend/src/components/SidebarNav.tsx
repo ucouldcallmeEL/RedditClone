@@ -27,6 +27,8 @@ import {
   Star,
   Users,
   Info,
+  Mail,
+  Settings,
 } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../services/config';
@@ -44,9 +46,15 @@ type SidebarLink = {
   label: string;
   icon: LucideIcon;
   badge?: string;
+  path?: string;
 };
 
-// removed hardcoded placeholders — communities will be loaded from backend per-user
+const communityPlaceholders: SidebarLink[] = [
+  { label: 'r/webdev', icon: Code2 },
+  { label: 'r/reactjs', icon: Layers },
+  { label: 'r/frontend', icon: Flame },
+  { label: 'r/learnprogramming', icon: ListIcon },
+];
 
 const resourcesLinks: SidebarLink[] = [
   { label: 'About Reddit', icon: Info },
@@ -73,6 +81,14 @@ const policyLinks: SidebarLink[] = [
   { label: 'Accessibility', icon: Accessibility },
 ];
 
+const moderationLinks: SidebarLink[] = [
+  { label: 'Mod Queue', icon: Shield, path: '/moderation/queue' },
+  { label: 'Mod Mail', icon: Mail, path: '/moderation/mail' },
+  { label: 'Mod Management', icon: Settings, path: '/moderation/management' },
+];
+
+const moderationSection = { id: 'moderation', title: 'Moderation', items: moderationLinks };
+
 const collapsibleSections = [
   { id: 'communities', title: 'Communities', items: [] },
   { id: 'resources', title: 'Resources', items: resourcesLinks },
@@ -91,15 +107,52 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [userCommunities, setUserCommunities] = useState<SidebarLink[] | null>(null);
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
-    collapsibleSections.reduce(
+  const [isModerator, setIsModerator] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      console.log("SidebarNav user from localStorage:", user);
+      return !!user.isModerator;
+    } catch {
+      return false;
+    }
+  });
+
+  const allSections = isModerator ? [moderationSection, ...collapsibleSections] : collapsibleSections;
+
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    const sections = collapsibleSections.reduce(
       (acc, section) => {
         acc[section.id] = false;
         return acc;
       },
       {} as Record<string, boolean>,
-    ),
-  );
+    );
+    // Initialize moderation section as well
+    sections['moderation'] = false;
+    return sections;
+  });
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setIsModerator(!!user.isModerator);
+        } catch {
+          setIsModerator(false);
+        }
+      } else {
+        setIsModerator(false);
+      }
+    };
+
+    window.addEventListener('user-updated', handleUserUpdate);
+    return () => window.removeEventListener('user-updated', handleUserUpdate);
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -117,35 +170,35 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
 
   // load current user's communities (top 3) to show in the Communities section
   useEffect(() => {
-    
-  const getCurrentUserFromStorage = () => {
-    // Prefer JWT token (stored as `token`) and decode payload for userId
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      if (token) {
-        const parts = token.split('.');
-        if (parts.length >= 2) {
-          const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
-          const id = payload?.userId || payload?.sub || null;
-          // try to fill name/username from stored user object if available
-          if (storedUser) {
-            const u = JSON.parse(storedUser);
-            return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+
+    const getCurrentUserFromStorage = () => {
+      // Prefer JWT token (stored as `token`) and decode payload for userId
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        if (token) {
+          const parts = token.split('.');
+          if (parts.length >= 2) {
+            const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
+            const id = payload?.userId || payload?.sub || null;
+            // try to fill name/username from stored user object if available
+            if (storedUser) {
+              const u = JSON.parse(storedUser);
+              return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+            }
+            return { id, name: null, username: null };
           }
-          return { id, name: null, username: null };
         }
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+        }
+      } catch (e) {
+        console.warn('Failed to read current user from storage', e);
       }
-      if (storedUser) {
-        const u = JSON.parse(storedUser);
-        return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
-      }
-    } catch (e) {
-      console.warn('Failed to read current user from storage', e);
-    }
-    return null;
-  };
-  
+      return null;
+    };
+
     const load = async () => {
       try {
         const currentUser = getCurrentUserFromStorage();
@@ -231,15 +284,14 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
         </nav>
       </div>
 
-      {collapsibleSections.map(({ id, title, items: sectionItems }) => {
+      {allSections.map(({ id, title, items: sectionItems }) => {
         const isCollapsed = collapsedSections[id];
 
         return (
           <div
             key={id}
-            className={`sidebar__section sidebar__section--collapsible${
-              isCollapsed ? ' sidebar__section--collapsed' : ''
-            }`}
+            className={`sidebar__section sidebar__section--collapsible${isCollapsed ? ' sidebar__section--collapsed' : ''
+              }`}
           >
             <button
               type="button"
@@ -259,33 +311,42 @@ function SidebarNav({ activeFilter = 'home', onSelectFilter }: Props) {
             >
               {id === 'communities' && userCommunities && userCommunities.length > 0
                 ? userCommunities.map(({ label, icon: Icon }) => {
-                // Extract community name from "r/communityname" format
+                  // Extract community name from "r/communityname" format
+                  const slug = label.replace(/^r\//i, '');
+                  // Use /r/:communityName route format
+                  const communityRoute = label.startsWith('r/') ? `/r/${slug}` : `#${label}`;
+                  return (
+                    <Link key={label} className="sidebar__link" to={communityRoute}>
+                      <Icon size={18} />
+                      <span>{label}</span>
+                    </Link>
+                  );
+                })
+                : sectionItems.map(({ label, icon: Icon, badge, path }) => {
+                  let to;
+                  if (path) {
+                    to = path;
+                  } else if (label === 'Communities') {
+                    to = '/communities';
+                  } else {
                     const slug = label.replace(/^r\//i, '');
-                // Use /r/:communityName route format
-                const communityRoute = label.startsWith('r/') ? `/r/${slug}` : `#${label}`;
-                    return (
-                      <Link key={label} className="sidebar__link" to={communityRoute}>
-                        <Icon size={18} />
-                        <span>{label}</span>
-                      </Link>
-                    );
-                  })
-                : sectionItems.map(({ label, icon: Icon, badge }) => {
-                    const slug = label.replace(/^r\//i, '');
-                    const to = label === 'Communities' ? '/communities' : `/community/${slug}`;
-                    return (
-                      <Link key={label} className="sidebar__link" to={to}>
-                        <Icon size={18} />
-                        <span>{label}</span>
-                        {badge && <span className="sidebar__badge">{badge}</span>}
-                      </Link>
-                    );
-                  })}
+                    to = `/community/${slug}`;
+                  }
+
+                  return (
+                    <Link key={label} className="sidebar__link" to={to}>
+                      <Icon size={18} />
+                      <span>{label}</span>
+                      {badge && <span className="sidebar__badge">{badge}</span>}
+                    </Link>
+                  );
+                })}
             </div>
           </div>
         );
-      })}
-    </aside>
+      })
+      }
+    </aside >
   );
 }
 

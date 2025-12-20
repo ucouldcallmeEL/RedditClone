@@ -32,32 +32,32 @@ const CreateCommunity = ({ onClose }) => {
 
   const totalPages = 4;
 
-// Fetch topics from API on component mount
-useEffect(() => {
-  const fetchTopics = async () => {
-    try {
-      setTopicsLoading(true);
-      const response = await apiGet(topicRoutes.getAll);
-      if (!response.ok) {
-        throw new Error('Failed to fetch topics');
+  // Fetch topics from API on component mount
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        setTopicsLoading(true);
+        const response = await apiGet(topicRoutes.getAll);
+        if (!response.ok) {
+          throw new Error('Failed to fetch topics');
+        }
+        const data = await response.json();
+        // Filter to only show Entertainment and Gaming categories for community creation
+        const filteredCategories = data.filter(cat =>
+          cat.title === 'Entertainment' || cat.title === 'Gaming'
+        );
+        setTopicCategories(filteredCategories);
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+        // Fallback to empty array or default topics if API fails
+        setTopicCategories([]);
+      } finally {
+        setTopicsLoading(false);
       }
-      const data = await response.json();
-      // Filter to only show Entertainment and Gaming categories for community creation
-      const filteredCategories = data.filter(cat => 
-        cat.title === 'Entertainment' || cat.title === 'Gaming'
-      );
-      setTopicCategories(filteredCategories);
-    } catch (error) {
-      console.error('Error fetching topics:', error);
-      // Fallback to empty array or default topics if API fails
-      setTopicCategories([]);
-    } finally {
-      setTopicsLoading(false);
-    }
-  };
+    };
 
-  fetchTopics();
-}, []);
+    fetchTopics();
+  }, []);
 
 
   // Check if at least one topic is selected in page 1
@@ -173,6 +173,17 @@ useEffect(() => {
       }
 
       console.log("Community created successfully:", createdCommunity);
+
+      // Update user in local storage to be moderator
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.isModerator = true;
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Dispatch event to notify sidebar
+        window.dispatchEvent(new CustomEvent('user-updated'));
+      }
       return true;
     } catch (error) {
       console.error("Error creating community:", error);
@@ -350,7 +361,7 @@ useEffect(() => {
   };
 
   // // Render 
-  
+
   // Page configurations
   const pages = [
     {
@@ -464,9 +475,8 @@ useEffect(() => {
           {[...Array(totalPages)].map((_, index) => (
             <div
               key={index}
-              className={`progress-dot ${
-                currentPage === index + 1 ? "current-page-indicator" : ""
-              }`}
+              className={`progress-dot ${currentPage === index + 1 ? "current-page-indicator" : ""
+                }`}
             ></div>
           ))}
         </div>

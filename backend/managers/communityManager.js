@@ -2,9 +2,14 @@ const Community = require('../schemas/community');
 const Post = require('../schemas/post');
 
 const createCommunity = async (community) => {
-    const newCommunity = new Community(community);
-    await newCommunity.save();
-    return newCommunity;
+    try {
+        const newCommunity = new Community(community);
+        await newCommunity.save();
+        return newCommunity;
+    } catch (error) {
+        console.error("Error creating community (Manager):", error);
+        throw error;
+    }
 };
 
 const getCommunity = async (id) => {
@@ -19,6 +24,11 @@ const getCommunities = async () => {
 
 const getCommunitiesByUser = async (id) => {
     const communities = await Community.find({ members: id });
+    return communities;
+};
+
+const getModeratedCommunities = async (id) => {
+    const communities = await Community.find({ moderators: id });
     return communities;
 };
 
@@ -45,7 +55,7 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
         .populate('moderators', 'username name')
         .populate('members', 'username name')
         .lean();
-    
+
     if (!community) {
         return null;
     }
@@ -80,13 +90,13 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
                 // Reddit-style hot algorithm
                 const aScore = (a.upvotes - a.downvotes) + (a.comments?.length || 0);
                 const bScore = (b.upvotes - b.downvotes) + (b.comments?.length || 0);
-                
+
                 const aAge = (now - new Date(a.createdAt).getTime()) / (1000 * 60 * 60); // hours
                 const bAge = (now - new Date(b.createdAt).getTime()) / (1000 * 60 * 60);
-                
+
                 const aHot = aScore / Math.pow(aAge + 2, 1.8);
                 const bHot = bScore / Math.pow(bAge + 2, 1.8);
-                
+
                 return bHot - aHot;
 
             case 'new':
@@ -99,10 +109,10 @@ async function getCommunityWithFilteredPosts(name, filter = 'hot') {
                 // Velocity: comments per hour
                 const aRisAge = (now - new Date(a.createdAt).getTime()) / (1000 * 60 * 60);
                 const bRisAge = (now - new Date(b.createdAt).getTime()) / (1000 * 60 * 60);
-                
+
                 const aVelocity = (a.comments?.length || 0) / (aRisAge + 1);
                 const bVelocity = (b.comments?.length || 0) / (bRisAge + 1);
-                
+
                 return bVelocity - aVelocity;
 
             default:
@@ -259,6 +269,7 @@ module.exports = {
     getCommunity,
     getCommunities,
     getCommunitiesByUser,
+    getModeratedCommunities,
     deleteCommunity,
     getCommunityByName,
     getCommunityWithFilteredPosts,

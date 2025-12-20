@@ -37,6 +37,8 @@ const LogIn = ({ onClose }) => {
       }
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        // Dispatch event to notify sidebar
+        window.dispatchEvent(new CustomEvent('user-updated'));
       }
 
       // Close modal and navigate
@@ -194,9 +196,8 @@ const LogIn = ({ onClose }) => {
       </div>
       <div className="log-in-modal-content">
         <div
-          className={`LogIn-button login-action-button ${
-            !formIsValid ? "disabled" : ""
-          }`}
+          className={`LogIn-button login-action-button ${!formIsValid ? "disabled" : ""
+            }`}
           onClick={formIsValid ? handleSubmit : undefined}
         >
           <span

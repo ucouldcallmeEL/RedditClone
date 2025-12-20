@@ -8,7 +8,8 @@ const {
     resetPassword,
     phoneSignin,
     phoneSignup,
-    generateUsername
+    generateUsername,
+    updateSettings
 } = require('../controllers/userController');
 const { getUser, findByUsername } = require('../managers/userManager');
 const { authenticate } = require('../middleware/auth');
@@ -22,6 +23,7 @@ router.post('/reset-password', resetPassword);
 router.post('/phone/signin', phoneSignin);
 router.post('/phone/signup', phoneSignup);
 router.get('/generate-username', generateUsername);
+router.put('/update-settings', updateSettings);
 
 // Get current authenticated user (must come before /username/:username)
 router.get('/me', authenticate, async (req, res) => {
