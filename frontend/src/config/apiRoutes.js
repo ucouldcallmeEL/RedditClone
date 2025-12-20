@@ -36,19 +36,19 @@ export const postRoutes = {
   create: `${API_BASE_URL}/api/posts/create`,
 
   // Get post details by ID
-  getById: (id) => `${API_BASE_URL}/posts/${id}`,
+  getById: (id) => `${API_BASE_URL}/api/posts/${id}`,
 
   // Get all posts
-  getAll: `${API_BASE_URL}/posts`,
+  getAll: `${API_BASE_URL}/api/posts`,
 
   // Get posts by user
-  getByUser: (userId) => `${API_BASE_URL}/posts/user/${userId}`,
+  getByUser: (userId) => `${API_BASE_URL}/api/posts/user/${userId}`,
 
   // Get home feed posts
-  getHomeFeed: (userId) => `${API_BASE_URL}/posts/home/${userId}`,
+  getHomeFeed: (userId) => `${API_BASE_URL}/api/posts/home/${userId}`,
 
   // Get popular posts
-  getPopular: (timeFilter = 'all') => `${API_BASE_URL}/posts/popular?filter=${timeFilter}`,
+  getPopular: (timeFilter = 'all') => `${API_BASE_URL}/api/posts/popular?filter=${timeFilter}`,
 
   // Get upvoted posts by user
   getUpvoted: (userId) => `${API_BASE_URL}/api/posts/upvoted/${userId}`,
@@ -189,7 +189,7 @@ export const uploadRoutes = {
  * Comment API Routes
  */
 export const commentRoutes = {
-  getByUser: (userId) => `${API_BASE_URL}/api/users/${userId}/comments`,
+  getByUser: (userId) => `${API_BASE_URL}/api/comments/user/${userId}`,
 };
 
 /**
