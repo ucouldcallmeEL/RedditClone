@@ -12,11 +12,28 @@ const communitySchema = new mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        required: false
+        default: '/resources/communityIcon_9cgdstjtz58g1.png'
     },
     coverPicture: {
         type: String,
-        required: false
+        default: '/resources/bannerBackgroundImage_6p2dptjtz58g1.png'
+    },
+    topics: [{
+        type: String
+    }],
+    type: {
+        type: String,
+        enum: ['public', 'restricted', 'private'],
+        default: 'public'
+    },
+    isNSFW: {
+        type: Boolean,
+        default: false
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     topics: [{
         type: String

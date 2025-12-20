@@ -5,7 +5,7 @@ import ArrowButton from "../ArrowButton/ArrowButton";
 import LinkButton from "../LinkButton/LinkButton";
 import ToggleSwitch from "../ToggleSwitch/ToggleSwitch";
 import Button from "../Button/Button";
-import { updateUser } from "../../../services/api";
+import { updateUser } from "../../../config/apiRoutes";
 
 function SettingsEmailContent() {
     const [adminNotifications, setAdminNotifications] = useState(true);

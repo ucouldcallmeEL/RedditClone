@@ -6,7 +6,7 @@ import SelectTopicsPage from "./pages/SelectTopicsPage";
 import CommunityTypePage from "./pages/CommunityTypePage";
 import CommunityInfoPage from "./pages/CommunityInfoPage";
 import StyleCommunityPage from "./pages/StyleCommunityPage";
-import { communityRoutes, topicRoutes, apiPost, apiGet } from "../../config/apiRoutes";
+import { communityRoutes, topicRoutes, uploadRoutes, apiPost, apiGet } from "../../config/apiRoutes";
 
 const CreateCommunity = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,12 +112,23 @@ const CreateCommunity = ({ onClose }) => {
   // Handle create community
   const handleCreateCommunity = async () => {
     try {
-      // Build community data object
+      const token = localStorage.getItem("token");
+
+      // Build community data object; avoid persisting blob: URLs so defaults apply until uploads finish
+      const profilePicture =
+        iconImageUrl && !iconImageUrl.startsWith("blob:")
+          ? iconImageUrl
+          : undefined;
+      const coverPicture =
+        bannerImageUrl && !bannerImageUrl.startsWith("blob:")
+          ? bannerImageUrl
+          : undefined;
+
       const communityData = {
         name: communityName,
         description: communityDescription,
-        profilePicture: iconImageUrl || "", // Icon is profile picture
-        coverPicture: bannerImageUrl || "", // Banner is cover picture
+        ...(profilePicture && { profilePicture }),
+        ...(coverPicture && { coverPicture }),
         members: [], // Will be populated by backend from authenticated user
         moderators: [], // Will be populated by backend from authenticated user
         topics: selectedTopics,
@@ -136,6 +147,31 @@ const CreateCommunity = ({ onClose }) => {
       }
 
       const createdCommunity = await response.json();
+      const communityId = createdCommunity._id || createdCommunity.id;
+
+      // Upload icon/banner files (only if actual Files exist)
+      const uploadFile = async (url, file) => {
+        if (!file) return null;
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch(url, {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: form,
+        });
+        if (!res.ok) {
+          console.error("Upload failed:", await res.text());
+          return null;
+        }
+        const data = await res.json().catch(() => ({}));
+        return data.url || null;
+      };
+
+      if (communityId) {
+        await uploadFile(uploadRoutes.communityIcon(communityId), iconImage);
+        await uploadFile(uploadRoutes.communityBanner(communityId), bannerImage);
+      }
+
       console.log("Community created successfully:", createdCommunity);
 
       // Update user in local storage to be moderator

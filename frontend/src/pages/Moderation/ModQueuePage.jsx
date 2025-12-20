@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QueueMain from '../../components/Moderation/QueueMain';
 import QueueStatsSidebar from '../../components/Moderation/QueueStatsSidebar';
 import '../../styles/ModQueuePage.css';
-import { fetchModeratedCommunities } from '../../services/api';
+import { fetchModeratedCommunities } from '../../config/apiRoutes';
 
 const ModQueuePage = () => {
     const [selectedSubreddit, setSelectedSubreddit] = useState('All');

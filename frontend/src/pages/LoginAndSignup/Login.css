@@ -1,17 +1,25 @@
+/* ===============================
+   AUTH FLOW MODAL
+   =============================== */
 .auth-flow-modal {
   justify-self: center;
   align-self: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 700px;
   width: 528px;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
+/* ===============================
+   CLOSE / QUIT BUTTONS
+   =============================== */
 .quit-login-button {
-  background-color: #2a3236;
-  color: #ffffff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   align-items: center;
   justify-content: center;
   display: inline-flex;
@@ -26,8 +34,25 @@
   right: 1rem;
   z-index: 10;
 }
+
+.quit-login-button svg {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  fill: var(--text-primary);
+  position: relative;
+  top: 0.15rem;
+  right: -0.05rem;
+}
+
+.quit-login-button:hover {
+  background-color: var(--bg-hover);
+  cursor: pointer;
+}
+
 .quit-reset-button {
-  position: relative; /* remove absolute positioning */
+  position: relative;
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
@@ -35,108 +60,85 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2a3236;
-  color: #fff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   cursor: pointer;
-  /* background-color: #2a3236;
-  color: #ffffff;
-  align-items: center;
-  justify-content: center;
-  display: inline-flex;
-  padding-left: 0.375rem;
-  padding-right: 0.375rem;
-  border-radius: 999px;
-  border: none;
-  height: 2rem;
-  width: 2rem;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10; */
 }
+
 .quit-reset-button svg {
-  font-family: "Segeo UI", sans-serif;
+  font-family: "Segoe UI", sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
+  fill: var(--text-primary);
   position: relative;
   top: 0.15rem;
   right: -0.05rem;
-  /* width: 16px;
-  height: 16px;
-  display: block; */
 }
+
 .quit-reset-button:hover {
-  background-color: #333d42;
-  cursor: pointer;
+  background-color: var(--bg-hover);
 }
 
-.quit-login-button svg {
-  font-family: "Segeo UI", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-  position: relative;
-  top: 0.15rem;
-  right: -0.05rem;
-  /* width: 16px;
-  height: 16px;
-  display: block; */
-}
-
-.quit-login-button:hover {
-  background-color: #333d42;
-  cursor: pointer;
-}
-
+/* ===============================
+   LOGIN MODAL
+   =============================== */
 .log-in-modal {
-  background-color: #181c1f;
+  background-color: var(--bg-secondary);
   box-sizing: border-box;
   padding: 1rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: auto;
   min-height: fit-content;
   overflow: visible;
   border-radius: 1rem;
-  box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   margin: 50px, 100px;
-  position: relative; /* Add this for absolute positioning of close button */
-}
-
-.log-in-modal-text {
-  color: #b7cad4;
-  font-size: 13px;
-  font-weight: 400;
-  text-align: center;
-  margin: 1em 0 1em;
+  position: relative;
 }
 
 .log-in-modal .log-in-modal-title {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 700;
   text-align: center;
   margin: 1em 0 0.5em;
 }
 
+.log-in-modal-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: center;
+  margin: 1em 0;
+}
+
+/* ===============================
+   LOGIN BUTTONS
+   =============================== */
 .LogIn-button {
-  background-color: white;
+  background-color: #ffffff;
   border-radius: 20px;
   padding: 10px 20px;
-  margin: 10px 0;
+  margin: 5px 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 14px;
   font-weight: 400;
-  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-  color: #181c1f;
-  border: none;
-  width: 89%;
-  /* position: relative; */
+  color: #131313;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+[data-theme="light"] .LogIn-button {
+  background-color: #ffffff;
+  color: #131313;
+  border: 1px solid #e2e8f0;
 }
 
 .LogIn-button img,
@@ -151,14 +153,49 @@
   text-align: center;
 }
 
-.logos {
+.logo {
+  border-radius: 0%;
   width: 2px;
   height: 2px;
 }
 
+.LogIn-button.disabled {
+  background-color: var(--bg-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.LogIn-button.disabled:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.login-action-button {
+  color: var(--text-primary);
+  background-color: var(--accent-orange);
+}
+
+.login-action-button:hover {
+  background-color: #ae2c00;
+}
+
+.log-in-button-text {
+  color: #131313;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.log-in-button-text.disabled {
+  color: var(--text-tertiary);
+}
+
+/* ===============================
+   CONTENT & DIVIDERS
+   =============================== */
 .log-in-modal-content {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-items: center;
+  justify-content: center;
   width: 70%;
 }
 
@@ -175,30 +212,21 @@
 .or-divider-line {
   width: 100%;
   border: none;
-  border-top: 1px solid #323131;
-  margin: 0;
+  border-top: 1px solid var(--border-primary);
 }
 
 .or-divider-text {
   position: absolute;
-  /* background-color: #181C1F; */
-  color: #b7cad4;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
   padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
 }
 
-.text-field {
-  background-color: #b7cad4;
-  width: 100%;
-  margin: 10px 0;
-  display: block;
-}
-
-.or-divider-text {
-  color: #b7cad4;
-}
-
+/* ===============================
+   TEXT FIELDS
+   =============================== */
 .text-fields-wrapper {
   width: 100%;
   display: flex;
@@ -206,91 +234,56 @@
   gap: 12px;
 }
 
+.text-field {
+  background-color: var(--bg-tertiary);
+  width: 100%;
+  margin: 10px 0;
+  display: block;
+}
+
+/* ===============================
+   LINKS & FOOTER TEXT
+   =============================== */
 .log-in-modal-other-links {
-  align-self: left;
   text-align: left;
   width: 70%;
   margin-bottom: 16px;
 }
 
-.forgot-password-link {
-  align-self: left;
-  text-align: left;
-  width: 100%;
-  margin-bottom: 16px;
-  color: #b7cad4;
+.forgot-password-link,
+.signup-prompt {
+  color: var(--text-secondary);
   font-size: 14px;
   text-align: left;
 }
 
-.signup-prompt {
-  color: #b7cad4;
-  font-size: 14px;
-  text-align: left;
-}
 a {
   text-decoration: none;
   color: #648efc;
 }
+
 a:hover {
   text-decoration: underline;
 }
 
 .Reset-and-signup:hover {
   color: #90a9fd;
-  text-decoration: none;
 }
 
-.LogIn-button.disabled {
-  background-color: #24282b;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.LogIn-button.disabled:hover {
-  background-color: #24282b;
-}
-.login-action-button {
-  color: White;
-  background-color: #d93900;
-}
-.login-action-button .log-in-button-text {
-  color: #ffffff;
-}
-.login-action-button:hover {
-  background-color: #ae2c00;
-}
-.log-in-button-text {
-  color: #020101;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.log-in-button-text.disabled {
-  color: #8e8e93;
-  font-size: 16px;
-  font-weight: 600;
-}
-
+/* ===============================
+   RESET PASSWORD MODAL
+   =============================== */
 .reset-pass-modal {
-  /* display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* top content at top, button at bottom 
-  height: 80vh; /* or whatever fixed height you want 
-  width: 528px;
-  padding: 2rem; */
-
   display: flex;
-  flex-direction: column; /* stack children vertically */
-  justify-content: space-between; /* top content at top, button at bottom */
+  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-items: center; /* horizontally center children */
-  height: 700px; /* fixed modal height */
-  width: 528px; /* modal width */
+  height: 700px;
+  width: 528px;
   padding: 2rem;
   box-sizing: border-box;
   position: relative;
-  overflow: hidden; /* keep scroll inside inner content */
+  overflow: hidden;
 }
 
 .top-content {
@@ -298,48 +291,24 @@ a:hover {
   flex-direction: column;
   align-items: center;
 }
+
 .email {
   width: 70%;
+  display: flex;
+  flex-direction: column;
 }
 
 .button-wrapper {
-  display: flex; /* place children side by side */
-  justify-content: space-between; /* space between buttons */
-  width: 100%; /* take full width of parent */
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
   max-width: 528px;
   gap: 400px;
-  position: relative;
 }
 
-.signin-phone-text {
-  margin: 0;
-  gap: 0;
-}
-
-.signin-phone-modal-text {
-  align-self: left;
-  text-align: left;
-  width: 100%;
-  color: #b7cad4;
-  font-size: 10.5px;
-  font-weight: 400;
-  text-align: left;
-  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-}
-
-.signin-phone-link {
-  align-self: left;
-  text-align: left;
-  width: 100%;
-  color: white;
-  font-size: 11px;
-  text-align: left;
-  font-weight: 600;
-  font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-}
-
+/* ===============================
+   INTERESTS
+   =============================== */
 .interests-section {
   margin-top: 1.5rem;
   width: 100%;
@@ -357,18 +326,13 @@ a:hover {
   margin-top: 0.75rem;
 }
 
-.interests-header {
-  width: 100%;
-}
-
 .interests-scroll-area {
   flex: 1;
   width: 100%;
   overflow-y: auto;
-  margin-top: 0rem;
   display: flex;
   flex-direction: column;
-  align-items: center; /* center inner content horizontally */
+  align-items: center;
 }
 
 .interests-bottom {

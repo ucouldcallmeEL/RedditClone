@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PostCard from '../components/PostCard';
-import PostComposer from '../components/PostComposer';
 import type { Post } from '../types';
 
 type FeedFilter = 'home' | 'popular' | 'all';
@@ -26,6 +25,9 @@ function HomePage({ feedFilter = 'home' }: Props) {
 
       // Use centralized API routes
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+      const BACKEND_BASE = API_BASE_URL.replace(/\/api$/, '');
+      const withBackendBase = (val?: string) =>
+        val && val.startsWith('/') ? `${BACKEND_BASE}${val}` : val || '';
       let url = '';
 
       if (filter === 'all') {
@@ -66,18 +68,34 @@ function HomePage({ feedFilter = 'home' }: Props) {
       const backendPosts = Array.isArray(data) ? data : data.posts || [];
       
       // Transform backend data to frontend format
-      const transformedPosts: Post[] = backendPosts.map((post: any) => ({
-        id: post._id,
-        subreddit: 'r/general',
-        communityIcon: 'https://styles.redditmedia.com/t5_2qh4c/styles/communityIcon_ddkrl1wbp3t91.png',
-        title: post.title,
-        body: post.content,
-        upvotes: post.upvotes || 0,
-        comments: post.comments?.length || 0,
-        shared: 0,
-        author: post.author?.name ? `u/${post.author.name}` : 'u/anonymous',
-        createdAt: getTimeAgo(post.createdAt),
-      }));
+      const transformedPosts: Post[] = backendPosts.map((post: any) => {
+        const authorName = post.author?.username || 'anonymous';
+        const communityName = post.community?.name;
+        const label = communityName ? `r/${communityName}` : `u/${authorName}`;
+
+        const communityIcon =
+          withBackendBase(post.community?.profilePicture) ||
+          withBackendBase(post.author?.profilePicture) ||
+          '';
+
+        const mediaEntry = post.mediaUrls?.[0];
+        const mediaUrl = mediaEntry?.url || post.media;
+
+        return {
+          id: post._id,
+          subreddit: label,
+          communityIcon,
+          title: post.title,
+          body: post.content,
+          media: mediaUrl,
+          mediaUrls: post.mediaUrls || [],
+          upvotes: post.upvotes || 0,
+          comments: post.comments?.length || 0,
+          shared: 0,
+          author: `u/${authorName}`,
+          createdAt: getTimeAgo(post.createdAt),
+        };
+      });
       
       setPosts(transformedPosts);
       setError(null);
@@ -125,7 +143,6 @@ function HomePage({ feedFilter = 'home' }: Props) {
 
   return (
     <>
-      <PostComposer />
       {loading ? (
         <div className="loading card">Loading posts...</div>
       ) : error ? (
@@ -145,6 +162,9 @@ function HomePage({ feedFilter = 'home' }: Props) {
             key={post.id} 
             post={post} 
             onClick={() => handlePostClick(post.id)}
+            onVote={(postId, upvotes, downvotes) => {
+              setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes, downvotes } : p));
+            }}
           />
         ))
       )}

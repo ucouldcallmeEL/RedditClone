@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import '../../styles/QueueStatsSidebar.css';
 import { X, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
-import { fetchStats } from '../../services/api';
+import { fetchStats } from '../../config/apiRoutes';
 
 const QueueStatsSidebar = () => {
     const [stats, setStats] = useState(null);

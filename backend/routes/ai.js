@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Post = require("../schemas/post");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI("AIzaSyCayaSWhxKUTUJq1GJR-Jz11sASpxexxkE"); //add ur own key here 
 
 
 router.post("/summarize/:postId", async (req, res) => {
@@ -20,7 +20,7 @@ router.post("/summarize/:postId", async (req, res) => {
     });
 
     const prompt = `
-    Summarize This Post in 2-3 Sentences.
+    Summarize This Post in 1 Sentence.
 
     Title: ${post.title}
 

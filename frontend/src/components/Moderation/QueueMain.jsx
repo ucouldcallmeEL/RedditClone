@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/QueueMain.css';
 import { HelpCircle, ChevronLeft, ChevronRight, ArrowUpDown, Check, Trash2 } from 'lucide-react';
-import { fetchQueueItems, approveItem, removeItem } from '../../services/api';
+import { fetchQueueItems, approveItem, removeItem } from '../../config/apiRoutes';
 
 const QueueMain = ({ selectedSubreddit, onSelectSubreddit, communities }) => {
     // Removed tabs state

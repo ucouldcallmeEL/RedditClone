@@ -1,9 +1,8 @@
 const { getPosts } = require('../managers/postManager');
-const {
+const { getCommunityWithFilteredPosts, getCommunities, getCommunitiesByUser, getTopCommunitiesForUser: managerGetTopCommunitiesForUser, addMemberToCommunity, removeMemberFromCommunity,
   getCommunityByName,
   createCommunity,
   getCommunitiesByNameSubstring,
-  getCommunitiesByUser,
   getModeratedCommunities
 } = require('../managers/communityManager');
 const User = require('../schemas/user');
@@ -11,11 +10,23 @@ const User = require('../schemas/user');
 const getCommunityDetails = async (req, res) => {
   try {
     const communityName = req.params.communityName;
-    const community = await getCommunityByName(communityName);
+    const filter = req.query.filter || 'hot'; // default to 'hot'
+    const community = await getCommunityWithFilteredPosts(communityName, filter);
     if (!community) {
       return res.status(404).send({ error: 'Community not found' });
     }
-    res.send(community);
+    // Ensure we return plain JSON and include profile/cover pictures explicitly
+    let payload = community;
+    try {
+      payload = community.toObject ? community.toObject() : JSON.parse(JSON.stringify(community));
+    } catch (e) {
+      payload = community;
+    }
+
+    payload.profilePicture = payload.profilePicture || null;
+    payload.coverPicture = payload.coverPicture || null;
+
+    return res.send(payload);
   } catch (err) {
     console.error('Failed to fetch community details', err);
     res.status(500).send({ error: 'Failed to fetch community details' });
@@ -80,7 +91,75 @@ const fetchUserCommunities = async (req, res) => {
     res.json(communities || []);
   } catch (err) {
     console.error('Error fetching user communities:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to fetch user communities' });
+  }
+};
+
+const getAllCommunities = async (req, res) => {
+  try {
+    const communities = await getCommunities();
+    res.send(communities);
+  } catch (err) {
+    console.error('Failed to fetch communities', err);
+    res.status(500).send({ error: 'Failed to fetch communities' });
+  }
+};
+// Controller for joining a community. Expects body: { userId, communityName }
+const joinCommunity = async (req, res) => {
+  try {
+    const paramName = req.params.communityName;
+    const { userId, communityName, communityId } = req.body || {};
+    const idOrName = communityId || communityName || paramName;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    await addMemberToCommunity(idOrName, userId);
+    res.status(200).send({ success: true });
+  } catch (err) {
+    console.error('Failed to join community', err);
+    const msg = err?.message || 'Failed to join community';
+    const code = /not found/i.test(msg) ? 404 : 500;
+    res.status(code).send({ error: msg });
+  }
+};
+
+// Controller for leaving a community. Expects body: { userId, communityName }
+const leaveCommunity = async (req, res) => {
+  try {
+    const paramName = req.params.communityName;
+    const { userId, communityName, communityId } = req.body || {};
+    console.log('[leaveCommunity] params:', { paramName });
+    console.log('[leaveCommunity] body:', { userId, communityName, communityId });
+    const idOrName = communityId || communityName || paramName;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    try {
+      await removeMemberFromCommunity(idOrName, userId);
+      res.status(200).send({ success: true });
+    } catch (innerErr) {
+      console.error('[leaveCommunity] removeMemberFromCommunity error', innerErr);
+      const msg = innerErr?.message || 'Failed to leave community';
+      const code = /not found/i.test(msg) ? 404 : 500;
+      return res.status(code).send({ error: msg });
+    }
+  } catch (err) {
+    console.error('Failed to leave community', err);
+    const msg = err?.message || 'Failed to leave community';
+    const code = /not found/i.test(msg) ? 404 : 500;
+    res.status(code).send({ error: msg });
+  }
+};
+// Return top N communities the specified user is a member of (sorted by member count desc)
+const getTopCommunitiesForUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) return res.status(400).send({ error: 'userId required' });
+
+    // Use manager helper to get top communities directly
+    const top = await managerGetTopCommunitiesForUser(userId, 3);
+    res.send(top);
+  } catch (err) {
+    console.error('Failed to fetch top communities for user', err);
+    res.status(500).send({ error: 'Failed to fetch top communities for user' });
   }
 };
 
@@ -97,11 +176,18 @@ const fetchModeratedCommunities = async (req, res) => {
   }
 };
 
+
+
+
 module.exports = {
   getCommunityDetails,
   checkCommunityNameExists,
   postCommunity,
   fetchCommunitiesBySubstring,
   fetchUserCommunities,
+  getAllCommunities,
+  getTopCommunitiesForUser,
+  joinCommunity,
+  leaveCommunity,
   fetchModeratedCommunities
 };

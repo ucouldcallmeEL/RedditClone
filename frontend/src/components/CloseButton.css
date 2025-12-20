@@ -1,6 +1,6 @@
 .close-button {
-    background-color: #2a3236;
-    color: #FFFFFF;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     align-items: center;
     justify-content: center;
     display: inline-flex;
@@ -11,15 +11,23 @@
     height: 2rem;
     width: 2rem;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .close-icon {
     font-family: 'Segeo UI', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: #FFFFFF;
+    color: var(--text-primary);
+    fill: var(--text-primary);
 }
 
 .close-button:hover {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
+}
+
+/* Ensure SVG inherits color properly */
+.close-button svg {
+    fill: currentColor;
+    color: var(--text-primary);
 }

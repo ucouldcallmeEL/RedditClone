@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/ModManagementPage.css';
 import { Star, MoreHorizontal, Shield } from 'lucide-react';
-import { fetchModeratedCommunities } from '../../services/api';
+import { fetchModeratedCommunities } from '../../config/apiRoutes';
 
 const ModManagementPage = () => {
     const navigate = useNavigate();

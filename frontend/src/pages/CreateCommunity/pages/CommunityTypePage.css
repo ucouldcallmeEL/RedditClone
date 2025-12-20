@@ -11,12 +11,16 @@
     transition: background-color 0.2s;
 }
 
+.community-maturity-container.selected {
+    background-color: var(--bg-hover);
+}
+
 .community-type-container.selected {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .community-maturity-icon {
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .community-maturity-details {
@@ -30,7 +34,7 @@
 }
 
 .community-maturity-heading {
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 500;
     text-align: start;
@@ -40,7 +44,7 @@
 
 .community-type-divider {
     border-style: solid;
-    border-color: rgb(0 0 0 / 0.2);
+    border-color: var(--border-primary);
     border-width: 1px;
     margin: 1rem 0;
     width: 100%;
@@ -49,11 +53,11 @@
 }
 
 .community-maturity-container:active {
-    background: #333D42;
+    background: var(--bg-hover);
 }
 
 .reddit-rules-text {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 14px;
     font-weight: 400;
     text-align: start;

@@ -1,4 +1,4 @@
-const { getPost, createPost } = require('../managers/postManager');
+const { getPost, createPost, votePost } = require('../managers/postManager');
 const { getCommentsByPost } = require('../managers/commentManager');
 
 const getPostDetails = async (req, res) => {
@@ -54,7 +54,28 @@ const addPost = async (req, res) => {
   }
 };
 
+const voteOnPost = async (req, res) => {
+  try {
+    const { id } = req.params; // postId
+    const { vote } = req.body; // 1, -1, or 0
+    const userId = req.user._id;
+
+    console.log(`[voteOnPost] user=${userId} post=${id} vote=${vote}`);
+
+    if (![1, -1, 0].includes(vote)) {
+      return res.status(400).send({ error: 'Invalid vote value' });
+    }
+
+    const updatedPost = await votePost(id, userId, vote);
+    res.send(updatedPost);
+  } catch (err) {
+    console.error('Failed to vote on post', err);
+    res.status(500).send({ error: err.message || 'Failed to vote on post' });
+  }
+};
+
 module.exports = {
   getPostDetails,
   addPost,
+  voteOnPost,
 };

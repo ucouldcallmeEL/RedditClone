@@ -6,6 +6,10 @@ export type Post = {
   title: string;
   body: string;
   media?: string;
+  mediaUrls?: {
+    url: string;
+    mediaType?: string;
+  }[];
   isSpoiler?: boolean;
   upvotes: number;
   downvotes?: number; // Optional for backward compatibility
@@ -39,6 +43,7 @@ export type Community = {
   members: string;
   description: string;
   avatar: string;
+  id?: string;
 };
 
 export type CommunityDetails = Community & {

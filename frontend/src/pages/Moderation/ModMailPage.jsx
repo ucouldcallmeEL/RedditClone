@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/ModMailPage.css';
-import { fetchConversations, fetchMessages, sendMessage, createConversation, archiveConversation, fetchModeratedCommunities } from '../../services/api'; // Added fetchModeratedCommunities
+import { fetchConversations, fetchMessages, sendMessage, createConversation, archiveConversation, fetchModeratedCommunities } from '../../config/apiRoutes';
 import { PenSquare, X, Archive } from 'lucide-react';
 
 const ModMailPage = () => {
@@ -87,7 +87,8 @@ const ModMailPage = () => {
             composeRecipient,
             composeSubject,
             composeBody,
-            isModerator ? (composeSubreddit || "r/General") : null // Subreddit only relevant if mod sends it
+            isModerator ? (composeSubreddit || "r/General") : null, // Subreddit only relevant if mod sends it
+            isModerator // Pass isMod flag
         );
 
         // Only add to list if we are in inbox
@@ -125,8 +126,8 @@ const ModMailPage = () => {
             return `ModTeam in ${subreddit} to ${targetUser}`;
         } else {
             // User sending message
-            // "User to ModTeam in r/Subreddit"
-            return `${msg.sender} to ModTeam in ${subreddit}`;
+            // "User to ModTeam"
+            return `${msg.sender} to ModTeam`;
         }
     };
 
