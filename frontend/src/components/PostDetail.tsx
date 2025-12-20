@@ -11,6 +11,7 @@ import {
   Share2,
 } from 'lucide-react';
 import Comment from './Comment';
+import { apiClient } from '../services/apiClient';
 import type { Comment as CommentType } from '../types';
 
 type PostDetailData = {
@@ -45,6 +46,9 @@ function PostDetail({ postId, onBack }: Props) {
   const [post, setPost] = useState<PostDetailData | null>(null);
   const [comments, setComments] = useState<CommentType[]>([]);
   const [commentCount, setCommentCount] = useState(0);
+  const [userVote, setUserVote] = useState<1 | -1 | 0>(0);
+  const [upvotes, setUpvotes] = useState<number>(0);
+  const [downvotes, setDownvotes] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
@@ -57,22 +61,40 @@ function PostDetail({ postId, onBack }: Props) {
   const fetchPostDetails = async () => {
     try {
       setLoading(true);
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
-      const response = await fetch(`${API_BASE}/posts/${postId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch post');
+      const res = await apiClient.get(`/posts/${postId}`);
+      const data = res?.data || {};
+      setPost(data.post || data);
+      setComments(data.comments || []);
+      setCommentCount(data.commentCount || 0);
+      setUserVote(typeof data.userVote === 'number' ? data.userVote : 0);
+      const refreshed = data.post || data;
+      if (refreshed) {
+        setUpvotes(refreshed.upvotes || 0);
+        setDownvotes(refreshed.downvotes || 0);
       }
-      
-      const data = await response.json();
-      setPost(data.post);
-      setComments(data.comments);
-      setCommentCount(data.commentCount);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load post');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVote = async (vote: 1 | -1) => {
+    try {
+      // toggle
+      const newVote = userVote === vote ? 0 : vote;
+      const res = await apiClient.post(`/posts/vote/${postId}`, { vote: newVote });
+      const payload = res?.data || {};
+      const updated = payload.post || payload;
+      const returnedUserVote = typeof payload.userVote === 'number' ? payload.userVote : newVote;
+      if (updated) {
+        setUpvotes(updated.upvotes || 0);
+        setDownvotes(updated.downvotes || 0);
+      }
+      setUserVote(returnedUserVote as 1 | -1 | 0);
+    } catch (e) {
+      console.error('Vote failed', e);
     }
   };
 
@@ -125,7 +147,7 @@ function PostDetail({ postId, onBack }: Props) {
     );
   }
 
-  const score = post.upvotes - post.downvotes;
+  const score = (upvotes || (post?.upvotes || 0)) - (downvotes || (post?.downvotes || 0));
   const safeContent = post.content ? DOMPurify.sanitize(post.content) : '';
   const mediaItems = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : post.media ? [{ url: post.media }] : [];
 
@@ -137,11 +159,11 @@ function PostDetail({ postId, onBack }: Props) {
 
       <article className="post-detail__post card">
         <div className="post-detail__vote">
-          <button aria-label="Upvote">
+          <button aria-label="Upvote" onClick={() => handleVote(1)} style={{ color: userVote === 1 ? 'orange' : 'inherit' }}>
             <ArrowBigUp size={24} />
           </button>
           <span className="post-detail__score">{score.toLocaleString()}</span>
-          <button aria-label="Downvote">
+          <button aria-label="Downvote" onClick={() => handleVote(-1)} style={{ color: userVote === -1 ? 'orange' : 'inherit' }}>
             <ArrowBigDown size={24} />
           </button>
         </div>

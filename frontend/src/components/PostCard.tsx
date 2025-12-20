@@ -16,9 +16,9 @@ function PostCard({ post, onClick, onVote }: Props) {
   const [loading, setLoading] = useState(false);
   const [summaryVisible, setSummaryVisible] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [userVote, setUserVote] = useState<1 | -1 | 0>(0); // 1 up, -1 down, 0 none
-  const [upvotes, setUpvotes] = useState(post.upvotes);
-  const [downvotes, setDownvotes] = useState(post.downvotes || 0);
+  const [userVote, setUserVote] = useState<1 | -1 | 0>((post as any)?.userVote || 0); // 1 up, -1 down, 0 none
+  const [upvotes, setUpvotes] = useState<number>(post.upvotes || 0);
+  const [downvotes, setDownvotes] = useState<number>(post.downvotes || 0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const safeBody = post.body ? DOMPurify.sanitize(post.body) : '';
   const mediaEntry = post.mediaUrls?.[0];
@@ -60,17 +60,52 @@ function PostCard({ post, onClick, onVote }: Props) {
     const newVote = userVote === vote ? 0 : vote; // toggle or set
 
     try {
-      const res = await apiClient.post(`/posts/vote/${post.id}`, { vote: newVote });
-      const updatedPost = res.data;
-      setUpvotes(updatedPost.upvotes);
-      setDownvotes(updatedPost.downvotes);
-      setUserVote(newVote);
-      onVote?.(post.id, updatedPost.upvotes, updatedPost.downvotes);
+      const id = (post as any)._id || (post as any).id;
+      const res = await apiClient.post(`/posts/vote/${id}`, { vote: newVote });
+      const payload = res?.data || {};
+      const updatedPost = payload.post || payload;
+      const returnedUserVote = (typeof payload.userVote === 'number') ? payload.userVote : newVote;
+
+      setUpvotes(updatedPost?.upvotes || 0);
+      setDownvotes(updatedPost?.downvotes || 0);
+      setUserVote(returnedUserVote as 1 | -1 | 0);
+      onVote?.(id, updatedPost?.upvotes || 0, updatedPost?.downvotes || 0);
     } catch (err: any) {
       console.error('Vote failed', err);
       alert('Failed to vote');
     }
   };
+
+  // Initialize vote state once per post id to avoid flicker on re-renders
+  const _initPostId = useRef<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchUserVoteAndCounts() {
+      try {
+        const id = (post as any)._id || (post as any).id;
+        const res = await apiClient.get(`/posts/${id}`);
+        const payload = res?.data || {};
+        if (cancelled) return;
+        const refreshedPost = payload.post || payload;
+        const returnedUserVote = typeof payload.userVote === 'number' ? payload.userVote : 0;
+        if (refreshedPost) {
+          setUpvotes(refreshedPost.upvotes || 0);
+          setDownvotes(refreshedPost.downvotes || 0);
+        }
+        setUserVote(returnedUserVote as 1 | -1 | 0);
+        _initPostId.current = (post as any)._id || (post as any).id;
+      } catch (e) {
+        // ignore network errors here
+      }
+    }
+
+    const currentId = (post as any)._id || (post as any).id;
+    if (_initPostId.current !== currentId) {
+      fetchUserVoteAndCounts();
+    }
+
+    return () => { cancelled = true; };
+  }, [post]);
 
   useEffect(() => {
     // hide tooltip on outside click
@@ -204,11 +239,11 @@ function PostCard({ post, onClick, onVote }: Props) {
           >
             <ArrowBigUp size={18} />
           </button>
-          <span>{upvotes.toLocaleString()}</span>
+          <span>{(upvotes - downvotes).toLocaleString()}</span>
           <button 
             aria-label="Downvote" 
             onClick={(e) => { e.stopPropagation(); handleVote(-1); }}
-            style={{ color: userVote === -1 ? 'blue' : 'inherit' }}
+            style={{ color: userVote === -1 ? 'orange' : 'inherit' }}
           >
             <ArrowBigDown size={18} />
           </button>

@@ -1,3 +1,4 @@
+// ...existing code...
 const Post = require('../schemas/post');
 const User = require('../schemas/user');
 const Vote = require('../schemas/vote');
@@ -8,23 +9,40 @@ const createPost = async (post) => {
     return newPost;
 };
 
+const computeCounts = (post) => {
+    const votes = (post.vote && post.vote.length) ? post.vote : [];
+    let upvotes = 0, downvotes = 0;
+    for (const v of votes) {
+        if (!v) continue;
+        if (typeof v.vote === 'number') {
+            if (v.vote === 1) upvotes++;
+            else if (v.vote === -1) downvotes++;
+        }
+    }
+    return { upvotes, downvotes, score: upvotes - downvotes };
+};
+
 const getPost = async (id) => {
     const post = await Post.findById(id)
         .populate('author', 'username profilePicture')
-        .populate('community', 'name profilePicture');
-    return post;
+        .populate('community', 'name profilePicture')
+        .populate('vote'); // populate vote refs
+    if (!post) return null;
+    const counts = computeCounts(post);
+    return { ...post.toObject(), ...counts };
 };
 
 const getPosts = async () => {
     const posts = await Post.find()
         .populate('author', 'username profilePicture')
-        .populate('community', 'name profilePicture');
-    return posts;
+        .populate('community', 'name profilePicture')
+        .populate('vote');
+    return posts.map(p => ({ ...p.toObject(), ...computeCounts(p) }));
 };
 
 const getPostsByUser = async (id) => {
-    const posts = await Post.find({ author: id });
-    return posts;
+    const posts = await Post.find({ author: id }).populate('vote');
+    return posts.map(p => ({ ...p.toObject(), ...computeCounts(p) }));
 };
 
 const updatePost = async (id, post) => {
@@ -44,14 +62,17 @@ const getHomePosts = async (userId) => {
     const authors = [...user.following, userId];
     const communities = user.communities || [];
 
-    return Post.find({
+    const posts = await Post.find({
         $or: [
             { author: { $in: authors } },
             { community: { $in: communities } }
         ]
     })
     .populate('author', 'username profilePicture')
-    .populate('community', 'name profilePicture');
+    .populate('community', 'name profilePicture')
+    .populate('vote');
+
+    return posts.map(p => ({ ...p.toObject(), ...computeCounts(p) }));
 };
 
 const getPopularPosts = async (timeFilter = 'all') => {
@@ -82,16 +103,17 @@ const getPopularPosts = async (timeFilter = 'all') => {
         }
     }
 
-    // Fetch posts and calculate score
+    // Fetch posts with vote refs populated and calculate score from those refs
     const posts = await Post.find(dateFilter)
         .populate('author', 'username profilePicture')
-        .populate('community', 'name profilePicture');
+        .populate('community', 'name profilePicture')
+        .populate('vote');
 
-    // Calculate net score and sort by popularity
-    const postsWithScore = posts.map(post => ({
-        ...post.toObject(),
-        score: post.upvotes - post.downvotes
-    })).filter(post => post.score > 0) // Only show posts with positive score
+    const postsWithScore = posts.map(post => {
+        const obj = post.toObject();
+        const counts = computeCounts(post);
+        return { ...obj, ...counts };
+    }).filter(post => post.score > 0) // Only show posts with positive score
       .sort((a, b) => b.score - a.score); // Sort by score descending
 
     return postsWithScore;
@@ -99,60 +121,49 @@ const getPopularPosts = async (timeFilter = 'all') => {
 
 const votePost = async (postId, userId, voteType) => {
     // voteType: 1 for upvote, -1 for downvote, 0 to remove vote
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate('vote');
     if (!post) throw new Error('Post not found');
 
-    const existingVote = await Vote.findOne({ user: userId, post: postId });
+    let existingVote = await Vote.findOne({ user: userId, post: postId });
 
     if (voteType === 0) {
         // Remove vote
         if (existingVote) {
-            if (existingVote.vote === 1) {
-                post.upvotes -= 1;
-            } else if (existingVote.vote === -1) {
-                post.downvotes -= 1;
-            }
+            // remove vote doc
             await Vote.findByIdAndDelete(existingVote._id);
+            // remove ref from post.vote array
+            post.vote = post.vote.filter(vId => vId.toString() !== existingVote._id.toString());
             await post.save();
         }
-        return post;
-    }
-
-    if (existingVote) {
-        // Change vote
-        if (existingVote.vote === voteType) {
-            // Same vote, remove it
-            if (voteType === 1) {
-                post.upvotes -= 1;
-            } else {
-                post.downvotes -= 1;
-            }
-            await Vote.findByIdAndDelete(existingVote._id);
-        } else {
-            // Change vote
-            if (existingVote.vote === 1) {
-                post.upvotes -= 1;
-                post.downvotes += 1;
-            } else {
-                post.upvotes += 1;
-                post.downvotes -= 1;
-            }
-            existingVote.vote = voteType;
-            await existingVote.save();
-        }
     } else {
-        // New vote
-        if (voteType === 1) {
-            post.upvotes += 1;
+        if (existingVote) {
+            if (existingVote.vote === voteType) {
+                // Same vote: remove it
+                await Vote.findByIdAndDelete(existingVote._id);
+                post.vote = post.vote.filter(vId => vId.toString() !== existingVote._id.toString());
+                await post.save();
+            } else {
+                // Flip vote: update existing Vote doc (post.vote refs unchanged)
+                existingVote.vote = voteType;
+                await existingVote.save();
+            }
         } else {
-            post.downvotes += 1;
+            // New vote: create Vote doc and push its ref into post.vote
+            const newVote = new Vote({ user: userId, post: postId, vote: voteType });
+            await newVote.save();
+            post.vote.push(newVote._id);
+            await post.save();
         }
-        const newVote = new Vote({ user: userId, post: postId, vote: voteType });
-        await newVote.save();
     }
 
-    await post.save();
-    return post;
+    // Re-populate votes to compute counts
+    const updatedPost = await Post.findById(postId)
+        .populate('author', 'username profilePicture')
+        .populate('community', 'name profilePicture')
+        .populate('vote');
+
+    const counts = computeCounts(updatedPost);
+    return { ...updatedPost.toObject(), ...counts };
 };
 
 module.exports = {
@@ -166,3 +177,4 @@ module.exports = {
     deletePost,
     votePost
 };
+// ...existing code...

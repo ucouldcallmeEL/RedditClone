@@ -15,6 +15,16 @@ apiClient.interceptors.request.use((config) => {
   if (typeof config.url === 'string' && config.url.startsWith('/r/')) {
     config.url = config.url.replace(/^\/r\//, '/communities/');
   }
+  // attach auth token if present
+  try {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // ignore
+  }
   return config;
 });
 

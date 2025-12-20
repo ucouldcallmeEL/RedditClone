@@ -3,6 +3,7 @@ const { getPostDetails, addPost, voteOnPost } = require("../controllers/postCont
 const { getAllPosts, getHomeFeed, getPopularPostsHandler } = require("../controllers/homeController");
 const { getPostsByUser } = require("../managers/postManager");
 const { authenticate } = require('../middleware/auth');
+const { attachUserIfPresent } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -10,16 +11,16 @@ const router = express.Router();
 router.post("/create", authenticate, addPost);
 
 // Get all posts
-router.get("/", getAllPosts);
+router.get("/", attachUserIfPresent, getAllPosts);
 
 // Get popular posts
-router.get("/popular", getPopularPostsHandler);
+router.get("/popular", attachUserIfPresent, getPopularPostsHandler);
 
 // Get home feed posts (requires userId in query or authenticated user)
-router.get("/home/:userId", getHomeFeed);
+router.get("/home/:userId", attachUserIfPresent, getHomeFeed);
 
 // Get posts by user
-router.get("/user/:userId", async (req, res) => {
+router.get("/user/:userId", attachUserIfPresent, async (req, res) => {
   try {
     const userId = req.params.userId;
     const posts = await getPostsByUser(userId);
@@ -37,6 +38,7 @@ router.post("/vote/:id", authenticate, voteOnPost);
 router.post("/:id/vote", authenticate, voteOnPost);
 
 // Get post details by ID (must come last to avoid matching other routes)
-router.get("/:id", getPostDetails);
+// Attach user if token provided so responses can include `userVote` for authenticated callers
+router.get("/:id", attachUserIfPresent, getPostDetails);
 
 module.exports = router;
