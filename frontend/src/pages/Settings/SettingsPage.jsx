@@ -19,8 +19,9 @@ import openLanguagePopup from "./popups/openLanguagePopup";
 import openViewPopup from "./popups/openViewPopup";
 import "./Settings.css";
 
-// Using placeholder avatar - update path if image exists
-const defaultAvatar = "/avatar_default.png";
+// Using frontend resources for default avatar
+const defaultAvatar = "/resources/6yyqvx1f5bu71.webp";
+const defaultBanner = "/resources/bannerBackgroundImage_6p2dptjtz58g1.png";
 
 function SettingsPage() {
 
@@ -34,7 +35,7 @@ function SettingsPage() {
     const [displayedName , setDisplayedName] = useState("");
     const [about , setAbout] = useState("");
     const [avatar , setAvatar] = useState(defaultAvatar);
-    const [banner , setBanner] = useState(null);
+    const [banner , setBanner] = useState(defaultBanner);
     const [lang , setLang] = useState("English");
     const [view , setView] = useState("Card");
 
@@ -59,7 +60,7 @@ function SettingsPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setAvatar(data.profilePicture || defaultAvatar);
-                    setBanner(data.coverPicture || null);
+                    setBanner(data.coverPicture || defaultBanner);
                 }
             } catch (error) {
                 console.error("Failed to fetch user:", error);

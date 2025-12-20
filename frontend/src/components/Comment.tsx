@@ -1,18 +1,61 @@
 import { useState } from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageCircle, Share2 } from 'lucide-react';
 import type { Comment as CommentType } from '../types';
+import { API_BASE_URL } from '../config/apiConfig';
+import { apiClient } from '../services/apiClient';
 
 type Props = {
   comment: CommentType;
   depth?: number;
+  onReplySubmit?: (parentCommentId: string, content: string) => Promise<void>;
 };
 
-function Comment({ comment, depth = 0 }: Props) {
+function Comment({ comment, depth = 0, onReplySubmit }: Props) {
+  const fallbackAvatar = "/resources/6yyqvx1f5bu71.webp";
+  const authorName =  (comment as any)?.author?.username || "anonymous";
+  
+  // Helper to prepend backend base URL for relative paths
+  const backendBase = API_BASE_URL.replace(/\/api$/, '');
+  const withBackendBase = (val?: string) =>
+    val && val.startsWith('/') ? `${backendBase}${val}` : val || '';
+  
+  const avatarSrc = withBackendBase((comment as any)?.author?.profilePicture) || fallbackAvatar;
+  
+  // Handle image load errors
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.currentTarget;
+    if (target.src !== `${window.location.origin}${fallbackAvatar}`) {
+      target.src = fallbackAvatar;
+    }
+  };
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [userVote, setUserVote] = useState<1 | -1 | 0>((comment as any)?.userVote || 0);
+  const [upvotes, setUpvotes] = useState<number>(comment.upvotes || 0);
+  const [downvotes, setDownvotes] = useState<number>(comment.downvotes || 0);
   
-  const score = comment.upvotes - comment.downvotes;
+  const score = (upvotes || comment.upvotes || 0) - (downvotes || comment.downvotes || 0);
   const hasReplies = comment.replies && comment.replies.length > 0;
+
+  const handleVote = async (vote: 1 | -1) => {
+    try {
+      const newVote = userVote === vote ? 0 : vote;
+      const res = await apiClient.post(`/api/comments/vote/${comment._id}`, { vote: newVote });
+      const payload = res?.data || {};
+      const updated = payload.comment || payload;
+      const returnedUserVote = typeof payload.userVote === 'number' ? payload.userVote : newVote;
+      if (updated) {
+        setUpvotes(updated.upvotes || 0);
+        setDownvotes(updated.downvotes || 0);
+      }
+      setUserVote(returnedUserVote as 1 | -1 | 0);
+    } catch (err) {
+      console.error('Comment vote failed', err);
+    }
+  };
   
   // Calculate time ago
   const getTimeAgo = (dateString: string) => {
@@ -53,11 +96,9 @@ function Comment({ comment, depth = 0 }: Props) {
       
       <div className="comment__content">
         <div className="comment__header">
-          <span className="comment__author">{comment.author.name}</span>
-          <span className="comment__meta">
-            <span className="comment__score">{score} points</span>
-            <span className="comment__time">{getTimeAgo(comment.createdAt)}</span>
-          </span>
+          <img src={avatarSrc} alt={authorName || "author"} className="comment__avatar" loading="lazy" onError={handleImageError} />
+          <span className="comment__author-inline">{authorName}</span>
+          <span className="comment__meta-inline">{getTimeAgo(comment.createdAt)}</span>
         </div>
         
         {!isCollapsed && (
@@ -68,11 +109,19 @@ function Comment({ comment, depth = 0 }: Props) {
             
             <div className="comment__actions">
               <div className="vote vote--small">
-                <button aria-label="Upvote">
+                <button
+                  aria-label="Upvote"
+                  onClick={() => handleVote(1)}
+                  style={{ color: userVote === 1 ? 'orange' : 'inherit' }}
+                >
                   <ArrowBigUp size={16} />
                 </button>
-                <span>{score}</span>
-                <button aria-label="Downvote">
+                <span>{score.toLocaleString()}</span>
+                <button
+                  aria-label="Downvote"
+                  onClick={() => handleVote(-1)}
+                  style={{ color: userVote === -1 ? 'orange' : 'inherit' }}
+                >
                   <ArrowBigDown size={16} />
                 </button>
               </div>
@@ -96,22 +145,49 @@ function Comment({ comment, depth = 0 }: Props) {
                 <textarea 
                   placeholder="What are your thoughts?"
                   rows={3}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
                 />
                 <div className="comment__reply-actions">
-                  <button className="btn btn--sm" onClick={() => setShowReplyBox(false)}>
+                  <button className="btn btn--sm" onClick={() => { setShowReplyBox(false); setReplyError(null); }}>
                     Cancel
                   </button>
-                  <button className="btn btn--primary btn--sm">
-                    Reply
+                  <button
+                    className="btn btn--primary btn--sm"
+                    disabled={submitting || !replyText.trim()}
+                    onClick={async () => {
+                      if (!onReplySubmit) return;
+                      const trimmed = replyText.trim();
+                      if (!trimmed) return;
+                      try {
+                        setSubmitting(true);
+                        setReplyError(null);
+                        await onReplySubmit(comment._id, trimmed);
+                        setReplyText('');
+                        setShowReplyBox(false);
+                      } catch (err) {
+                        setReplyError(err instanceof Error ? err.message : 'Failed to reply');
+                      } finally {
+                        setSubmitting(false);
+                      }
+                    }}
+                  >
+                    {submitting ? 'Posting...' : 'Reply'}
                   </button>
                 </div>
+                {replyError && <div className="error">{replyError}</div>}
               </div>
             )}
             
             {hasReplies && (
               <div className="comment__replies">
                 {comment.replies.map((reply) => (
-                  <Comment key={reply._id} comment={reply} depth={depth + 1} />
+                  <Comment
+                    key={reply._id}
+                    comment={reply}
+                    depth={depth + 1}
+                    onReplySubmit={onReplySubmit}
+                  />
                 ))}
               </div>
             )}

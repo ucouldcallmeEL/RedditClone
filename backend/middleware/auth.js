@@ -33,3 +33,23 @@ module.exports = {
     authenticate
 };
 
+// Optional middleware: attach user to request if Authorization header present, otherwise continue unauthenticated
+const attachUserIfPresent = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
+        if (!token) {
+            return next();
+        }
+        const decoded = verifyToken(token);
+        if (!decoded) return next();
+        const user = await getUser(decoded.userId);
+        if (user) req.user = user;
+        return next();
+    } catch (e) {
+        // don't block request on auth errors; proceed unauthenticated
+        return next();
+    }
+};
+
+module.exports.attachUserIfPresent = attachUserIfPresent;
+

@@ -5,7 +5,7 @@
 }
 
 .interests-topics-title {
-  color: #b7cad4;
+  color: var(--text-quaternary);
   font-size: 14px;
   font-weight: 600;
   text-align: start;
@@ -20,20 +20,22 @@
 }
 
 .interests-topic-name {
-  background-color: #2a3236;
-  color: #ffffff;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   align-items: center;
   justify-content: center;
   display: inline-flex;
   gap: 0.25rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.6rem;
   border-radius: 999px;
-  border: 1px solid transparent;
+  border: none;
+  height: auto;
   min-height: 2.5rem;
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .interests-topic-name span {
@@ -43,12 +45,17 @@
 
 /* Selected state: orange outline + tint using existing orange auth colors */
 .interests-topic-name.selected {
-  background-color: #ae2c00; /* same as .login-action-button:hover */
-  border-color: #d93900; /* same as .login-action-button */
+  background-color: #d37959; /* Keep selected color even on hover */
+  border: 1px solid #ae2c00;  /* same as .login-action-button */
+}
+
+.interests-topic-name.selected:hover {
+  background-color: #d37959; /* Keep selected color even on hover */
+  border: 1px solid #ae2c00; /* Keep border on hover */
 }
 
 .interests-topic-name:hover {
-  background-color: #333d42;
+  background-color: var(--bg-secondary);
 }
 
 

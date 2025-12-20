@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import TextField from "./TextField";
 import { userRoutes, apiPost, apiGet } from "../../config/apiRoutes";
@@ -10,12 +10,12 @@ const CreateUser = ({ onClose }) => {
   const location = useLocation();
   // Get email from location state or localStorage
   const [email] = useState(location.state?.email || localStorage.getItem("signupEmail") || "");
-  
+
   const handleClose = () => {
     if (onClose) {
       onClose();
     } else {
-      navigate(-1);
+      navigate("/");
     }
   };
 
@@ -23,7 +23,7 @@ const CreateUser = ({ onClose }) => {
   const [password, setPassword] = useState("");
   const isUsernameValid = (val) => val.trim().length >= 3;
   const isPasswordValid = (val) => val.length > 0;
-  
+
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
     if (!formIsValid || !email) return;
@@ -49,6 +49,8 @@ const CreateUser = ({ onClose }) => {
       }
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        // Dispatch event to notify sidebar
+        window.dispatchEvent(new CustomEvent('user-updated'));
       }
 
       // Clear temporary email storage
@@ -60,7 +62,7 @@ const CreateUser = ({ onClose }) => {
       // TODO: Show error message to user
     }
   };
-  
+
   const formIsValid = isUsernameValid(username) && isPasswordValid(password);
 
   const fetchGeneratedUsername = async () => {
@@ -78,7 +80,7 @@ const CreateUser = ({ onClose }) => {
   useEffect(() => {
     // Generate an initial username when the page loads
     fetchGeneratedUsername();
-    
+
     // We intentionally only run this on mount
     // eslint-disable-next-line
   }, []);
@@ -113,8 +115,8 @@ const CreateUser = ({ onClose }) => {
               >
                 <path
                   d="M 17.5 9.1 H 4.679 l 5.487 -5.462 a 0.898 0.898 0 0 0 0.003 -1.272 a 0.898 0.898 0 0 0 -1.272 -0.003 l -7.032 7 a 0.898 0.898 0 0 0 0 1.275 l 7.03 7 a 0.896 0.896 0 0 0 1.273 -0.003 a 0.898 0.898 0 0 0 -0.002 -1.272 l -5.487 -5.462 h 12.82 a 0.9 0.9 0 0 0 0 -1.8 Z"
-                  fill="white"
-                  stroke="white"
+                  fill="currentColor"
+                  stroke="currentColor"
                   strokeWidth="0.25"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -131,8 +133,8 @@ const CreateUser = ({ onClose }) => {
               >
                 <path
                   d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"
-                  fill="white"
-                  stroke="white"
+                  fill="currentColor"
+                  stroke="currentColor"
                   strokeWidth="0.25"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -176,9 +178,8 @@ const CreateUser = ({ onClose }) => {
       </div>
 
       <div
-        className={`LogIn-button login-action-button ${
-          !formIsValid ? "disabled" : ""
-        }`}
+        className={`LogIn-button login-action-button ${!formIsValid ? "disabled" : ""
+          }`}
         onClick={formIsValid ? handleSubmit : undefined}
       >
         <span

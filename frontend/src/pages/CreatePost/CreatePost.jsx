@@ -6,16 +6,8 @@ import ToggleButton from "../../components/ToggleButton";
 import CustomButton from "../../components/CustomButton";
 import TextField from "../../components/TextField";
 import TextArea from "../../components/TextArea";
-import { communityRoutes, apiGet, apiPost, postRoutes } from "../../config/apiRoutes";
-
-// Placeholder components for external components
-const HeaderBar = () => {
-  return <div className="header-bar-placeholder"></div>;
-};
-
-const Sidebar = () => {
-  return <div className="sidebar-placeholder"></div>;
-};
+import { API_BASE_URL } from "../../config/apiConfig";
+import { communityRoutes, apiGet, apiPost, postRoutes, uploadRoutes } from "../../config/apiRoutes";
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -55,8 +47,13 @@ const CreatePost = () => {
   const gridMediaInputRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [communityOptions, setCommunityOptions] = useState([]);
+  const [subscribedCommunities, setSubscribedCommunities] = useState([]); // Store original subscribed communities
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   const isCommunitySelected = Boolean(selectedCommunityOption);
+
+  // Helper function to prepend backend base URL for relative paths
+  const backendBase = API_BASE_URL.replace(/\/api$/, '');
+  const withBackendBase = (val) => (val && val.startsWith('/') ? `${backendBase}${val}` : val || '');
 
   // Get current user from localStorage on component mount
   useEffect(() => {
@@ -72,7 +69,7 @@ const CreatePost = () => {
           label: `u/${user.name || user.username || "user"}`,
           members: "Your profile",
           type: "account",
-          imageUrl: user.profilePicture || null,
+          imageUrl: withBackendBase(user.profilePicture) || "/resources/6yyqvx1f5bu71.webp",
         };
         
         // Set initial community options with just the account
@@ -83,12 +80,104 @@ const CreatePost = () => {
     }
   }, []);
 
+  // Search communities by substring when user types
+  useEffect(() => {
+    // Only search if the community search dropdown is open
+    if (!showCommunitySearch) {
+      return;
+    }
+
+    const searchQuery = communitySearch.trim();
+    
+    // If search is empty, restore subscribed communities
+    if (!searchQuery) {
+      // Get account option
+      const accountOption = {
+        id: "account",
+        label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+        members: "Your profile",
+        type: "account",
+        imageUrl: withBackendBase(currentUser?.profilePicture) || null,
+      };
+      
+      // Restore original subscribed communities
+      setCommunityOptions([accountOption, ...subscribedCommunities]);
+      return;
+    }
+
+    // Debounce the API call
+    const searchTimeout = setTimeout(async () => {
+      setIsLoadingCommunities(true);
+      try {
+        const response = await apiGet(communityRoutes.search(searchQuery));
+        if (response.ok) {
+          const communities = await response.json();
+          
+          // Format communities to match expected structure
+          const formattedCommunities = communities.map((community) => ({
+            id: community.name,
+            label: `r/${community.name}`,
+            members: `${community.members?.length || 0} members`,
+            subscribed: community.subscribed || false,
+            type: "community",
+            imageUrl: withBackendBase(community.profilePicture) || "/resources/communityIcon_9cgdstjtz58g1.png",
+            communityId: community._id,
+          }));
+
+          // Get account option (preserve it)
+          const accountOption = {
+            id: "account",
+            label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+            members: "Your profile",
+            type: "account",
+            imageUrl: withBackendBase(currentUser?.profilePicture) || "/resources/6yyqvx1f5bu71.webp",
+          };
+
+          // Update community options with search results
+          // Include account option if search matches "u/" or user's username
+          const searchLower = searchQuery.toLowerCase();
+          const shouldShowAccount = searchLower.startsWith("u/") || 
+            (currentUser && (
+              (currentUser.name && currentUser.name.toLowerCase().includes(searchLower)) ||
+              (currentUser.username && currentUser.username.toLowerCase().includes(searchLower))
+            ));
+          
+          const newOptions = shouldShowAccount 
+            ? [accountOption, ...formattedCommunities]
+            : formattedCommunities;
+          
+          setCommunityOptions(newOptions);
+        } else {
+          console.error("Failed to search communities:", response.status);
+        }
+      } catch (error) {
+        console.error("Error searching communities:", error);
+      } finally {
+        setIsLoadingCommunities(false);
+      }
+    }, 300); // 300ms debounce delay
+
+    // Cleanup timeout on unmount or when search changes
+    return () => clearTimeout(searchTimeout);
+  }, [communitySearch, showCommunitySearch, currentUser, subscribedCommunities]);
+
   // Fetch user's subscribed communities when dropdown opens
   const handleOpenCommunitySearch = async () => {
     setShowCommunitySearch(true);
     
-    // If we already have communities loaded, don't fetch again
-    if (communityOptions.length > 1) {
+    // If we already have subscribed communities loaded, don't fetch again
+    if (subscribedCommunities.length > 0) {
+      // Restore subscribed communities if search is empty
+      if (!communitySearch.trim()) {
+        const accountOption = {
+          id: "account",
+          label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
+          members: "Your profile",
+          type: "account",
+          imageUrl: withBackendBase(currentUser?.profilePicture) || "/resources/6yyqvx1f5bu71.webp",
+        };
+        setCommunityOptions([accountOption, ...subscribedCommunities]);
+      }
       return;
     }
 
@@ -105,17 +194,20 @@ const CreatePost = () => {
           members: `${community.members?.length || 0} members`,
           subscribed: "Subscribed",
           type: "community",
-          imageUrl: community.profilePicture || null,
+          imageUrl: withBackendBase(community.profilePicture) || "/resources/communityIcon_9cgdstjtz58g1.png",
           communityId: community._id,
         }));
 
+        // Store subscribed communities for later restoration
+        setSubscribedCommunities(formattedCommunities);
+
         // Combine account option with communities
-        const accountOption = communityOptions.find(opt => opt.type === "account") || {
+        const accountOption = {
           id: "account",
           label: currentUser ? `u/${currentUser.name || currentUser.username || "user"}` : "u/user",
           members: "Your profile",
           type: "account",
-          imageUrl: currentUser?.profilePicture || null,
+          imageUrl: withBackendBase(currentUser?.profilePicture) || "/resources/6yyqvx1f5bu71.webp",
         };
 
         setCommunityOptions([accountOption, ...formattedCommunities]);
@@ -287,6 +379,8 @@ const CreatePost = () => {
     if (!isFormValid()) return;
 
     try {
+      const token = localStorage.getItem("token");
+
       // Build post data based on post type
       const postData = {
         title: postTitle,
@@ -303,17 +397,6 @@ const CreatePost = () => {
         postData.link = postLink;
       }
 
-      // Add media URLs array if there are uploaded media files
-      if (uploadedMedia.length > 0) {
-        // TODO: Upload to Cloudinary and get real URLs
-        // For now, using blob URLs as placeholders
-        postData.mediaUrls = uploadedMedia.map((file) => ({
-          url: URL.createObjectURL(file),
-          mediaType: file.type.startsWith("image/") ? "image" : "video",
-          // mediaId will be set after Cloudinary upload
-        }));
-      }
-
       // Add tags if any are selected
       if (selectedTags.nsfw || selectedTags.spoiler || selectedTags.brand) {
         postData.tags = {
@@ -328,6 +411,26 @@ const CreatePost = () => {
       if (response.ok) {
         const createdPost = await response.json();
         console.log("Post created successfully:", createdPost);
+
+        // Upload media files to backend (Cloudinary) if present
+        const postId = createdPost._id || createdPost.id;
+        if (postId && uploadedMedia.length > 0) {
+          const uploadFile = async (file) => {
+            const form = new FormData();
+            form.append("file", file);
+            const res = await fetch(uploadRoutes.postMedia(postId), {
+              method: "POST",
+              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+              body: form,
+            });
+            if (!res.ok) {
+              console.error("Post media upload failed:", await res.text());
+            }
+          };
+          for (const file of uploadedMedia) {
+            await uploadFile(file);
+          }
+        }
         
         // Navigate to home page after successful post creation
         navigate("/");
@@ -372,9 +475,7 @@ const CreatePost = () => {
 
   return (
     <div className="create-post-page">
-      {/* <HeaderBar /> */}
       <div className="create-post-layout">
-        {/* <Sidebar /> */}
         <div className="create-post-main-content">
           <div className="create-post-container">
             <div className="create-post-header">
@@ -394,12 +495,27 @@ const CreatePost = () => {
                         src={selectedCommunityOption.imageUrl}
                         alt={`${selectedCommunityOption.label} avatar`}
                         className="community-select-avatar-img"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallback = selectedCommunityOption?.type === "account" 
+                            ? "/resources/6yyqvx1f5bu71.webp" 
+                            : "/resources/communityIcon_9cgdstjtz58g1.png";
+                          if (target.src !== `${window.location.origin}${fallback}`) {
+                            target.src = fallback;
+                          }
+                        }}
                       />
                     ) : selectedCommunityOption?.type === "account" ? (
                       <img
-                        src="/avatar_default.png"
+                        src="/resources/6yyqvx1f5bu71.webp"
                         alt="User Avatar"
                         className="community-select-avatar-img"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (target.src !== `${window.location.origin}/resources/6yyqvx1f5bu71.webp`) {
+                            target.src = "/resources/6yyqvx1f5bu71.webp";
+                          }
+                        }}
                       />
                     ) : selectedCommunityOption ? (
                       <svg
@@ -521,12 +637,27 @@ const CreatePost = () => {
                                 src={option.imageUrl}
                                 alt={`${option.label} avatar`}
                                 className="community-avatar-img"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  const fallback = option.type === "account" 
+                                    ? "/resources/6yyqvx1f5bu71.webp" 
+                                    : "/resources/communityIcon_9cgdstjtz58g1.png";
+                                  if (target.src !== `${window.location.origin}${fallback}`) {
+                                    target.src = fallback;
+                                  }
+                                }}
                               />
                             ) : option.type === "account" ? (
                               <img
-                                src="/avatar_default.png"
+                                src="/resources/6yyqvx1f5bu71.webp"
                                 alt="User Avatar"
                                 className="community-avatar-img"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (target.src !== `${window.location.origin}/resources/6yyqvx1f5bu71.webp`) {
+                                    target.src = "/resources/6yyqvx1f5bu71.webp";
+                                  }
+                                }}
                               />
                             ) : (
                               <svg

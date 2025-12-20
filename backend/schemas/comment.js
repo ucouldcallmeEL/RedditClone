@@ -10,14 +10,11 @@ const commentSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    upvotes: {
-        type: Number,
-        default: 0
-    },
-    downvotes: {
-        type: Number,
-        default: 0
-    },
+    vote: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vote',
+        default: [] 
+    }],
     post: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post',

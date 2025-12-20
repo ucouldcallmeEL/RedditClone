@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const databaseConnection = require('./managers/databaseConnection');
 require("dotenv").config();
 const cors = require("cors");
@@ -77,7 +78,7 @@ app.use(cors({
     }
   },
   credentials: true, // Allow cookies/credentials to be sent
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
 
@@ -90,6 +91,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static resources (e.g., default avatars)
+app.use('/resources', express.static(path.join(__dirname, '../resources')));
+
 // Import routes
 const communityRoutes = require('./routes/communityRoutes');
 const postRoutes = require('./routes/postRoutes');
@@ -99,14 +103,17 @@ const notificationRouter = require("./routes/notification.routes");
 const userRouter = require("./routes/userRoutes"); // Changed from user.routes to userRoutes
 const aiRouter = require("./routes/ai");
 const topicRoutes = require('./routes/topicRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 
 // Use routes    
 
 app.use('/r', communityRoutes);
+app.use('/api/r', communityRoutes); // alias to support frontend api base path
 app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 app.use('/', homeRoutes);
 app.use("/api/upload", uploadRouter);
-app.use("/api/notifications" , notificationRouter);
+app.use("/api/notifications", notificationRouter);
 app.use("/api/users", userRouter);
 app.use('/topics', topicRoutes);
 // Reuse the same router for both:
@@ -114,8 +121,10 @@ app.use('/topics', topicRoutes);
 // - API create:      POST /api/posts/create
 // app.use("/api/posts", postRoutes);
 app.use("/api/ai", aiRouter);
+app.use("/api/modmail", require('./routes/modmailRoutes'));
 
-// app.use('/api/communities', communityRoutes);
+app.use('/api/communities', communityRoutes);
+app.use('/api/queue', require('./routes/queueRoutes'));
 
 
 // Explicit 404 handler to make it clear when a route isn't mounted

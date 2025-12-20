@@ -3,11 +3,13 @@ import '../styles/community.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, LayoutGrid, List } from 'lucide-react';
 import CommunityHeader from '../components/CommunityHeader';
-import CommunitySidebar from '../components/CommunitySidebar';
+import CommunitySidebar from './CommunitySidebar';
 import PostCard from '../components/PostCard';
 import { API_BASE_URL } from '../config/apiConfig';
 import type { CommunityDetails, Post } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+
+import { apiClient } from '../services/apiClient';
 
 type FilterKey = 'hot' | 'new' | 'top' | 'rising';
 
@@ -92,71 +94,232 @@ function CommunityPage() {
   const [community, setCommunity] = useState<CommunityDetails | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterKey>('hot');
+  const [compactView, setCompactView] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+
+  const backendBase = useMemo(() => API_BASE_URL.replace(/\/api$/, ''), []);
+  const withBackendBase = (val?: string) => (val && val.startsWith('/') ? `${backendBase}${val}` : val || '');
+
+  const getTimeAgo = (dateString: string) => {
+    if (!dateString) return 'recently';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'recently';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return 'just now';
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+    if (diffSecs < 10) return 'just now';
+    if (diffSecs < 60) return `${diffSecs}s ago`;
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    if (diffMonths < 12) return `${diffMonths}mo ago`;
+    return `${diffYears}y ago`;
+  };
+
+  const getCurrentUserFromStorage = () => {
+    // Prefer JWT token (stored as `token`) and decode payload for userId
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      if (token) {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const payload = JSON.parse(decodeURIComponent(escape(window.atob(parts[1]))));
+          const id = payload?.userId || payload?.sub || null;
+          // try to fill name/username from stored user object if available
+          if (storedUser) {
+            const u = JSON.parse(storedUser);
+            return { id, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+          }
+          return { id, name: null, username: null };
+        }
+      }
+      if (storedUser) {
+        const u = JSON.parse(storedUser);
+        return { id: u?._id || u?.id || null, name: u?.name || u?.username || null, username: u?.username || u?.name || null };
+      }
+    } catch (e) {
+      console.warn('Failed to read current user from storage', e);
+    }
+    return null;
+  };
 
   useEffect(() => {
     if (!communityName) return;
 
-    setLoading(true);
-    fetch(`${API_BASE_URL}/r/${communityName}`)
-      .then((res) => res.json())
-      .then((communityData: any) => {
-        // Set community details
+    const loadCommunity = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiClient.get(`/r/${communityName}`, { params: { filter } });
+        const communityData = res.data;
+
+        const currentUser = getCurrentUserFromStorage();
+
+        let isJoined = false;
+        if (currentUser && communityData.members?.length) {
+          isJoined = communityData.members.some((m: any) => {
+            if (!m) return false;
+            if (typeof m === 'string') return m === currentUser.name || m === currentUser.username;
+            return m.name === currentUser.name || m.name === currentUser.username || m._id === currentUser.id;
+          });
+        }
+
         const communityDetails: CommunityDetails = {
           name: `r/${communityData.name}`,
+          id: communityData._id,
           members: `${communityData.members?.length || 0} members`,
           description: communityData.description,
-          avatar: communityData.profilePicture,
-          bannerColor: '#f97316',
-          bannerImage: communityData.coverPicture,
-          createdAt: new Date(communityData.createdAt).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-          }),
+          avatar: withBackendBase(communityData.profilePicture) || "/resources/communityIcon_9cgdstjtz58g1.png",
+          bannerColor: communityData.bannerColor || '#f97316',
+          bannerImage: withBackendBase(communityData.coverPicture) || "/resources/bannerBackgroundImage_6p2dptjtz58g1.png",
+          createdAt: communityData.createdAt
+            ? new Date(communityData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            : '',
           moderators: communityData.moderators?.map((mod: any) => `u/${mod.name}`) || [],
-          rules: [
+          rules: communityData.rules || [
             { id: '1', title: 'Be respectful' },
             { id: '2', title: 'No spam' },
             { id: '3', title: 'Follow Reddit rules' },
           ],
-          bookmarks: ['Wiki', 'Recent Game Threads'],
-          weeklyContributions: '1.5K',
-          online: 432,
-          joined: false,
+          joined: isJoined,
         };
         setCommunity(communityDetails);
 
-        // Set posts
-        const postsData = communityData.posts?.map((post: any) => ({
-          id: post._id,
-          title: post.title,
-          content: post.content,
-          author: post.author.name,
-          upvotes: post.upvotes,
-          downvotes: post.downvotes,
-          comments: post.comments?.length || 0,
-          subreddit: `r/${communityName}`,
-          createdAt: post.createdAt,
-          communityIcon: 'https://styles.redditmedia.com/t5_2qhps/styles/communityIcon_56xnvgv33pib1.png',
-          timeAgo: '2h ago',
-        })) || [];
-        setPosts(postsData);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch community data', err);
-      })
-      .finally(() => setLoading(false));
-  }, [communityName]);
+        // Determine moderator status client-side from populated moderators list
+        try {
+          let isModLocal = false;
+          if (currentUser && communityData.moderators?.length) {
+            isModLocal = communityData.moderators.some((m: any) => {
+              if (!m) return false;
+              if (typeof m === 'string') {
+                // stored as a name string
+                return (
+                  m === currentUser.name ||
+                  m === currentUser.username ||
+                  m === currentUser.id ||
+                  m === `u/${currentUser.username}` ||
+                  m === `u/${currentUser.name}`
+                );
+              }
+              const mid = String(m._id || m.id || '');
+              const mname = m.name || m.username || '';
+              return mid === String(currentUser.id) || mname === currentUser.username || mname === currentUser.name;
+            });
+          }
+          setIsModerator(!!isModLocal);
+        } catch (e) {
+          console.warn('Failed to determine moderator status locally', e);
+          setIsModerator(false);
+        }
 
-  // add a root class while this page is mounted so we can adjust layout widths
+        const postsData: Post[] = (communityData.posts || []).map((post: any) => {
+          const authorName = post.author?.username ;
+          const mediaEntry = post.mediaUrls?.[0];
+          const mediaUrl = mediaEntry?.url || post.media;
+          const communityIcon = withBackendBase(post.community?.profilePicture) || withBackendBase(post.author?.profilePicture) || "/resources/communityIcon_9cgdstjtz58g1.png";
+
+          return {
+            id: post._id,
+            
+            communityIcon,
+            title: post.title,
+            body: post.content || '',
+            media: mediaUrl,
+            mediaUrls: post.mediaUrls || [],
+            upvotes: post.upvotes || 0,
+            downvotes: post.downvotes || 0,
+            comments: post.comments?.length || 0,
+            shared: 0,
+            author: `u/${authorName}`,
+            createdAt: getTimeAgo(post.createdAt),
+          };
+        });
+        setPosts(postsData);
+      } catch (err: any) {
+        console.error('Failed to fetch community data', err?.response || err.message || err);
+        setError(err?.response?.data?.error || err.message || 'Failed to load community');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCommunity();
+    (window as any).__loadCommunity = loadCommunity;
+  }, [communityName, filter]);
+
+  const handleInviteModerator = async (username: string) => {
+    if (!communityName || !username) return;
+    try {
+      const communityId = community?.id || null;
+      await apiClient.post(`/r/${communityName}/invite-mod`, { username, communityId });
+    } catch (err) {
+      console.warn('Failed to invite moderator', err);
+    }
+
+    try {
+      if (typeof (window as any).__loadCommunity === 'function') {
+        await (window as any).__loadCommunity();
+      }
+    } catch (e) {
+      console.warn('Failed to reload after invite', e);
+    }
+  };
+
+  const handleToggleJoin = async (joined: boolean) => {
+    if (!communityName) return;
+    // if the user is leaving, hide mod tools immediately for better UX
+    if (!joined) setIsModerator(false);
+    try {
+      const currentUser = getCurrentUserFromStorage();
+      const userId = currentUser?.id || currentUser?.username || currentUser?.name || null;
+      const communityId = community?.id || null;
+
+      if (!userId) {
+        console.warn('join/leave: no userId available, aborting');
+        return;
+      }
+
+      if (joined) {
+        await apiClient.post(`/r/${communityName}/join`, { userId, communityId });
+      } else {
+        await apiClient.post(`/r/${communityName}/leave`, { userId, communityId });
+      }
+    } catch (err: any) {
+      // Log detailed error information to help debug 500s
+      console.warn('join/leave API call failed', err?.message || err);
+      if (err?.response) {
+        console.warn('Response status:', err.response.status);
+        console.warn('Response data:', err.response.data);
+        console.warn('Response headers:', err.response.headers);
+      } else if (err?.request) {
+        console.warn('No response received, request:', err.request);
+      }
+    }
+    // refresh moderator state immediately (ensure mod tools hide promptly)
+    // then reload community details (loadCommunity will recompute moderator state)
+    try {
+      if (typeof (window as any).__loadCommunity === 'function') {
+        await (window as any).__loadCommunity();
+      }
+    } catch (e) {
+      console.warn('Failed to reload community after join/leave', e);
+    }
+  };
+
   useEffect(() => {
     const cls = 'community-active';
     document.documentElement.classList.add(cls);
     return () => document.documentElement.classList.remove(cls);
   }, []);
-
-  const [filter, setFilter] = useState<FilterKey>('hot');
-  const [compactView, setCompactView] = useState(false);
 
   const displayedPosts = useMemo(() => {
     if (!posts || posts.length === 0) return [] as Post[];
@@ -218,24 +381,26 @@ function CommunityPage() {
       {community && (
         <CommunityHeader
           community={community}
-          onToggleJoin={(joined) => setCommunity((c) => (c ? { ...c, joined } : c))}
+          isModerator={isModerator}
+          onOpenModTools={() => navigate(`/r/${communityName}/mod-tools`)}
+          onToggleJoin={(joined) => {
+            void handleToggleJoin(joined);
+          }}
         />
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1rem' }}>
-        {/* Sort & view toolbar */}
         <div style={{ gridColumn: '1 / span 2', marginTop: '.5rem' }}>
           <div className="filter-bar" style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
             <SortDropdown active={filter} onChange={(f) => setFilter(f)} />
             <ViewDropdown compact={compactView} onChange={(c) => setCompactView(c)} />
-            {/* post count removed as requested */}
           </div>
         </div>
         <div>
           <section className="card">
-            {/* Posts heading removed per request */}
-
             {loading ? (
               <p>Loading…</p>
+            ) : error ? (
+              <p>Error: {error}</p>
             ) : displayedPosts.length ? (
               displayedPosts.map((post) => (
                 <article
@@ -243,7 +408,12 @@ function CommunityPage() {
                   onClick={() => navigate(`/post/${post.id}`)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <PostCard post={post} />
+                  <PostCard 
+                    post={post} 
+                    onVote={(postId, upvotes, downvotes) => {
+                      setPosts(prev => prev.map(p => p.id === postId ? { ...p, upvotes, downvotes } : p));
+                    }}
+                  />
                 </article>
               ))
             ) : (
@@ -253,7 +423,9 @@ function CommunityPage() {
         </div>
 
         <div style={{ alignSelf: 'start' }}>
-          {community && <CommunitySidebar community={community} />}
+          {community && (
+            <CommunitySidebar community={community} isModerator={isModerator} onInviteModerator={handleInviteModerator} />
+          )}
         </div>
       </div>
     </main>

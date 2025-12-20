@@ -3,19 +3,68 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
 import TextField from "./TextField";
+import { userRoutes, apiPost } from "../../config/apiRoutes";
 import "./Login.css";
 
 const Signup = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [isChecking, setIsChecking] = useState(false);
   //   const [password, setPassword] = useState("");
 
-  const handleSubmit = () => {
-    // Store email temporarily for the next step
-    if (email) {
-      localStorage.setItem("signupEmail", email);
+  const handleSubmit = async () => {
+    if (!formIsValid) return;
+    
+    setIsChecking(true);
+    setEmailError("");
+
+    try {
+      const response = await apiPost(userRoutes.checkEmail, { email });
+      
+      // Handle network errors or failed fetch
+      if (!response) {
+        throw new Error("No response from server");
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        // If response is not JSON, use status text
+        throw new Error(response.statusText || "Invalid response from server");
+      }
+
+      if (!response.ok) {
+        if (response.status === 409 && data.exists) {
+          setEmailError("Email already exists. Try logging in.");
+        } else {
+          setEmailError(data.error || "An error occurred. Please try again.");
+        }
+        setIsChecking(false);
+        return;
+      }
+
+      // Email is available, proceed to next step
+      if (email) {
+        localStorage.setItem("signupEmail", email);
+      }
+      navigate("/create-user", { state: { email } });
+    } catch (error) {
+      console.error("Check email error:", error);
+      // Handle network errors (backend not running, connection refused, etc.)
+      if (
+        error.message?.includes("Failed to fetch") || 
+        error.message?.includes("NetworkError") ||
+        error.message?.includes("ERR_CONNECTION_REFUSED") ||
+        error.name === "TypeError"
+      ) {
+        setEmailError("Unable to connect to server. Please check your connection and try again.");
+      } else {
+        setEmailError(error.message || "An error occurred. Please try again.");
+      }
+      setIsChecking(false);
     }
-    navigate("/create-user", { state: { email } });
   };
 
   const handleClose = () => {
@@ -26,11 +75,33 @@ const Signup = ({ onClose }) => {
     }
   };
 
-  const isEmailValid = (val) =>
+  const isEmailFormatValid = (val) =>
     /^[^\s@]+@[^\s@]+\.(com|net|org|edu)$/i.test(val);
   //   const isPasswordValid = (val) => val.length > 0;
 
-  const formIsValid = isEmailValid(email); // && isPasswordValid(password);
+  // Validator function that checks both format and API error state
+  const emailValidator = (val) => {
+    // If there's an API error, the email is invalid
+    if (emailError) return false;
+    // Otherwise check format
+    return isEmailFormatValid(val);
+  };
+
+  const formIsValid = isEmailFormatValid(email) && !emailError; // && isPasswordValid(password);
+
+  // Get error message for email field
+  const getEmailErrorMessage = () => {
+    if (emailError) {
+      return emailError;
+    }
+    if (!email || email.length === 0) {
+      return "Fill out this field";
+    }
+    if (!isEmailFormatValid(email)) {
+      return "Invalid email";
+    }
+    return null;
+  };
 
   return (
     <div className="log-in-modal auth-flow-modal reset-pass-modal">
@@ -46,8 +117,8 @@ const Signup = ({ onClose }) => {
             >
               <path
                 d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"
-                fill="white"
-                stroke="white"
+                fill="currentColor"
+                stroke="currentColor"
                 strokeWidth="0.25"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -92,17 +163,20 @@ const Signup = ({ onClose }) => {
               label="Email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailError(""); // Clear error when user types
+              }}
               required
-              validator={isEmailValid}
-              errorMessage="Fill out this field."
+              validator={emailValidator}
+              errorMessage={getEmailErrorMessage()}
             />
           </div>
           <div className="log-in-modal-other-links">
             <div>
               <p className="signup-prompt">
                 Already a Redditor?{" "}
-                <Link className="Reset-and-signup" to="/">
+                <Link className="Reset-and-signup" to="/login">
                   Log In
                 </Link>
               </p>
@@ -113,14 +187,14 @@ const Signup = ({ onClose }) => {
       <div className="log-in-modal-content">
         <div
           className={`LogIn-button login-action-button ${
-            !formIsValid ? "disabled" : ""
+            !formIsValid || isChecking ? "disabled" : ""
           }`}
-          onClick={formIsValid ? handleSubmit : undefined}
+          onClick={formIsValid && !isChecking ? handleSubmit : undefined}
         >
           <span
-            className={`log-in-button-text ${!formIsValid ? "disabled" : ""}`}
+            className={`log-in-button-text ${!formIsValid || isChecking ? "disabled" : ""}`}
           >
-            Continue
+            {isChecking ? "Checking..." : "Continue"}
           </span>
         </div>
       </div>

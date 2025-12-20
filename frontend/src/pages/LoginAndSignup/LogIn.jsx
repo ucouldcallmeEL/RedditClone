@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Buttons from "./Buttons";
 import Button from "./Button";
 import TextField from "./TextField";
 import { userRoutes, apiPost } from "../../config/apiRoutes";
@@ -11,10 +10,12 @@ const LogIn = ({ onClose }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formIsValid) return;
+    setLoginError(false); // Reset error on new submit
 
     try {
       const response = await apiPost(userRoutes.login, {
@@ -26,7 +27,7 @@ const LogIn = ({ onClose }) => {
 
       if (!response.ok) {
         console.error("Login error:", data.error);
-        // TODO: Show error message to user
+        setLoginError(true);
         return;
       }
 
@@ -36,6 +37,8 @@ const LogIn = ({ onClose }) => {
       }
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        // Dispatch event to notify sidebar
+        window.dispatchEvent(new CustomEvent('user-updated'));
       }
 
       // Close modal and navigate
@@ -45,7 +48,7 @@ const LogIn = ({ onClose }) => {
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      // TODO: Show error message to user
+      setLoginError(true);
     }
   };
 
@@ -57,11 +60,35 @@ const LogIn = ({ onClose }) => {
 
   const isEmailValid = (val) => /\S+@\S+\.\S+/.test(val) || val.length > 3;
   const isPasswordValid = (val) => val.length > 0;
+  // Email validator for display: invalid if format is wrong OR if there's a login error
+  const isEmailValidForDisplay = (val) => isEmailValid(val) && !loginError;
+  // Password validator for display: invalid if empty OR if there's a login error
+  const isPasswordValidForDisplay = (val) => val.length > 0 && !loginError;
 
   const formIsValid = isEmailValid(email) && isPasswordValid(password);
 
+  // Get error messages for each field
+  const getEmailErrorMessage = () => {
+    if (!email || email.length === 0) {
+      return "Fill out this field";
+    }
+    // Don't show error message for email field on login error (only show outline)
+    // The error message will be shown under password field instead
+    return null;
+  };
+
+  const getPasswordErrorMessage = () => {
+    if (!password || password.length === 0) {
+      return "Fill out this field";
+    }
+    if (loginError) {
+      return "Invalid username or password";
+    }
+    return null;
+  };
+
   return (
-    <div className="log-in-modal auth-flow-modal">
+    <div className="log-in-modal auth-flow-modal reset-pass-modal">
       <button className="quit-login-button" onClick={handleClose}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -72,8 +99,8 @@ const LogIn = ({ onClose }) => {
         >
           <path
             d="M11.273 10l5.363-5.363a.9.9 0 10-1.273-1.273L10 8.727 4.637 3.364a.9.9 0 10-1.273 1.273L8.727 10l-5.363 5.363a.9.9 0 101.274 1.273L10 11.273l5.363 5.363a.897.897 0 001.274 0 .9.9 0 000-1.273L11.275 10h-.002z"
-            fill="white"
-            stroke="white"
+            fill="currentColor"
+            stroke="currentColor"
             strokeWidth="0.25"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -126,20 +153,28 @@ const LogIn = ({ onClose }) => {
           label="Email or username"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setLoginError(false); // Clear login error when user types
+          }}
           required
-          validator={isEmailValid}
-          errorMessage="Fill out this field."
+          validator={isEmailValidForDisplay}
+          errorMessage={getEmailErrorMessage()}
+          forceError={loginError}
         />
 
         <TextField
           label="Password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setLoginError(false); // Clear login error when user types
+          }}
           required
-          validator={isPasswordValid}
-          errorMessage="Fill out this field."
+          validator={isPasswordValidForDisplay}
+          errorMessage={getPasswordErrorMessage()}
+          forceError={loginError}
         />
       </div>
       <div className="log-in-modal-other-links">
@@ -161,9 +196,8 @@ const LogIn = ({ onClose }) => {
       </div>
       <div className="log-in-modal-content">
         <div
-          className={`LogIn-button login-action-button ${
-            !formIsValid ? "disabled" : ""
-          }`}
+          className={`LogIn-button login-action-button ${!formIsValid ? "disabled" : ""
+            }`}
           onClick={formIsValid ? handleSubmit : undefined}
         >
           <span

@@ -1,6 +1,6 @@
 .community-icon-button:hover,
 .community-banner-button:hover{
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .community-page-content {
@@ -24,9 +24,9 @@
     padding-block-start: 0.5rem;
     padding-block-end: 0.5rem;
     border-radius: 1.25rem;
-    border: 1px solid #2a3236;
-    background-color: #2a3236;
-    color: #ffffff;
+    border: 1px solid var(--border-primary);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 400;
     display: flex;
@@ -38,7 +38,7 @@
     position: absolute;
     left: 1rem;
     top: 1rem;
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 16px;
     font-weight: 400;
     pointer-events: none;
@@ -49,13 +49,13 @@
 .community-description-label.floating {
     top: 0.5rem;
     font-size: 12px;
-    color: #b7cad4;
+    color: var(--text-quaternary);
     transform: translateY(0);
 }
 
 .community-description-input {
     background-color: transparent;
-    color: #ffffff;
+    color: var(--text-primary);
     border: none;
     padding: 0;
     padding-top: 1rem;
@@ -72,15 +72,16 @@
 
 .community-name-container {
     position: relative;
-    height: 2.5rem;
+    height: 4rem;
+    min-height: 3.5rem;
     padding-inline-start: 1rem;
     padding-inline-end: 1rem;
     padding-block-start: 0.5rem;
     padding-block-end: 0.5rem;
     border-radius: 1.25rem;
-    border: 1px solid #2a3236;
-    background-color: #2a3236;
-    color: #ffffff;
+    border: 1px solid var(--border-primary);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 400;
     display: flex;
@@ -89,7 +90,7 @@
 }
 
 .community-name-container:hover , .community-description-container:hover {
-    background-color: #333D42;
+    background-color: var(--bg-hover);
 }
 
 .community-name-container:focus-within, .community-description-container:focus-within {
@@ -109,7 +110,7 @@
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 16px;
     font-weight: 400;
     pointer-events: none;
@@ -118,9 +119,9 @@
 }
 
 .community-name-label.floating {
-    top: 0.5rem;
+    top: 0.75rem;
     font-size: 12px;
-    color: #b7cad4;
+    color: var(--text-quaternary);
     transform: translateY(0);
 }
 
@@ -138,7 +139,7 @@
 }
 
 .community-name-prefix {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 16px;
     font-weight: 400;
     pointer-events: none;
@@ -147,7 +148,7 @@
 }
 
 .community-name-prefix.floating {
-    color: #b7cad4;
+    color: var(--text-quaternary);
     font-size: 16px;
 }
 
@@ -159,7 +160,7 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 16px;
     margin-top: 0;
 }
@@ -192,7 +193,7 @@
 }
 
 .community-name-counter, .community-description-counter {
-    color: #748791;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 400;
     padding-right: 1rem;
@@ -216,25 +217,28 @@
     /* overflow: auto; */
     max-width: 280px;
     position: relative;
-    background-color: #181C1F;
+    background-color: var(--bg-secondary);
     text-align: start;
     padding: 1rem;
+    box-sizing: border-box;
 }
 
 .community-summary-name {
-    color: #eef1f3;
+    color: var(--text-primary);
     font-size: 20px;
     font-weight: 600;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .community-summary-stats {
-    color: #8BA2AD;
+    color: var(--text-quaternary);
     font-size: 12px;
     white-space: nowrap;
 }
 
 .community-summary-description {
-    color: #acacac;
+    color: var(--text-secondary);
     font-size: 14px;
 }
