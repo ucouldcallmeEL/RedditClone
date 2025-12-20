@@ -191,10 +191,14 @@ const addMemberToCommunity = async (communityIdOrName, userId) => {
     console.log('[addMemberToCommunity] resolved community=', community?._id || community?.name || null);
     if (!community) throw new Error('Community not found');
 
-// Atomic, idempotent add to members without triggering full doc validation
+    // Atomic, idempotent add to members and user's communities without triggering full doc validation
     const CommunityModel = require('../schemas/community');
     await CommunityModel.findByIdAndUpdate(community._id, {
         $addToSet: { members: user._id }
+    });
+
+    await User.findByIdAndUpdate(user._id, {
+        $addToSet: { communities: community._id }
     });
 
     // return success, no need for updated community
@@ -240,6 +244,11 @@ const removeMemberFromCommunity = async (communityIdOrName, userId) => {
         console.error('[removeMemberFromCommunity] update error', e);
         throw e;
     }
+
+    // Remove community from user's communities array as well
+    await User.findByIdAndUpdate(user._id, {
+        $pull: { communities: community._id }
+    });
 
     // return success
     return;

@@ -23,7 +23,9 @@ const getPosts = async () => {
 };
 
 const getPostsByUser = async (id) => {
-    const posts = await Post.find({ author: id });
+    const posts = await Post.find({ author: id })
+        .populate('author', 'username profilePicture')
+        .populate('community', 'name profilePicture');
     return posts;
 };
 

@@ -15,14 +15,40 @@ function CommentsTab({ userId }) {
   const [sortBy, setSortBy] = useState("new");
   const [loading, setLoading] = useState(true);
 
+  const resolvedUserId = useMemo(() => {
+    if (userId) return userId;
+    try {
+      const storedUserRaw = localStorage.getItem("user") || sessionStorage.getItem("user");
+      if (storedUserRaw) {
+        const stored = JSON.parse(storedUserRaw);
+        return stored?._id || stored?.id || stored?.userId || null;
+      }
+    } catch (e) {
+      console.warn("Failed to read stored user", e);
+    }
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (token) {
+        const [, payload] = token.split(".");
+        if (payload) {
+          const decoded = JSON.parse(decodeURIComponent(escape(window.atob(payload))));
+          return decoded?.userId || decoded?.sub || decoded?._id || null;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to decode token for user id", e);
+    }
+    return null;
+  }, [userId]);
+
   // Fetch comments using userId
   useEffect(() => {
-    if (!userId) return;
+    if (!resolvedUserId) return;
 
     const fetchComments = async () => {
       setLoading(true);
       try {
-        const response = await apiGet(commentRoutes.getByUser(userId));
+        const response = await apiGet(commentRoutes.getByUser(resolvedUserId));
         const data = response.ok ? await response.json() : [];
         setComments(Array.isArray(data) ? data : data.data || []);
       } catch (err) {
@@ -34,7 +60,7 @@ function CommentsTab({ userId }) {
     };
 
     fetchComments();
-  }, [userId]);
+  }, [resolvedUserId]);
 
   // sort comments
   const sortedComments = useMemo(() => {
@@ -55,7 +81,7 @@ function CommentsTab({ userId }) {
     return list;
   }, [comments, sortBy]);
 
-  if (!userId) return null;
+  if (!resolvedUserId) return null;
 
   return (
     <div className="overview">

@@ -5,11 +5,18 @@ import type { Comment as CommentType } from '../types';
 type Props = {
   comment: CommentType;
   depth?: number;
+  onReplySubmit?: (parentCommentId: string, content: string) => Promise<void>;
 };
 
-function Comment({ comment, depth = 0 }: Props) {
+function Comment({ comment, depth = 0, onReplySubmit }: Props) {
+  const fallbackAvatar = "/resources/6yyqvx1f5bu71.webp";
+  const authorName =  (comment as any)?.author?.username || "anonymous";
+  const avatarSrc = (comment as any)?.author?.profilePicture || fallbackAvatar;
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
   
   const score = comment.upvotes - comment.downvotes;
   const hasReplies = comment.replies && comment.replies.length > 0;
@@ -53,11 +60,9 @@ function Comment({ comment, depth = 0 }: Props) {
       
       <div className="comment__content">
         <div className="comment__header">
-          <span className="comment__author">{comment.author.name}</span>
-          <span className="comment__meta">
-            <span className="comment__score">{score} points</span>
-            <span className="comment__time">{getTimeAgo(comment.createdAt)}</span>
-          </span>
+          <img src={avatarSrc} alt={authorName || "author"} className="comment__avatar" loading="lazy" />
+          <span className="comment__author-inline">{authorName}</span>
+          <span className="comment__meta-inline">{getTimeAgo(comment.createdAt)}</span>
         </div>
         
         {!isCollapsed && (
@@ -96,22 +101,49 @@ function Comment({ comment, depth = 0 }: Props) {
                 <textarea 
                   placeholder="What are your thoughts?"
                   rows={3}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
                 />
                 <div className="comment__reply-actions">
-                  <button className="btn btn--sm" onClick={() => setShowReplyBox(false)}>
+                  <button className="btn btn--sm" onClick={() => { setShowReplyBox(false); setReplyError(null); }}>
                     Cancel
                   </button>
-                  <button className="btn btn--primary btn--sm">
-                    Reply
+                  <button
+                    className="btn btn--primary btn--sm"
+                    disabled={submitting || !replyText.trim()}
+                    onClick={async () => {
+                      if (!onReplySubmit) return;
+                      const trimmed = replyText.trim();
+                      if (!trimmed) return;
+                      try {
+                        setSubmitting(true);
+                        setReplyError(null);
+                        await onReplySubmit(comment._id, trimmed);
+                        setReplyText('');
+                        setShowReplyBox(false);
+                      } catch (err) {
+                        setReplyError(err instanceof Error ? err.message : 'Failed to reply');
+                      } finally {
+                        setSubmitting(false);
+                      }
+                    }}
+                  >
+                    {submitting ? 'Posting...' : 'Reply'}
                   </button>
                 </div>
+                {replyError && <div className="error">{replyError}</div>}
               </div>
             )}
             
             {hasReplies && (
               <div className="comment__replies">
                 {comment.replies.map((reply) => (
-                  <Comment key={reply._id} comment={reply} depth={depth + 1} />
+                  <Comment
+                    key={reply._id}
+                    comment={reply}
+                    depth={depth + 1}
+                    onReplySubmit={onReplySubmit}
+                  />
                 ))}
               </div>
             )}

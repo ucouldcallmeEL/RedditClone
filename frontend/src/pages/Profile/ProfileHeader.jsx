@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Edit } from "lucide-react";
 import { userRoutes, apiGet } from "../../config/apiRoutes";
@@ -7,6 +7,15 @@ import avatarFallback from "./Reddit_Avatar.webp";
 function ProfileHeader({ user: initialUser }) {
     const [user, setUser] = useState(initialUser);
     const [loading, setLoading] = useState(!initialUser);
+
+    // Resolve relative profile picture paths against backend base
+    const backendBase = useMemo(() => {
+        const apiBase = (process.env.REACT_APP_API_URL || "http://localhost:4000").replace(/\/api$/, "");
+        return apiBase;
+    }, []);
+
+    const withBackendBase = (val) =>
+        val && val.startsWith("/") ? `${backendBase}${val}` : val || "";
 
     useEffect(() => {
         // If user is provided, use it; otherwise fetch current user
@@ -64,7 +73,7 @@ function ProfileHeader({ user: initialUser }) {
             <div className="profile-content">
                 <div className="avatar-container">
                     <img 
-                        src={user.profilePicture || avatarFallback} 
+                        src={withBackendBase(user.profilePicture) || avatarFallback} 
                         className="avatar" 
                         alt={`${user.username || user.name}'s avatar`} 
                     />

@@ -47,14 +47,6 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    posts: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Post'
-    }],
-    comments: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment'
-    }]
 });
 
 const User = mongoose.model('User', userSchema);

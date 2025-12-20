@@ -90,12 +90,14 @@ const notificationRouter = require("./routes/notification.routes");
 const userRouter = require("./routes/userRoutes"); // Changed from user.routes to userRoutes
 const aiRouter = require("./routes/ai");
 const topicRoutes = require('./routes/topicRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 
 // Use routes    
 
 app.use('/r', communityRoutes);
 app.use('/api/r', communityRoutes); // alias to support frontend api base path
 app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 app.use('/', homeRoutes);
 app.use("/api/upload", uploadRouter);
 app.use("/api/notifications" , notificationRouter);

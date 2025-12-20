@@ -1,20 +1,61 @@
 import { Eye, Plus, SlidersHorizontal } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { postRoutes, commentRoutes, apiGet } from "../../../config/apiRoutes";
-
+import { postRoutes, apiGet } from "../../../config/apiRoutes";
+import type { Post } from "../../../types";
 
 import PostCard from "../../../components/PostCard";
-import Comment from "../../../components/Comment";
 import EmptyState from "../../../components/EmptyState";
 
 import "./OverviewTab.css";
 
-function OverviewTab({ userId }) {
+type PostsTabProps = {
+  userId?: string;
+};
+
+type BackendPost = {
+  _id?: string;
+  id?: string;
+  title?: string;
+  content?: string;
+  media?: string;
+  mediaUrls?: { url?: string; mediaType?: string }[];
+  upvotes?: number;
+  comments?: unknown[];
+  author?: { username?: string; profilePicture?: string };
+  community?: { name?: string; profilePicture?: string };
+  createdAt?: string;
+};
+
+function PostsTab({ userId }: PostsTabProps) {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const resolvedUserId = useMemo(() => {
+    if (userId) return userId;
+    try {
+      const storedUserRaw = localStorage.getItem("user") || sessionStorage.getItem("user");
+      if (storedUserRaw) {
+        const stored = JSON.parse(storedUserRaw);
+        return stored?._id || stored?.id || stored?.userId || null;
+      }
+    } catch (e) {
+      console.warn("Failed to read stored user", e);
+    }
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (token) {
+        const [, payload] = token.split(".");
+        if (payload) {
+          const decoded = JSON.parse(decodeURIComponent(escape(window.atob(payload))));
+          return decoded?.userId || decoded?.sub || decoded?._id || null;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to decode token for user id", e);
+    }
+    return null;
+  }, [userId]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Backend base for resolving relative media/icon URLs
   const backendBase = useMemo(() => {
@@ -22,10 +63,10 @@ function OverviewTab({ userId }) {
     return apiBase;
   }, []);
 
-  const withBackendBase = (val) =>
+  const withBackendBase = (val: string | null | undefined): string =>
     val && val.startsWith("/") ? `${backendBase}${val}` : val || "";
 
-  const getTimeAgo = (dateString) => {
+  const getTimeAgo = (dateString?: string): string => {
     if (!dateString) return "recently";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "recently";
@@ -47,24 +88,21 @@ function OverviewTab({ userId }) {
     return `${diffYears}y ago`;
   };
 
-  // Fetch posts and comments using userId
+  // Fetch posts using userId
   useEffect(() => {
-    if (!userId) return;
+    if (!resolvedUserId) return;
 
-    const fetchAll = async () => {
+    const fetchPosts = async () => {
       setLoading(true);
       try {
-        const [postsRes, commentsRes] = await Promise.all([
-          apiGet(postRoutes.getByUser(userId)),
-          apiGet(commentRoutes.getByUser(userId)),
-        ]);
-
-        const postsData = postsRes.ok ? await postsRes.json() : [];
-        const commentsData = commentsRes.ok ? await commentsRes.json() : [];
-
-        const rawPosts = Array.isArray(postsData) ? postsData : postsData.data || [];
-        // Transform backend posts to frontend format (JS-friendly)
-        const transformedPosts = rawPosts.map((post) => {
+        // Guard against envs where REACT_APP_API_URL already includes /api (would create /api/api)
+        const postsUrl = postRoutes.getByUser(resolvedUserId).replace(/\/api\/api\//, "/api/");
+        const response = await apiGet(postsUrl);
+        const data = response.ok ? await response.json() : [];
+        const backendPosts: BackendPost[] = Array.isArray(data) ? data : data.data || [];
+        
+        // Transform backend posts to frontend format
+        const transformedPosts: Post[] = backendPosts.map((post) => {
           const authorName = post.author?.username || "anonymous";
           const communityName = post.community?.name;
           const label = communityName ? `r/${communityName}` : `u/${authorName}`;
@@ -98,60 +136,30 @@ function OverviewTab({ userId }) {
         });
         
         setPosts(transformedPosts);
-        setComments(Array.isArray(commentsData) ? commentsData : commentsData.data || []);
       } catch (e) {
-        console.error("Failed to fetch overview data", e);
+        console.error("Failed to fetch posts", e);
         setPosts([]);
-        setComments([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAll();
-  }, [userId]);
+    fetchPosts();
+  }, [resolvedUserId]);
 
-  const items = useMemo(() => {
-    const merged = [];
-
-    posts.forEach((p) => {
-      merged.push({
-        type: "post",
-        data: p,
-        sortValue: new Date(p.createdAt || 0).getTime(),
-      });
-    });
-
-    comments.forEach((c) => {
-      merged.push({
-        type: "comment",
-        data: c,
-        sortValue: new Date(c.createdAt || 0).getTime(),
-      });
-    });
-
-    merged.sort((a, b) => b.sortValue - a.sortValue);
-    return merged;
-  }, [posts, comments]);
-
-  const handleOpenPost = (post) => {
-    const postId = post._id || post.id;
-    if (postId) navigate(`/post/${postId}`);
-  };
-
-  if (!userId) return null;
+  if (!resolvedUserId) return null;
 
   return (
     <div className="overview">
       {loading ? (
-        <EmptyState message="Loading..." />
-      ) : items.length > 0 ? (
+        <EmptyState message="Loading posts..." />
+      ) : posts.length > 0 ? (
         <>
           <Link className="no-underline" to="/settings?tab=profile">
             <div className="overview__filter">
               <div className="filter-left">
                 <Eye size={18} />
-                <span>Showing all content</span>
+                <span>Showing all posts</span>
               </div>
               <span className="arrow">›</span>
             </div>
@@ -168,27 +176,21 @@ function OverviewTab({ userId }) {
           </div>
 
           <div className="overview__posts">
-            {items.map((item) => {
-              const keyId = item.data._id || item.data.id;
-              return (
-                <div key={`${item.type}-${keyId}`} className="overview-item">
-                  {item.type === "post" ? (
-                    <PostCard post={item.data} onClick={() => handleOpenPost(item.data)} />
-                  ) : (
-                    <div className="comment-preview">
-                      <Comment comment={item.data} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {posts.map((post) => (
+              <div key={post.id} className="overview-item">
+                <PostCard
+                  post={post}
+                  onClick={() => navigate(`/post/${post.id}`)}
+                />
+              </div>
+            ))}
           </div>
         </>
       ) : (
-        <EmptyState message="No posts or comments yet" />
+        <EmptyState message="Looks like you haven't posted anything yet" />
       )}
     </div>
   );
 }
 
-export default OverviewTab;
+export default PostsTab;

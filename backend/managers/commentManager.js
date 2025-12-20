@@ -17,12 +17,14 @@ const getcommentreplies = async (id) => {
 };
 
 const getCommentsByUser = async (id) => {
-    const comments = await Comment.find({ author: id });
+    const comments = await Comment.find({ author: id })
+        .populate('author', 'username name profilePicture');
     return comments;
 };
 
 const getCommentsByPost = async (id) => {
-    const comments = await Comment.find({ post: id }).populate('author', 'name');
+    const comments = await Comment.find({ post: id })
+        .populate('author', 'username name profilePicture');
     return comments;
 };
 

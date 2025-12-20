@@ -16,6 +16,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 
 const redditLogo = "/Reddit_Lockup.svg";
+const avatarFallback = "/resources/6yyqvx1f5bu71.webp";
 
 const profileActions = [
   { label: "Edit Avatar", icon: Pencil },
@@ -209,7 +210,7 @@ function Header() {
               <img
                 src={
                   JSON.parse(localStorage.getItem("user") || "{}")
-                    .profilePicture
+                    .profilePicture || avatarFallback
                 }
                 alt="User avatar"
                 className="profile-menu__avatar"
@@ -221,12 +222,27 @@ function Header() {
               ref={menuRef}
               role="menu"
             >
-              <div className="profile-menu__section profile-menu__section--user">
+              <div
+                className="profile-menu__section profile-menu__section--user"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/user/me");
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    navigate("/user/me");
+                  }
+                }}
+              >
                 <div className="profile-menu__avatar" aria-hidden="true">
                   <img
                     src={
                       JSON.parse(localStorage.getItem("user") || "{}")
-                        .profilePicture
+                        .profilePicture || avatarFallback
                     }
                     alt="User avatar"
                     className="profile-menu__avatar"
